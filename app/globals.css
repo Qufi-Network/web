@@ -1,0 +1,1059 @@
+/*
+ * QUFI Network — design system.
+ *
+ * One accent colour, one sans for statements, one mono for technical labels,
+ * and a great deal of nothing. Every rule here is either structure or restraint;
+ * there are no decorative surfaces, because the network is the surface.
+ */
+
+:root {
+  --void: #04060b;
+  --deep: #070c16;
+
+  /*
+   * Text is white first and atmospheric second.
+   *
+   * These started much dimmer, treating type as another element of the
+   * composition to be balanced against the network behind it. That reads well
+   * in a still frame and badly in use: the copy sits over a live scene that is
+   * bright in places, and anything under about half opacity stops being
+   * readable the moment the camera moves something luminous behind it. Every
+   * level here now clears AA against the void, and the brightest is plain white.
+   */
+  --ice: #ffffff;
+  --ice-soft: rgba(255, 255, 255, 0.88);
+  --ice-faint: rgba(255, 255, 255, 0.7);
+  --ice-ghost: rgba(255, 255, 255, 0.56);
+
+  --accent: #1769ff;
+  --signal: #4cc9ff;
+  --rule: rgba(140, 180, 255, 0.24);
+
+  --sans: 'Sora Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --mono: 'JetBrains Mono Variable', ui-monospace, 'SF Mono', 'Cascadia Mono', monospace;
+
+  /* Long, unhurried, and never quite linear. Nothing in this project snaps. */
+  --ease: cubic-bezier(0.22, 0.61, 0.28, 1);
+  --reveal: 1100ms;
+
+  --gutter: clamp(22px, 5vw, 88px);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--void);
+  color: var(--ice);
+  font-family: var(--sans);
+  font-weight: 300;
+  /* The experience owns the viewport. Nothing scrolls until the visitor has
+     accepted the invitation and there is somewhere to descend to. */
+  overflow: hidden;
+  overscroll-behavior: none;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: rgba(23, 105, 255, 0.35);
+  color: var(--ice);
+}
+
+[data-inside='true'] body {
+  overflow-y: auto;
+}
+
+
+/* The descent needs a document long enough to fall through. */
+.track {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  pointer-events: none;
+}
+
+/* ---------------------------------------------------------------- stage -- */
+
+.stage {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+}
+
+.stage canvas {
+  display: block;
+  /* The scene is the interaction surface: it has to receive the pointer even
+     though the overlay sits above it. */
+  touch-action: none;
+}
+
+/* -------------------------------------------------------------- overlay -- */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  /*
+   * dvh, not the default height of a fixed box.
+   *
+   * inset:0 on a fixed element resolves against the LARGE viewport - the one
+   * you get with the address bar hidden - so on a phone that is showing its
+   * address bar, the middle of this layer sits below the middle of what the
+   * visitor can actually see. Everything centred in here reads as having sunk
+   * toward the bottom of the screen. dvh tracks the visible area instead, and
+   * vh above it is the fallback for anything that does not know the unit.
+   */
+  height: 100vh;
+  height: 100dvh;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.overlay [data-show] {
+  opacity: 0;
+  transition:
+    opacity var(--reveal) var(--ease),
+    transform var(--reveal) var(--ease),
+    filter var(--reveal) var(--ease);
+}
+
+.overlay [data-show='true'] {
+  opacity: 1;
+}
+
+/* --------------------------------------------------------------- status -- */
+
+/*
+ * Live, and saying so quietly.
+ *
+ * Sits in the corner the counts used to, under the mark. A status line earns
+ * its place by being true, not by being loud, so it is one mono line at label
+ * size - the same register as every other piece of furniture on the page.
+ */
+.status {
+  position: absolute;
+  /* Below the persistent mark, which owns this corner. */
+  top: calc(max(var(--gutter), env(safe-area-inset-top)) + clamp(48px, 4.6vw, 64px));
+  left: var(--gutter);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  font-weight: 400;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  line-height: 1;
+  color: var(--ice-faint);
+  transform: translateY(-6px);
+}
+
+.status[data-show='true'] {
+  transform: translateY(0);
+  transition-delay: 260ms;
+}
+
+/*
+ * The indicator, drawn as a light rather than as a shape.
+ *
+ * A ring expanding out of a lit centre and dissolving - the same gesture a
+ * signal makes leaving a node in the scene behind it, at the scale of a piece
+ * of furniture. A plain filled square would say "status: ok" in the vocabulary
+ * of a dashboard, which is not what the rest of this page speaks.
+ */
+.status-pulse {
+  position: relative;
+  width: 7px;
+  height: 7px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--neon, #4cc9ff);
+  box-shadow: 0 0 8px 1px rgba(76, 201, 255, 0.7);
+}
+
+.status-pulse::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 50%;
+  border: 1px solid var(--neon, #4cc9ff);
+  animation: status-ring 2.6s var(--ease) infinite;
+}
+
+@keyframes status-ring {
+  0% {
+    transform: scale(0.6);
+    opacity: 0.9;
+  }
+  70%,
+  100% {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .status-pulse::after {
+    animation: none;
+    opacity: 0.4;
+  }
+}
+
+/* ------------------------------------------------------------- identity -- */
+
+.identity {
+  position: absolute;
+  left: var(--gutter);
+  right: var(--gutter);
+  bottom: max(clamp(56px, 11vh, 132px), env(safe-area-inset-bottom));
+  max-width: 38ch;
+}
+
+.wordmark {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  font-weight: 600;
+  font-size: clamp(2.9rem, 8.4vw, 6.6rem);
+  line-height: 0.88;
+  letter-spacing: -0.035em;
+}
+
+.wordmark span {
+  display: block;
+  transform: translateY(0.3em);
+  opacity: 0;
+  transition:
+    opacity 1400ms var(--ease),
+    transform 1400ms var(--ease);
+}
+
+.identity[data-show='true'] .wordmark span {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.wordmark-a {
+  color: var(--ice);
+}
+
+/* The second half of the lockup sits back, so the pair reads as one object with
+   depth rather than as two words of equal weight. */
+.wordmark-b {
+  color: rgba(255, 255, 255, 0.58);
+  transition-delay: 220ms !important;
+}
+
+.descriptor {
+  margin: clamp(20px, 3vh, 34px) 0 0;
+  font-size: clamp(0.98rem, 1.35vw, 1.22rem);
+  font-weight: 300;
+  line-height: 1.55;
+  letter-spacing: 0.005em;
+  color: var(--ice-soft);
+  transform: translateY(14px);
+  opacity: 0;
+  transition:
+    opacity 1200ms var(--ease) 620ms,
+    transform 1200ms var(--ease) 620ms;
+}
+
+.identity[data-show='true'] .descriptor {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+/* ----------------------------------------------------------- invitation -- */
+
+.invitation {
+  margin-top: clamp(28px, 4vh, 48px);
+  transform: translateY(10px);
+}
+
+.invitation[data-show='true'] {
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.enter {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 26px;
+  background: rgba(9, 18, 34, 0.5);
+  border: 1px solid var(--glass-edge);
+  border-radius: 3px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  cursor: pointer;
+  color: var(--ice);
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+}
+
+.enter-mark {
+  width: 7px;
+  height: 7px;
+  flex: none;
+  background: var(--signal);
+  box-shadow: 0 0 0 0 rgba(24, 184, 255, 0.55);
+  animation: enter-pulse 2600ms var(--ease) infinite;
+}
+
+/* One node, still transmitting. The invitation is the network asking. */
+@keyframes enter-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(24, 184, 255, 0.5);
+    opacity: 1;
+  }
+  55% {
+    box-shadow: 0 0 0 9px rgba(24, 184, 255, 0);
+    opacity: 0.55;
+  }
+}
+
+.enter-rule {
+  width: 0;
+  height: 1px;
+  background: linear-gradient(90deg, var(--accent), transparent);
+  transition: width 700ms var(--ease);
+}
+
+.enter:hover .enter-rule,
+.enter:focus-visible .enter-rule {
+  width: 68px;
+}
+
+.enter:focus-visible {
+  outline: 1px solid var(--signal);
+  outline-offset: 6px;
+}
+
+/* ---------------------------------------------------------- instruction -- */
+
+.instruction {
+  position: absolute;
+  left: var(--gutter);
+  bottom: max(var(--gutter), env(safe-area-inset-bottom));
+  margin: 0;
+  max-width: 34ch;
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  line-height: 1.9;
+  color: var(--ice-ghost);
+  transform: translateY(8px);
+}
+
+.instruction[data-show='true'] {
+  transform: translateY(0);
+  transition-delay: 900ms;
+}
+
+/* ----------------------------------------------------------------- skip -- */
+
+.skip {
+  position: absolute;
+  right: var(--gutter);
+  bottom: max(var(--gutter), env(safe-area-inset-bottom));
+  padding: 10px 0;
+  background: none;
+  border: 0;
+  border-bottom: 1px solid transparent;
+  cursor: pointer;
+  color: var(--ice-ghost);
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  transition:
+    color 500ms var(--ease),
+    border-color 500ms var(--ease),
+    opacity var(--reveal) var(--ease);
+}
+
+.skip[data-show='true'] {
+  pointer-events: auto;
+  transition-delay: 3200ms;
+}
+
+.skip:hover,
+.skip:focus-visible {
+  color: var(--ice-soft);
+  border-bottom-color: var(--rule);
+}
+
+.skip:focus-visible {
+  outline: 1px solid var(--signal);
+  outline-offset: 5px;
+}
+
+/* ---------------------------------------------------------------- stats -- */
+
+.stats {
+  position: absolute;
+  top: var(--gutter);
+  right: var(--gutter);
+  display: flex;
+  gap: 16px;
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  color: var(--ice-faint);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ------------------------------------------------------------ treatment -- */
+
+.grain {
+  position: absolute;
+  inset: -2px;
+  opacity: 0.038;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.vignette {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 88% 78% at 50% 48%, transparent 42%, rgba(2, 4, 9, 0.62) 100%),
+    linear-gradient(180deg, rgba(2, 4, 9, 0.5) 0%, transparent 22%);
+}
+
+/* ------------------------------------------------------------- fallback -- */
+
+.static-network {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  opacity: 0.55;
+}
+
+.static-network svg {
+  width: 100%;
+  height: 100%;
+}
+
+/*
+ * The document is always in the markup — crawlers and screen readers get the
+ * real content whether or not a GPU was involved. It is only visually hidden,
+ * and it comes back the moment the experience cannot run.
+ */
+.document {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+[data-webgl='false'] .document {
+  position: relative;
+  z-index: 3;
+  width: auto;
+  height: auto;
+  max-width: 62ch;
+  margin: 0;
+  padding: clamp(48px, 9vh, 120px) var(--gutter);
+  overflow: visible;
+  clip-path: none;
+  white-space: normal;
+}
+
+[data-webgl='false'] body {
+  overflow: auto;
+}
+
+.document h1 {
+  margin: 0;
+  font-size: clamp(2.2rem, 5.5vw, 3.6rem);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.document h2 {
+  margin: clamp(36px, 6vh, 64px) 0 12px;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ice-faint);
+}
+
+.document p {
+  margin: 0 0 1.1em;
+  font-size: 1rem;
+  line-height: 1.7;
+  color: var(--ice-soft);
+}
+
+.document .lede {
+  margin-top: 1.4em;
+  font-size: 1.15rem;
+  color: var(--ice);
+}
+
+.document dl {
+  margin: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.document dl div {
+  display: grid;
+  grid-template-columns: 10ch 1fr;
+  gap: 16px;
+  align-items: baseline;
+}
+
+.document dt {
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ice-ghost);
+}
+
+.document dd {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--ice-soft);
+}
+
+/* -------------------------------------------------------- reduced motion -- */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
+  }
+}
+
+/* ---- the wait -------------------------------------------------------------
+ * Sits in the middle of the black, says what it is doing, and leaves as soon as
+ * the network starts answering the question itself. Set in the same instrument
+ * language as everything else, so it reads as part of the system rather than as
+ * a spinner borrowed from somewhere.
+ */
+.loader {
+  position: fixed;
+  inset: 0;
+  /*
+   * dvh, not the default height of a fixed box.
+   *
+   * inset:0 on a fixed element resolves against the LARGE viewport - the one
+   * you get with the address bar hidden - so on a phone that is showing its
+   * address bar, the middle of this layer sits below the middle of what the
+   * visitor can actually see. Everything centred in here reads as having sunk
+   * toward the bottom of the screen. dvh tracks the visible area instead, and
+   * vh above it is the fallback for anything that does not know the unit.
+   */
+  height: 100vh;
+  height: 100dvh;
+  z-index: 5;
+  display: grid;
+  /* The mark sits dead centre and the words hang off it absolutely, so the
+     point the visitor travels through is the middle of the letter and the
+     middle of the frame at the same time. */
+  place-content: center;
+  justify-items: center;
+  pointer-events: none;
+  /* Opacity is set inline from the beat. Short, because it overlaps the moment
+     the particles take over and the two have to be the same object throughout
+     — a long dissolve would show one fading under the other. */
+  transition: opacity 420ms linear;
+}
+
+.loader-welcome,
+.loader-status {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  /* The words clear out before the mark passes over them; the mark takes far
+     longer to travel than they need to leave. */
+  transition: opacity 700ms var(--ease);
+}
+
+.loader-welcome {
+  top: calc(50% + clamp(96px, 12vw, 160px));
+}
+
+.loader-status {
+  top: calc(50% + clamp(160px, 19vw, 250px));
+}
+
+/*
+ * On a phone the words move above the mark.
+ *
+ * The mark is close to a whole screen wide at this width, so anything hung
+ * below its centre lands on top of it. Above it there is nothing but space.
+ */
+@media (max-width: 700px) {
+  .loader-welcome {
+    top: max(clamp(58px, 11vh, 104px), env(safe-area-inset-top));
+  }
+
+  /* Cleared by the full height of the line above, which runs to three rows at
+     the narrowest widths - a gap sized for one row put it inside the welcome. */
+  .loader-status {
+    top: calc(max(clamp(58px, 11vh, 104px), env(safe-area-inset-top)) + 104px);
+  }
+}
+
+
+.loader[data-passing='true'] .loader-welcome,
+.loader[data-passing='true'] .loader-status {
+  opacity: 0;
+}
+
+/* ---- the mark ------------------------------------------------------------
+ * Used as a mask rather than as a picture, so the drifting light underneath it
+ * shows only through the shape of the letter. That is what puts a network
+ * inside the Q instead of beside it.
+ */
+.mark {
+  position: relative;
+  display: block;
+  isolation: isolate;
+  aspect-ratio: 190 / 186;
+}
+
+.mark-art,
+.mark-life,
+.mark-sweep {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.mark-art {
+  object-fit: contain;
+}
+
+/* The living interior. Two slow blooms drifting out of phase, clipped to the
+   letter, so the inside of the Q never settles. */
+.mark-life {
+  background:
+    radial-gradient(38% 38% at 30% 28%, rgba(120, 220, 255, 0.95) 0%, transparent 62%),
+    radial-gradient(34% 34% at 72% 68%, rgba(23, 105, 255, 0.9) 0%, transparent 66%),
+    radial-gradient(60% 60% at 50% 50%, rgba(14, 60, 130, 0.7) 0%, transparent 76%);
+  mask-image: var(--mark-mask);
+  -webkit-mask-image: var(--mark-mask);
+  mask-size: contain;
+  -webkit-mask-size: contain;
+  mask-repeat: no-repeat;
+  -webkit-mask-repeat: no-repeat;
+  mask-position: center;
+  -webkit-mask-position: center;
+  mix-blend-mode: screen;
+  animation: mark-life 7s ease-in-out infinite;
+}
+
+/* A signal running across the letter, the same gesture as a pulse travelling a
+   connection in the scene. */
+.mark-sweep {
+  background: linear-gradient(
+    115deg,
+    transparent 38%,
+    rgba(190, 240, 255, 0.85) 48%,
+    rgba(255, 255, 255, 0.95) 51%,
+    rgba(190, 240, 255, 0.85) 54%,
+    transparent 64%
+  );
+  background-size: 260% 260%;
+  mask-image: var(--mark-mask);
+  -webkit-mask-image: var(--mark-mask);
+  mask-size: contain;
+  -webkit-mask-size: contain;
+  mask-repeat: no-repeat;
+  -webkit-mask-repeat: no-repeat;
+  mask-position: center;
+  -webkit-mask-position: center;
+  mix-blend-mode: screen;
+  opacity: 0.75;
+  animation: mark-sweep 5.5s var(--ease) infinite;
+}
+
+@keyframes mark-life {
+  0%,
+  100% {
+    transform: scale(1) translate(0, 0);
+    opacity: 0.75;
+  }
+  50% {
+    transform: scale(1.18) translate(4%, -5%);
+    opacity: 1;
+  }
+}
+
+@keyframes mark-sweep {
+  0% {
+    background-position: 120% 0%;
+  }
+  55%,
+  100% {
+    background-position: -60% 100%;
+  }
+}
+
+.mark-hero {
+  width: clamp(150px, 20vw, 260px);
+  filter: drop-shadow(0 0 40px rgba(76, 201, 255, 0.45));
+
+  /*
+   * The way through. As the network comes up behind, the mark scales past the
+   * edges of the frame and dissolves, so the visitor passes through the letter
+   * rather than watching it fade.
+   */
+  transform: scale(var(--mark-scale, 1));
+  transform-origin: 50% 50%;
+  transition: transform 2600ms cubic-bezier(0.5, 0, 0.75, 0.35);
+  will-change: transform;
+}
+
+/* ---- the persistent mark ------------------------------------------------- */
+
+.mark-home {
+  position: fixed;
+  top: max(var(--gutter), env(safe-area-inset-top));
+  left: var(--gutter);
+  z-index: 7;
+  padding: 0;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  line-height: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 900ms var(--ease),
+    transform 500ms var(--ease);
+}
+
+.mark-home[data-show='true'] {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.mark-home:hover,
+.mark-home:focus-visible {
+  transform: scale(1.08);
+}
+
+.mark-home:focus-visible {
+  outline: 1px solid var(--signal);
+  outline-offset: 8px;
+}
+
+.mark-corner {
+  display: block;
+  width: clamp(34px, 3.4vw, 46px);
+  pointer-events: none;
+  filter: drop-shadow(0 0 14px rgba(76, 201, 255, 0.5));
+  opacity: 0;
+  transform: translateY(-8px);
+  transition:
+    opacity 1200ms var(--ease),
+    transform 1200ms var(--ease);
+}
+
+.mark-corner[data-show='true'] {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mark-life,
+  .mark-sweep {
+    animation: none;
+  }
+
+  .mark-hero {
+    transition: none;
+  }
+}
+
+.loader-welcome {
+  margin: 0;
+  max-width: 22ch;
+  font-size: clamp(1rem, 1.7vw, 1.35rem);
+  font-weight: 300;
+  line-height: 1.4;
+  letter-spacing: 0.01em;
+  text-align: center;
+  text-wrap: balance;
+  color: var(--ice-soft);
+}
+
+
+.loader-status {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  font-weight: 500;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: var(--ice-faint);
+}
+
+.loader-dots {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* Square marks rather than round ones: the same shape the registry nodes use. */
+.loader-dots i {
+  width: 3px;
+  height: 3px;
+  background: var(--signal);
+  opacity: 0.18;
+  animation: loader-run 1500ms var(--ease) infinite;
+}
+
+@keyframes loader-run {
+  0%,
+  70%,
+  100% {
+    opacity: 0.16;
+    transform: scale(1);
+  }
+  35% {
+    opacity: 1;
+    transform: scale(1.5);
+  }
+}
+
+.loader-name {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--ice-ghost);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loader-dots i {
+    opacity: 0.5;
+  }
+
+  .loader-mark {
+    animation: none;
+  }
+}
+
+/* ---- the descent has to be discoverable -----------------------------------
+ * A full-bleed canvas gives no signal that scrolling does anything. Centre
+ * bottom, because that is where a scroll cue is looked for.
+ */
+.scroll-prompt {
+  position: fixed;
+  left: 50%;
+  bottom: max(clamp(26px, 6vh, 64px), env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  z-index: 6;
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 800ms var(--ease);
+}
+
+.scroll-prompt[data-show='true'] {
+  opacity: 1;
+  transition-delay: 1400ms;
+}
+
+.scroll-prompt p {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  font-weight: 500;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--ice-soft);
+  text-align: center;
+}
+
+/* A signal running down a wire, rather than a bouncing arrow. */
+.scroll-rule {
+  position: relative;
+  display: block;
+  width: 1px;
+  height: 44px;
+  background: var(--rule);
+  overflow: hidden;
+}
+
+.scroll-run {
+  position: absolute;
+  inset-inline: 0;
+  top: -40%;
+  height: 40%;
+  background: linear-gradient(180deg, transparent, var(--signal));
+  animation: scroll-run 1900ms var(--ease) infinite;
+}
+
+@keyframes scroll-run {
+  0% {
+    transform: translateY(0);
+    opacity: 0;
+  }
+  25% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(350%);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scroll-run {
+    animation: none;
+    top: 30%;
+    opacity: 0.9;
+  }
+}
+
+/* ---- the statement over the emergence ------------------------------------
+ * Three lines sharing one place in the frame, so each replaces the last rather
+ * than moving it. Characters arrive from their own offsets and resolve in
+ * place, which reads as the words gathering out of the same material as
+ * everything else on the page.
+ */
+.creed {
+  position: fixed;
+  inset: 0;
+  /*
+   * dvh, not the default height of a fixed box.
+   *
+   * inset:0 on a fixed element resolves against the LARGE viewport - the one
+   * you get with the address bar hidden - so on a phone that is showing its
+   * address bar, the middle of this layer sits below the middle of what the
+   * visitor can actually see. Everything centred in here reads as having sunk
+   * toward the bottom of the screen. dvh tracks the visible area instead, and
+   * vh above it is the fallback for anything that does not know the unit.
+   */
+  height: 100vh;
+  height: 100dvh;
+  z-index: 5;
+  display: grid;
+  place-content: center;
+  pointer-events: none;
+}
+
+.creed p {
+  grid-area: 1 / 1;
+  margin: 0;
+  max-width: 22ch;
+  font-size: clamp(1.7rem, 4.8vw, 3.6rem);
+  font-weight: 400;
+  line-height: 1.18;
+  letter-spacing: -0.025em;
+  text-align: center;
+  text-wrap: balance;
+  color: var(--ice);
+  text-shadow: 0 0 44px rgba(4, 6, 11, 0.92);
+}
+
+.creed-word {
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.creed-word + .creed-word::before {
+  content: ' ';
+  white-space: pre;
+}
+
+.creed-char {
+  display: inline-block;
+  opacity: 0;
+  filter: blur(9px);
+  transform: translate(var(--dx, 0), var(--dy, 0)) scale(1.25);
+  transition:
+    opacity 900ms var(--ease),
+    filter 900ms var(--ease),
+    transform 1100ms var(--ease);
+}
+
+/* Each character resolves a little after the one before it. */
+.creed p[data-show='true'] .creed-char {
+  opacity: 1;
+  filter: blur(0);
+  transform: translate(0, 0) scale(1);
+  transition-delay: calc(var(--i, 0) * 26ms);
+}
+
+/*
+ * The mark, set as a letter.
+ *
+ * Sized in em so it tracks the line it sits in at every viewport, and nudged
+ * down a fraction because the artwork's optical centre sits above the baseline
+ * the surrounding capitals stand on.
+ */
+.creed-mark-char {
+  line-height: 1;
+}
+
+.creed-mark {
+  display: block;
+  width: 1.02em;
+  height: auto;
+  transform: translateY(0.12em);
+  filter: drop-shadow(0 0 18px rgba(76, 201, 255, 0.55));
+}
+
+/* The word each line turns on, carried in the accent and lit. */
+.creed-lit .creed-char {
+  color: var(--signal);
+}
+
+.creed p[data-show='true'] .creed-lit .creed-char {
+  text-shadow:
+    0 0 18px rgba(76, 201, 255, 0.75),
+    0 0 46px rgba(23, 105, 255, 0.45);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .creed-char {
+    filter: none;
+    transform: none;
+    transition: opacity 300ms linear;
+  }
+}

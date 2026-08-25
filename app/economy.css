@@ -1,0 +1,385 @@
+/*
+ * THE ECONOMIC JOURNEYS
+ *
+ * The three destinations and the questions that link them. Same materials as
+ * the rest of the descent — hairline rules, near-black grounds, mono labels —
+ * because these are places inside the network, not a different part of the site.
+ */
+
+/* ---- the question that links two journeys -------------------------------- */
+
+.handover {
+  position: absolute;
+  left: var(--gutter);
+  bottom: max(clamp(56px, 12vh, 130px), env(safe-area-inset-bottom));
+  display: grid;
+  gap: 12px;
+  opacity: 0;
+  transform: translateY(18px);
+  transition:
+    opacity 900ms var(--ease),
+    transform 900ms var(--ease);
+}
+
+.handover[data-shown='true'] {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.handover-question {
+  margin: 0;
+  font-size: clamp(1.1rem, 1.8vw, 1.5rem);
+  font-weight: 300;
+  color: var(--ice-soft);
+}
+
+.handover button {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  justify-self: start;
+  padding: 12px 2px;
+  background: none;
+  border: 0;
+  border-bottom: 1px solid var(--rule);
+  cursor: pointer;
+  color: var(--ice);
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  transition: border-color 500ms var(--ease);
+}
+
+.handover button:hover,
+.handover button:focus-visible {
+  border-bottom-color: var(--signal);
+}
+
+/* An arrow drawn as a rule and a point: the network reaching onward. */
+.handover-mark {
+  width: 22px;
+  height: 1px;
+  background: var(--signal);
+  position: relative;
+}
+
+.handover-mark::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: -2px;
+  width: 5px;
+  height: 5px;
+  background: var(--signal);
+}
+
+/* ---- a longer descent ---------------------------------------------------- */
+
+/* Thirteen stops need tighter rows than seven did. */
+.rail li {
+  grid-template-columns: 2.4ch 26px auto;
+  gap: 8px;
+}
+
+.rail ol {
+  gap: 6px;
+}
+
+/* ---- narrow viewports ---------------------------------------------------- */
+
+@media (max-width: 900px) {
+  /*
+   * Anchored to the bottom, and given a ceiling.
+   *
+   * On a short frame the copy above these runs past the middle of the screen,
+   * so anything centred collides with it. Sitting on the bottom edge with a
+   * capped height keeps the three destinations clear of the words at every
+   * height a phone comes in.
+   */
+  .routes {
+    right: var(--gutter);
+    top: auto;
+    bottom: clamp(30px, 7vh, 90px);
+    grid-template-columns: 1fr;
+    max-height: 46vh;
+  }
+
+  .routes button {
+    grid-template-columns: 1fr auto;
+    align-items: baseline;
+    gap: 4px 12px;
+    padding: clamp(12px, 1.8vh, 18px) clamp(14px, 3vw, 20px);
+  }
+
+  /* The supporting line is the first thing to go: three destinations have to
+     fit on one screen, and the names carry the meaning on their own. */
+  .route-line {
+    display: none;
+  }
+
+  .route-cta {
+    margin: 0;
+    text-align: right;
+  }
+
+  .handover {
+    right: var(--gutter);
+    bottom: clamp(58px, 15vh, 140px);
+  }
+}
+
+/* ---- chapters that carry furniture --------------------------------------- */
+
+/*
+ * Route cards and handover questions both live at the bottom of the frame, so
+ * the copy in those chapters moves to the top rather than competing for the
+ * same corner.
+ */
+.chapter[data-furniture] .chapter-copy {
+  top: clamp(96px, 17vh, 200px);
+  bottom: auto;
+  max-width: 40ch;
+}
+
+.chapter[data-furniture='routes'] .statement {
+  font-size: clamp(1.8rem, 4vw, 3rem);
+}
+
+@media (max-width: 900px) {
+  .chapter[data-furniture] .chapter-copy {
+    top: clamp(56px, 11vh, 110px);
+    max-width: none;
+  }
+}
+
+/* ---- qualifications -------------------------------------------------------
+ * A caption carries the wording a headline should not have to. It sits with the
+ * copy, small and quiet, and is always present rather than revealed on scroll:
+ * a qualification that only appears once you have scrolled far enough is not a
+ * qualification.
+ */
+.caption {
+  margin: clamp(14px, 2vh, 22px) 0 0;
+  max-width: 46ch;
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.12em;
+  line-height: 1.7;
+  text-transform: uppercase;
+  color: var(--ice-ghost);
+}
+
+/* ---- the register ---------------------------------------------------------
+ * The one thing on offer at the end of the descent. It replaces the row of
+ * speculative calls to action, because there is exactly one thing a visitor can
+ * actually do today and pretending otherwise would be the least honest part of
+ * the page.
+ */
+.genesis-panel {
+  position: absolute;
+  left: 50%;
+  /*
+   * Centred, and held back until the words have had the screen to themselves.
+   *
+   * Presence comes from scroll position rather than from a transition, so
+   * scrolling back up returns the frame to the words alone rather than leaving
+   * a form that has already been shown.
+   */
+  top: 50%;
+  transform: translate(-50%, -50%) scale(calc(0.94 + var(--genesis, 0) * 0.06));
+  opacity: var(--genesis, 0);
+  pointer-events: none;
+  transition: opacity 220ms linear;
+  width: min(52ch, 88vw);
+  padding: clamp(16px, 2.4vh, 26px) clamp(18px, 2.2vw, 30px);
+  text-align: left;
+  background: rgba(4, 7, 14, 0.86);
+  backdrop-filter: blur(6px);
+  border: 1px solid var(--rule);
+  border-radius: 16px;
+  /* The perimeter light is drawn just outside the border box, so this pane
+     cannot clip its own children the way the others do. */
+  overflow: visible;
+}
+
+/* The one live thing left on the screen, so it is the one thing carrying the
+   light. */
+/* The glass highlight has to follow the rounded corners now that there are
+   some, since the pane no longer clips it. */
+.genesis-panel.pane::after {
+  border-radius: inherit;
+}
+
+.genesis-panel.edge-light::before {
+  inset: -1.5px;
+  padding: 1.5px;
+  filter: drop-shadow(0 0 10px rgba(76, 201, 255, 0.55));
+}
+
+.genesis-heading {
+  margin: 0 0 8px;
+  font-size: clamp(1.25rem, 2.2vw, 1.7rem);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  color: var(--ice);
+}
+
+.genesis-body {
+  margin: 0 0 clamp(16px, 2.2vh, 24px);
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--ice-faint);
+}
+
+.genesis-fields {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.genesis-field {
+  display: grid;
+  gap: 6px;
+}
+
+.genesis-label {
+  font-family: var(--mono);
+  font-size: 0.56rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ice-ghost);
+}
+
+.genesis-optional {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.genesis-field input {
+  width: 100%;
+  padding: 10px 12px;
+  background: rgba(10, 18, 34, 0.9);
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  color: var(--ice);
+  font-family: var(--sans);
+  font-size: 0.92rem;
+  transition: border-color 320ms var(--ease);
+}
+
+.genesis-field input:focus {
+  outline: none;
+  border-color: rgba(24, 184, 255, 0.6);
+}
+
+.genesis-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 20px;
+  margin-top: clamp(16px, 2.2vh, 22px);
+}
+
+.genesis button {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 30px;
+  background: rgba(23, 105, 255, 0.16);
+  border: 1px solid rgba(24, 184, 255, 0.42);
+  border-radius: 2px;
+  cursor: pointer;
+  color: var(--ice);
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  transition:
+    background 380ms var(--ease),
+    border-color 380ms var(--ease);
+}
+
+.genesis button:hover:not(:disabled),
+.genesis button:focus-visible:not(:disabled) {
+  background: rgba(23, 105, 255, 0.3);
+  border-color: var(--signal);
+}
+
+.genesis button:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+/* One node, transmitting. The same mark as the invitation at the opening. */
+.genesis-mark {
+  width: 7px;
+  height: 7px;
+  flex: none;
+  background: var(--signal);
+  animation: enter-pulse 2600ms var(--ease) infinite;
+}
+
+.genesis-note {
+  flex: 1 1 24ch;
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 0.56rem;
+  letter-spacing: 0.12em;
+  line-height: 1.7;
+  text-transform: uppercase;
+  color: var(--ice-ghost);
+}
+
+.genesis-error {
+  margin: 10px 0 0;
+  min-height: 1.2em;
+  font-size: 0.82rem;
+  color: rgba(255, 168, 168, 0.9);
+  opacity: 0;
+  transition: opacity 320ms var(--ease);
+}
+
+.genesis-error[data-shown='true'] {
+  opacity: 1;
+}
+
+.genesis[data-state='done'] {
+  display: grid;
+  gap: 10px;
+}
+
+.genesis-done {
+  margin: 0;
+  font-size: clamp(1rem, 1.6vw, 1.2rem);
+  line-height: 1.5;
+  color: var(--signal);
+}
+
+@media (max-width: 900px) {
+  /*
+   * The register is the only thing on the closing screen by then, so it sits in
+   * the middle of it rather than down at the bottom edge.
+   */
+  .genesis-panel {
+    left: var(--gutter);
+    right: var(--gutter);
+    width: auto;
+    top: 50%;
+    bottom: auto;
+    transform: translateY(calc(-50% + (1 - var(--genesis, 0)) * 20px));
+    text-align: center;
+  }
+
+  /* Three inputs side by side is unusable at this width. */
+  .genesis-fields {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .genesis-body {
+    display: none;
+  }
+}

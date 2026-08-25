@@ -1,0 +1,20 @@
+# dependencies and build output
+node_modules/
+.next/
+out/
+dist/
+next-env.d.ts
+*.tsbuildinfo
+.DS_Store
+
+# verification captures: screenshots produced by tools/*.mjs while
+# art-directing the sequence. Regenerable, and large.
+.captures/
+
+# flattened copies of this same source. The repository is the source.
+QUFI-SOURCE*.md
+qufi-network-source.zip
+
+# editor and tooling notes, not part of the website. AGENTS.md is written by
+# `next dev`, so it is ignored rather than deleted.
+AGENTS.md

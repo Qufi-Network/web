@@ -1,0 +1,692 @@
+/*
+ * THE DESCENT
+ *
+ * Everything below the opening. Chapters are fixed to the frame and revealed by
+ * scroll position rather than laid out in the flow, so the camera can travel
+ * through the network while the words stay where they were composed.
+ */
+
+.chapters {
+  position: fixed;
+  inset: 0;
+  /*
+   * dvh, not the default height of a fixed box.
+   *
+   * inset:0 on a fixed element resolves against the LARGE viewport - the one
+   * you get with the address bar hidden - so on a phone that is showing its
+   * address bar, the middle of this layer sits below the middle of what the
+   * visitor can actually see. Everything centred in here reads as having sunk
+   * toward the bottom of the screen. dvh tracks the visible area instead, and
+   * vh above it is the fallback for anything that does not know the unit.
+   */
+  height: 100vh;
+  height: 100dvh;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.chapter {
+  position: absolute;
+  inset: 0;
+  opacity: var(--presence, 0);
+  /* Presence is written every frame, so this transition only smooths the first
+     paint; the movement itself is scroll-driven. */
+  transition: opacity 120ms linear;
+  will-change: opacity;
+}
+
+.chapter-copy {
+  position: absolute;
+  left: var(--gutter);
+  right: var(--gutter);
+  bottom: max(clamp(64px, 14vh, 168px), env(safe-area-inset-bottom));
+  max-width: 44ch;
+}
+
+/*
+ * A pool of ground behind the copy. Soft-edged and off-centre so it never reads
+ * as a panel, but enough that a statement stays legible when the camera puts
+ * something luminous directly behind it.
+ */
+.chapter-copy::before {
+  content: '';
+  position: absolute;
+  inset: -14vh -14vw -16vh -100vw;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse at 22% 50%,
+    rgba(4, 6, 11, 0.94) 0%,
+    rgba(4, 6, 11, 0.78) 42%,
+    rgba(4, 6, 11, 0) 76%
+  );
+}
+
+/* The closing chapter centres its copy, so its ground has to be centred too. */
+.chapter-enter .chapter-copy::before {
+  inset: -18vh -50vw;
+  background: radial-gradient(
+    ellipse at 50% 50%,
+    rgba(4, 6, 11, 0.92) 0%,
+    rgba(4, 6, 11, 0.7) 46%,
+    rgba(4, 6, 11, 0) 78%
+  );
+}
+
+.line {
+  opacity: 0;
+  transform: translateY(20px);
+  transition:
+    opacity 900ms var(--ease),
+    transform 900ms var(--ease);
+}
+
+.line[data-shown='true'] {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Every statement in a chapter occupies the same cell, so switching between
+   them is a swap in place rather than a reflow. The cell takes the height of
+   the tallest, which keeps the supporting text below it from moving. */
+.statement-stack {
+  display: grid;
+  /*
+   * minmax(0, 1fr), not the implicit auto.
+   *
+   * An auto-sized grid column takes its width from max-content, so a headline
+   * in here does not wrap at the container width — it runs to whatever length
+   * the longest line wants and off the side of the screen. Only visible where
+   * the copy has no max-width of its own, which is exactly the narrow layout.
+   */
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.statement-stack > .line {
+  grid-area: 1 / 1;
+  align-self: end;
+}
+
+.body-stack > .line + .line {
+  margin-top: clamp(12px, 1.8vh, 20px);
+}
+
+.body-stack {
+  margin-top: clamp(16px, 2.2vh, 26px);
+}
+
+.eyebrow {
+  margin: 0 0 clamp(12px, 1.8vh, 20px);
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  font-weight: 500;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--ice-ghost);
+}
+
+.statement {
+  margin: 0;
+  font-size: clamp(1.9rem, 4.6vw, 3.5rem);
+  font-weight: 500;
+  line-height: 1.04;
+  letter-spacing: -0.03em;
+  color: var(--ice);
+  text-wrap: balance;
+}
+
+.body {
+  margin: 0;
+  max-width: 46ch;
+  font-size: clamp(0.92rem, 1.1vw, 1.03rem);
+  line-height: 1.62;
+  color: var(--ice-soft);
+}
+
+/* ---- terms laid out as a field ------------------------------------------ */
+
+/* The depth rail lives at the right edge, so panels stop short of it rather
+   than sitting underneath. */
+.grid {
+  position: absolute;
+  right: var(--gutter);
+  top: 50%;
+  transform: translateY(-50%);
+  width: min(34ch, 38vw);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 1px;
+  background: var(--rule);
+  border: 1px solid var(--rule);
+}
+
+.grid li {
+  display: grid;
+  gap: 5px;
+  padding: clamp(12px, 1.6vh, 18px) clamp(14px, 1.4vw, 20px);
+  background: rgba(4, 7, 14, 0.82);
+  backdrop-filter: blur(3px);
+}
+
+.grid-term {
+  font-family: var(--mono);
+  font-size: 0.64rem;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--signal);
+}
+
+.grid-note {
+  font-size: 0.84rem;
+  line-height: 1.5;
+  color: var(--ice-faint);
+}
+
+/* ---- the route ----------------------------------------------------------- */
+
+.stops {
+  position: absolute;
+  right: var(--gutter);
+  top: 50%;
+  transform: translateY(-50%);
+  width: min(40ch, 42vw);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: clamp(10px, 1.4vh, 18px);
+}
+
+.stops li {
+  display: grid;
+  grid-template-columns: 3ch 1fr;
+  gap: 4px 14px;
+  padding: clamp(10px, 1.3vh, 15px) clamp(13px, 1.2vw, 18px);
+  /* This list is read against the Core, which is the brightest thing on the
+     page. Without a ground behind it the type simply disappears. */
+  background: rgba(4, 7, 14, 0.9);
+  backdrop-filter: blur(4px);
+  border-left: 1px solid var(--rule);
+  opacity: 0.46;
+  transition:
+    opacity 520ms var(--ease),
+    border-color 520ms var(--ease);
+}
+
+/* The stop the instruction has actually reached. The rest wait their turn. */
+.stops li[data-current='true'] {
+  opacity: 1;
+  border-left-color: var(--signal);
+}
+
+.stop-index {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  color: var(--ice-ghost);
+  padding-top: 2px;
+}
+
+.stop-term {
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ice);
+}
+
+.stop-note {
+  grid-column: 2;
+  font-size: 0.84rem;
+  line-height: 1.55;
+  color: var(--ice-faint);
+}
+
+/* ---- readout ------------------------------------------------------------- */
+
+.readout-panel {
+  position: absolute;
+  right: var(--gutter);
+  top: 50%;
+  transform: translateY(-50%);
+  width: min(36ch, 40vw);
+}
+
+.live-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  padding: 10px 16px;
+  background: rgba(9, 16, 30, 0.9);
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  cursor: pointer;
+  color: var(--ice-soft);
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  transition:
+    border-color 400ms var(--ease),
+    color 400ms var(--ease);
+}
+
+.live-toggle:hover,
+.live-toggle:focus-visible {
+  color: var(--ice);
+  border-color: rgba(24, 184, 255, 0.45);
+}
+
+.live-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ice-ghost);
+  transition:
+    background 400ms var(--ease),
+    box-shadow 400ms var(--ease);
+}
+
+.live-toggle[data-live='true'] .live-dot {
+  background: var(--signal);
+  box-shadow: 0 0 10px rgba(24, 184, 255, 0.8);
+}
+
+.readout-panel dl {
+  margin: 0;
+  display: grid;
+  gap: 1px;
+  background: var(--rule);
+  border: 1px solid var(--rule);
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition:
+    max-height 700ms var(--ease),
+    opacity 500ms var(--ease);
+}
+
+.readout-panel dl[data-open='true'] {
+  max-height: 420px;
+  opacity: 1;
+}
+
+.readout-panel dl div {
+  display: grid;
+  grid-template-columns: 14ch 1fr;
+  gap: 12px;
+  padding: 10px 16px;
+  background: rgba(4, 7, 14, 0.86);
+}
+
+.readout-panel dt,
+.readout-panel dd {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.readout-panel dt {
+  color: var(--ice-ghost);
+}
+
+.readout-panel dd {
+  color: var(--ice-faint);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- the last chapter ---------------------------------------------------- */
+
+/* The register panel occupies the lower half of the closing chapter, so the
+   line it answers has to sit clear above it. */
+/*
+ * Centred by auto margins, not by left: 50%.
+ * Anchoring the left edge at the midpoint caps the containing block at half the
+ * viewport, so any max-width past that is silently ignored and the headline
+ * wraps however wide the screen gets.
+ *
+ * The words take the whole frame while they are alone on it, and rise out of
+ * the way as the register arrives — one movement, driven by the same scroll
+ * position that brings the form up.
+ */
+.chapter-enter .chapter-copy {
+  left: 0;
+  right: 0;
+  bottom: auto;
+  top: 50%;
+  margin-inline: auto;
+  transform: translateY(-50%);
+  /* Not expressed in ch: that unit resolves against this container font size,
+     which is body copy at 16px, not the display size the statement is actually
+     set in — so a ch cap that looks generous silently wraps the headline. */
+  width: min(1180px, 92vw);
+  max-width: none;
+  text-align: center;
+}
+
+/* Sized so the whole closing line holds on one row on a desktop frame. It
+   still wraps on a phone, which is right — the alternative is type too small to
+   carry the moment. */
+/*
+ * The words leave, and the register is the only thing on the screen.
+ *
+ * The closing beat is two full sentences rather than one word, so there is no
+ * arrangement in which they and a form both hold the frame. They are read, they
+ * go, and what is left is the mark and the one thing there is to do.
+ */
+.chapter-enter .chapter-copy {
+  opacity: calc(1 - var(--genesis, 0));
+  transform: translateY(calc(-50% - var(--genesis, 0) * 6vh));
+  transition: opacity 200ms linear;
+}
+
+.chapter-enter .chapter-copy .body-stack {
+  opacity: calc(1 - var(--genesis, 0));
+}
+
+.chapter-enter .chapter-copy .body-stack,
+.chapter-enter .chapter-copy .body,
+.chapter-enter .chapter-copy .caption {
+  /* Everything under the closing word sits with it. */
+  text-align: center;
+  margin-inline: auto;
+}
+
+.chapter-enter .statement {
+  font-size: clamp(1.5rem, 4vw, 3.1rem);
+  text-wrap: balance;
+}
+
+.actions {
+  position: absolute;
+  left: 50%;
+  /* Low, so the visitor's own node has room to sit between the closing line
+     and the ways in. */
+  bottom: max(clamp(26px, 5vh, 62px), env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  background: var(--rule);
+  border: 1px solid var(--rule);
+  max-width: min(96vw, 1100px);
+}
+
+.actions li {
+  min-width: 22ch;
+  flex: 1 1 22ch;
+}
+
+.actions button {
+  display: grid;
+  gap: 6px;
+  width: 100%;
+  height: 100%;
+  padding: clamp(16px, 2vh, 22px) clamp(18px, 1.8vw, 26px);
+  background: rgba(4, 7, 14, 0.86);
+  border: 0;
+  cursor: pointer;
+  text-align: left;
+  transition: background 420ms var(--ease);
+}
+
+/* Hovering an action is the visitor reaching for that part of the network, so
+   the control lights rather than merely highlighting. */
+.actions button:hover,
+.actions button:focus-visible {
+  background: rgba(12, 26, 52, 0.92);
+}
+
+.action-label {
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ice);
+  transition: color 420ms var(--ease);
+}
+
+.actions button:hover .action-label,
+.actions button:focus-visible .action-label {
+  color: var(--signal);
+}
+
+.action-note {
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: var(--ice-faint);
+}
+
+/* ---- words pinned to participants ---------------------------------------- */
+
+.node-labels {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.node-label {
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding-left: 14px;
+  margin: -0.5em 0 0 6px;
+  white-space: nowrap;
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ice-soft);
+  opacity: 0;
+  will-change: transform, opacity;
+}
+
+/* A short rule tying the word back to the node it belongs to. */
+.node-label::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 9px;
+  height: 1px;
+  background: var(--signal);
+}
+
+/* ---- narrow viewports ---------------------------------------------------- */
+
+@media (max-width: 900px) {
+
+  .chapter {
+    overflow: hidden;
+  }
+
+  /*
+   * A phone has one column, and it is the middle of it.
+   *
+   * The wide layout hangs copy off a left rail because there is a frame's worth
+   * of network beside it to balance against. At this width there is no beside -
+   * the network is behind the words, not next to them - so anything ranged left
+   * reads as having slipped off the centre rather than as being aligned to
+   * anything.
+   */
+  .chapter-copy {
+    bottom: auto;
+    top: clamp(56px, 11vh, 110px);
+    max-width: min(100%, 34ch);
+    margin-inline: auto;
+    text-align: center;
+  }
+
+  .chapter-copy .statement-stack,
+  .chapter-copy .body-stack,
+  .chapter-copy .eyebrow,
+  .chapter-copy .caption,
+  .chapter-copy .body {
+    text-align: center;
+    justify-items: center;
+    margin-inline: auto;
+  }
+
+  /* The rule under a heading is drawn from its left edge, which is only the
+     start of the text while the text is ranged left. */
+  .chapter-copy .eyebrow::before,
+  .chapter-copy .eyebrow::after {
+    margin-inline: auto;
+  }
+
+  /* On a tall frame the copy runs across the top, so the ground becomes a band
+     rather than a pool. */
+  .chapter-copy::before {
+    inset: -34vh -100vw -12vh;
+    background: linear-gradient(
+      180deg,
+      rgba(4, 6, 11, 0.95) 0%,
+      rgba(4, 6, 11, 0.9) 46%,
+      rgba(4, 6, 11, 0) 100%
+    );
+  }
+
+  .statement {
+    font-size: clamp(1.7rem, 7.6vw, 2.6rem);
+  }
+
+  /*
+   * The supporting paragraph stands down where a reading can be opened.
+   *
+   * On a phone there is one column, and in these chapters it has to hold both
+   * the words and a card the visitor can open. The paragraph and the card say
+   * the same thing - the card just says it on demand - so the paragraph is the
+   * one that goes, and the card comes up to the middle of the screen instead of
+   * being pushed below a wall of text. The statement above it stays: that is
+   * the part the paragraph was supporting.
+   */
+  .chapter[data-readings='true'] .chapter-copy .body-stack {
+    display: none;
+  }
+
+  /*
+   * Centred in what is left, not parked at the bottom.
+   *
+   * The copy takes a band across the top, so the middle of the screen is the
+   * middle of the space underneath it. Pinning these to the bottom edge left a
+   * hole through the centre of the frame and pushed the panel down against the
+   * home indicator on a tall phone.
+   */
+  .grid,
+  .stops,
+  .readout-panel {
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: 50%;
+    bottom: auto;
+    width: auto;
+    margin: 0 var(--gutter);
+    transform: translateY(-50%);
+    max-height: 46vh;
+    overflow: hidden;
+  }
+
+  .grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .stop-note,
+  .grid-note {
+    display: none;
+  }
+
+  .actions li {
+    min-width: 100%;
+  }
+
+  .node-label {
+    font-size: 0.52rem;
+    letter-spacing: 0.16em;
+  }
+}
+
+/* ---- the word held back --------------------------------------------------
+ * Arrives after the line it answers, and arrives large. The gap between the
+ * two is the effect; setting them together would just be a sentence.
+ */
+/*
+ * The last word, and the way through it.
+ *
+ * Held in the accent rather than in white, because it is the one word on the
+ * site that is about the visitor rather than about the network. As the register
+ * arrives the word scales past the frame and dissolves — the same move the mark
+ * makes at the opening, so the site ends by going through something the way it
+ * began.
+ */
+/*
+ * The closing beat.
+ *
+ * A sentence, not a word, so it is set large enough to own the screen but not
+ * so large that it wraps to four lines on a phone. It stays white; the light
+ * belongs to the phrase inside it that answers the line before.
+ */
+.chapter-enter .statement-hero,
+.statement-hero {
+  margin: 0;
+  font-size: clamp(2.1rem, 6.4vw, 5.4rem);
+  font-weight: 600;
+  line-height: 1.02;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+  color: var(--ice);
+}
+
+/*
+ * The same light as the mark, running through the letterforms. Clipped to the
+ * text so the sweep travels across the phrase itself rather than behind it —
+ * the last thing the visitor reads carries the colour of the thing they have
+ * been travelling through.
+ */
+.hero-accent {
+  background: linear-gradient(
+    100deg,
+    #4cc9ff 0%,
+    #4cc9ff 30%,
+    #b9ecff 44%,
+    #ffffff 50%,
+    #7fd8ff 58%,
+    #2f9fe6 72%,
+    #4cc9ff 100%
+  );
+  background-size: 260% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: reveal-sweep 5s var(--ease) infinite;
+}
+
+@keyframes reveal-sweep {
+  0% {
+    background-position: 130% 0;
+  }
+  60%,
+  100% {
+    background-position: -30% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-accent {
+    animation: none;
+  }
+}

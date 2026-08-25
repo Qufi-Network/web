@@ -1,0 +1,927 @@
+/*
+ * SURFACES
+ *
+ * The panels, cards and controls that sit over the scene.
+ *
+ * One shared idea underneath all of them: a pane of dark glass with a light
+ * running around its edge. The glass is what lets a surface sit over a live
+ * network without blocking it — you keep seeing the scene move behind the
+ * words. The travelling light is the same signal that runs the connections in
+ * the scene, borrowed for the interface, so a card responds to a cursor the way
+ * a node responds to a pointer.
+ *
+ * The perimeter light needs an animatable angle, which needs @property. Where
+ * that is unsupported the gradient simply sits still and reads as a lit edge —
+ * a quieter version of the same thing, never a broken one.
+ */
+
+@property --edge-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+:root {
+  --glass: rgba(9, 16, 30, 0.55);
+  --glass-strong: rgba(7, 13, 26, 0.78);
+  --glass-edge: rgba(150, 200, 255, 0.22);
+  --neon: #4cc9ff;
+  --neon-deep: #1769ff;
+}
+
+/* ---- the glass pane ------------------------------------------------------ */
+
+.pane {
+  position: relative;
+  isolation: isolate;
+  /*
+   * Firmer than a typical glass panel. These sit over a live scene that is
+   * bright in places, and the priority is that the words on them are easy to
+   * read — the transparency is there to keep the network present behind the
+   * surface, not to make the surface hard to see.
+   */
+  background: linear-gradient(
+    145deg,
+    rgba(18, 34, 62, 0.88) 0%,
+    rgba(6, 12, 24, 0.92) 55%,
+    rgba(4, 9, 18, 0.94) 100%
+  );
+  backdrop-filter: blur(18px) saturate(150%);
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+  border: 1px solid var(--glass-edge);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+/* A single soft highlight along the top edge, the way light catches glass. */
+.pane::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.09) 0%, transparent 38%);
+}
+
+/* ---- the material at a card's edge ---------------------------------------- */
+
+/*
+ * Fixed, because the position written on it every frame is a viewport
+ * coordinate taken from the card's own bounding box.
+ *
+ * Without this it is a static element in normal flow: the left and top set on
+ * it are inert, and it parks itself at the top-left of the frame no matter
+ * where the card it belongs to actually is.
+ */
+.card-manifest {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 3;
+  pointer-events: none;
+  visibility: hidden;
+}
+
+/* ---- the light on the perimeter ------------------------------------------ */
+
+.edge-light {
+  position: relative;
+  isolation: isolate;
+}
+
+.edge-light::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  z-index: -1;
+  border-radius: inherit;
+  padding: 1px;
+  background: conic-gradient(
+    from var(--edge-angle),
+    transparent 0deg,
+    transparent 190deg,
+    rgba(76, 201, 255, 0.35) 250deg,
+    var(--neon) 300deg,
+    #ffffff 318deg,
+    var(--neon) 336deg,
+    rgba(76, 201, 255, 0.3) 350deg,
+    transparent 360deg
+  );
+  /* Masked to the ring only, so the gradient lights the border and nothing
+     inside it. */
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 420ms var(--ease);
+}
+
+/* Controls carry the light all the time; it is what marks them as live. */
+.edge-light[data-always='true']::before,
+.edge-light:hover::before,
+.edge-light:focus-visible::before,
+.edge-light:focus-within::before {
+  opacity: 1;
+  animation: edge-orbit 4.2s linear infinite;
+}
+
+@keyframes edge-orbit {
+  to {
+    --edge-angle: 360deg;
+  }
+}
+
+/* ---- the swirl that answers a cursor ------------------------------------- */
+
+/*
+ * A slow bloom of accent light that drifts across the pane while it is being
+ * looked at. It sits under the content and above the glass, so the card seems
+ * to be lit from within rather than highlighted from outside.
+ */
+.swirl {
+  position: absolute;
+  inset: -40%;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0;
+  background:
+    radial-gradient(38% 46% at 26% 30%, rgba(23, 105, 255, 0.55) 0%, transparent 70%),
+    radial-gradient(34% 40% at 74% 66%, rgba(76, 201, 255, 0.42) 0%, transparent 72%),
+    radial-gradient(50% 50% at 50% 50%, rgba(12, 40, 90, 0.5) 0%, transparent 78%);
+  /* The gradients are soft enough on their own; a blur filter over a layer this
+     large is an expensive way to soften something already soft. */
+  transition: opacity 620ms var(--ease);
+}
+
+.pane:hover .swirl,
+.pane:focus-within .swirl {
+  opacity: 1;
+  animation: swirl-drift 14s linear infinite;
+}
+
+@keyframes swirl-drift {
+  0% {
+    transform: rotate(0deg) scale(1);
+  }
+  50% {
+    transform: rotate(180deg) scale(1.12);
+  }
+  100% {
+    transform: rotate(360deg) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .edge-light::before,
+  .swirl {
+    animation: none !important;
+  }
+}
+
+/* ---- capabilities, reached one at a time --------------------------------- */
+
+.feature-stage {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 4;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 420ms var(--ease);
+}
+
+.feature-stage[data-show='true'] {
+  opacity: 1;
+}
+
+/*
+ * A control first, a panel second.
+ *
+ * A reading arrives as a compact bar: a mark, its position along the route, and
+ * what it is. That is all most visitors want while something is moving on
+ * screen. Opening it grows the same object into a panel with the explanation
+ * inside, so the panel is the expanded state of the control rather than a
+ * second thing that replaced it.
+ *
+ * It does not fade in. Opacity is switched and the arrival is carried by the
+ * approach in depth and the particles gathering at its edge — a panel that
+ * fades up while it also scales reads as two effects fighting, and neither of
+ * them reads as something coming out of the network.
+ */
+.feature-card {
+  position: fixed;
+  z-index: 4;
+  left: var(--anchor-x, 50%);
+  top: var(--anchor-y, 50%);
+  width: max-content;
+  /* Absolute, not ch: that unit resolves against this element font size, which
+     is body copy, so an open panel specified in ch came out narrower than the
+     closed control it was supposed to grow from. */
+  max-width: min(400px, 86vw);
+  padding: 13px 18px;
+  display: grid;
+  gap: 0;
+  pointer-events: auto;
+  isolation: isolate;
+  overflow: hidden;
+
+  border: 1px solid rgba(150, 200, 255, 0.22);
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(9, 15, 27, 0.9) 0%, rgba(5, 9, 18, 0.93) 70%);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow:
+    0 0 20px -4px color-mix(in srgb, var(--neon) 30%, transparent),
+    0 8px 26px -10px rgba(0, 0, 0, 0.8);
+
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(var(--depth, 0.6));
+  filter: blur(calc(var(--haze, 3) * 1px));
+  transition:
+    border-radius 480ms var(--ease),
+    max-width 520ms var(--ease),
+    padding 480ms var(--ease),
+    box-shadow 480ms var(--ease);
+
+  visibility: hidden;
+}
+
+/* Grain, so the surface is a surface. */
+.feature-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.18;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.68' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.feature-card[data-show='true'] {
+  visibility: visible;
+  opacity: 1;
+}
+
+/* Opened, it becomes the panel: wider, softer cornered, lit from beneath. */
+.feature-card[data-open='true'] {
+  max-width: min(430px, 88vw);
+  width: min(430px, 88vw);
+  padding: 22px 24px;
+  /*
+   * Fully forward and fully sharp.
+   *
+   * The approach scales and softens a reading according to how present it is,
+   * which is right while it is arriving and wrong the moment somebody opens it
+   * to read: they have asked for the words, so the words stop being scenery.
+   */
+  transform: translate(-50%, -50%) scale(1);
+  filter: none;
+  transition:
+    border-radius 480ms var(--ease),
+    max-width 520ms var(--ease),
+    width 520ms var(--ease),
+    padding 480ms var(--ease),
+    transform 420ms var(--ease),
+    filter 320ms var(--ease),
+    box-shadow 480ms var(--ease);
+  border-radius: 22px;
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  box-shadow:
+    0 -10px 80px 4px color-mix(in srgb, var(--neon) 22%, transparent),
+    0 12px 40px -12px rgba(0, 0, 0, 0.85);
+}
+
+/* The bloom belongs to the open panel. */
+.feature-card::before {
+  content: '';
+  position: absolute;
+  inset: 40% 0 0;
+  z-index: -2;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at bottom right, color-mix(in srgb, var(--neon) 55%, transparent) -10%, transparent 68%),
+    radial-gradient(ellipse at bottom left, color-mix(in srgb, var(--neon-deep, #1769ff) 50%, transparent) -10%, transparent 68%);
+  filter: blur(34px);
+  opacity: 0;
+  transition: opacity 560ms var(--ease);
+}
+
+.feature-card[data-open='true']::before {
+  opacity: 0.85;
+}
+
+.card-edge {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  z-index: 2;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.04) 0%,
+    rgba(255, 255, 255, 0.7) 50%,
+    rgba(255, 255, 255, 0.04) 100%
+  );
+  opacity: 0;
+  transition: opacity 520ms var(--ease);
+}
+
+.feature-card[data-open='true'] .card-edge {
+  opacity: 1;
+  box-shadow: 0 0 18px 3px color-mix(in srgb, var(--neon) 60%, transparent);
+}
+
+/* The head is the whole card until somebody asks for more. */
+.feature-head {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  padding: 0 0 2px;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  text-align: left;
+  color: inherit;
+}
+
+.feature-titles {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+/* The way in: a mark that turns as the reading opens. */
+.feature-toggle {
+  position: relative;
+  flex: none;
+  width: 22px;
+  height: 22px;
+  margin-left: auto;
+  border: 1px solid color-mix(in srgb, var(--neon) 50%, transparent);
+  border-radius: 50%;
+  transition:
+    border-color 380ms var(--ease),
+    transform 420ms var(--ease);
+}
+
+.feature-toggle::before,
+.feature-toggle::after {
+  content: '';
+  position: absolute;
+  inset: 50% 5px auto;
+  height: 1px;
+  background: var(--neon);
+  transition: transform 420ms var(--ease);
+}
+
+.feature-toggle::after {
+  transform: rotate(90deg);
+}
+
+.feature-card[data-open='true'] .feature-toggle {
+  transform: rotate(135deg);
+  border-color: var(--neon);
+}
+
+.feature-head:hover .feature-toggle,
+.feature-head:focus-visible .feature-toggle {
+  border-color: var(--neon);
+}
+
+/* The body is held at zero height until the reading is opened. */
+.feature-body {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition:
+    grid-template-rows 520ms var(--ease),
+    opacity 360ms var(--ease);
+}
+
+.feature-body > p {
+  overflow: hidden;
+  min-height: 0;
+}
+
+.feature-card[data-open='true'] .feature-body {
+  grid-template-rows: 1fr;
+  opacity: 1;
+  padding-top: 12px;
+}
+
+/* The rule under the heading belongs to the opened panel. */
+.feature-head::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -10px;
+  height: 1px;
+  width: 0;
+  background: linear-gradient(90deg, var(--neon), transparent);
+  transition: width 620ms var(--ease) 120ms;
+}
+
+.feature-card[data-open='true'] .feature-head::after {
+  width: 100%;
+}
+
+
+/*
+ * The marks trace themselves on where something drives the animation.
+ *
+ * The hiding has to be scoped. Applied globally it hid every drawn mark on the
+ * site — including the ones on the journey cards, which have nothing running an
+ * animation to reveal them again — and those simply never appeared.
+ */
+.traces .glyph-draw [stroke]:not([fill='currentColor']) {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+}
+
+.traces .glyph-draw .glyph-dot {
+  opacity: 0;
+}
+
+.traces[data-show='true'] .glyph-draw [stroke]:not([fill='currentColor']) {
+  animation: glyph-trace 900ms var(--ease) 180ms both;
+}
+
+.traces[data-show='true'] .glyph-draw .glyph-dot {
+  animation: glyph-settle 500ms var(--ease) 780ms both;
+}
+
+@keyframes glyph-trace {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes glyph-settle {
+  from {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .feature-card[data-show='true'] {
+    animation: none;
+  }
+
+    .traces[data-show='true'] .glyph-draw [stroke] {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+
+  .traces[data-show='true'] .glyph-draw .glyph-dot {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+.feature-card header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.feature-mark {
+  display: inline-flex;
+  align-items: center;
+  color: var(--neon);
+  filter: drop-shadow(0 0 7px rgba(76, 201, 255, 0.55));
+}
+
+.feature-index {
+  font-family: var(--mono);
+  font-size: 0.56rem;
+  letter-spacing: 0.2em;
+  color: var(--ice-ghost);
+  font-variant-numeric: tabular-nums;
+}
+
+/* A mono label at rest; the display face once there is a panel around it. */
+.feature-card h3 {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--ice);
+  transition: font-size 420ms var(--ease);
+}
+
+.feature-card[data-open='true'] h3 {
+  font-family: var(--sans);
+  font-size: clamp(1.15rem, 1.8vw, 1.5rem);
+  letter-spacing: -0.02em;
+  text-transform: none;
+  white-space: normal;
+}
+
+.feature-card p {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.6;
+  color: var(--ice-faint);
+}
+
+/* ---- the three journeys --------------------------------------------------
+ * Three separate objects, not one control divided into three. Each carries the
+ * colour of the journey it leads to, glowing on its own outline, so the choice
+ * and the place it leads to are visibly the same thing.
+ */
+
+.routes-heading {
+  position: absolute;
+  left: var(--gutter);
+  right: var(--gutter);
+  bottom: calc(max(clamp(56px, 12vh, 130px), env(safe-area-inset-bottom)) + 210px);
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  font-weight: 500;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--ice-soft);
+}
+
+.routes {
+  position: absolute;
+  left: var(--gutter);
+  right: var(--gutter);
+  bottom: max(clamp(56px, 12vh, 130px), env(safe-area-inset-bottom));
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  /* Real air between them, not a hairline rule. */
+  gap: clamp(16px, 2vw, 32px);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  background: none;
+  border: 0;
+}
+
+.routes li {
+  display: flex;
+  /* Each drifts on its own cycle, so no two cards move together. */
+  animation: card-drift 9s var(--ease) infinite;
+}
+
+.routes li:nth-child(2) {
+  animation-duration: 11s;
+  animation-delay: -3s;
+}
+
+.routes li:nth-child(3) {
+  animation-duration: 10s;
+  animation-delay: -6s;
+}
+
+/* A card being reached for stops drifting: a control that keeps moving under
+   the cursor is harder to hit, and the motion has done its job by then. */
+.routes li:hover,
+.routes li:focus-within {
+  animation-play-state: paused;
+}
+
+.routes button {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  gap: 12px;
+  width: 100%;
+  padding: clamp(24px, 3vh, 34px) clamp(22px, 2.1vw, 30px);
+  cursor: pointer;
+  text-align: left;
+  overflow: hidden;
+
+  border: 1px solid color-mix(in srgb, var(--neon) 45%, transparent);
+  border-radius: 20px;
+  background: linear-gradient(180deg, rgba(6, 11, 21, 0.92) 0%, rgba(4, 8, 16, 0.95) 70%);
+  backdrop-filter: blur(16px) saturate(150%);
+  -webkit-backdrop-filter: blur(16px) saturate(150%);
+
+  /* The outline glows in the journey colour, at rest as well as on hover. */
+  box-shadow:
+    0 0 22px -2px color-mix(in srgb, var(--neon) 42%, transparent),
+    0 -10px 60px -12px color-mix(in srgb, var(--neon) 30%, transparent),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.06);
+
+  transition:
+    transform 480ms var(--ease),
+    box-shadow 480ms var(--ease),
+    border-color 480ms var(--ease);
+}
+
+/* The bloom rising off the bottom edge, as on the reading cards. */
+.routes button::before {
+  content: '';
+  position: absolute;
+  inset: 40% 0 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at bottom right, color-mix(in srgb, var(--neon) 55%, transparent) -10%, transparent 68%),
+    radial-gradient(ellipse at bottom left, color-mix(in srgb, var(--neon-deep, #1769ff) 50%, transparent) -10%, transparent 68%);
+  filter: blur(34px);
+  opacity: 0.65;
+  transition: opacity 520ms var(--ease);
+}
+
+.routes button:hover,
+.routes button:focus-visible {
+  transform: translateY(-6px);
+  border-color: var(--neon);
+  box-shadow:
+    0 0 34px 0 color-mix(in srgb, var(--neon) 60%, transparent),
+    0 -12px 80px -10px color-mix(in srgb, var(--neon) 45%, transparent),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+}
+
+.routes button:hover::before,
+.routes button:focus-visible::before {
+  opacity: 1;
+}
+
+.route-mark {
+  display: block;
+  filter: drop-shadow(0 0 10px color-mix(in srgb, var(--neon) 55%, transparent));
+  transition: transform 620ms var(--ease);
+}
+
+.routes button:hover .route-mark,
+.routes button:focus-visible .route-mark {
+  transform: scale(1.1);
+}
+
+.route-label {
+  font-size: clamp(1.15rem, 1.9vw, 1.55rem);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  color: var(--ice);
+}
+
+.route-line {
+  font-size: 0.86rem;
+  line-height: 1.5;
+  color: var(--ice-faint);
+}
+
+.route-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  margin-top: 4px;
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ice-ghost);
+  transition: color 420ms var(--ease);
+}
+
+.route-cta::after {
+  content: '';
+  width: 16px;
+  height: 1px;
+  background: currentColor;
+  transition: width 420ms var(--ease);
+}
+
+.routes button:hover .route-cta,
+.routes button:focus-visible .route-cta {
+  color: var(--neon);
+}
+
+.routes button:hover .route-cta::after,
+.routes button:focus-visible .route-cta::after {
+  width: 30px;
+}
+
+@keyframes card-drift {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-7px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .routes li {
+    animation: none;
+  }
+}
+
+@media (max-width: 900px) {
+  .routes-heading {
+    right: var(--gutter);
+    bottom: calc(clamp(58px, 15vh, 140px) + 176px);
+  }
+
+  .routes {
+    gap: 10px;
+  }
+
+  .routes button {
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 6px 14px;
+    padding: clamp(13px, 1.9vh, 18px) clamp(14px, 3vw, 18px);
+  }
+
+  .route-glyph {
+    grid-row: span 2;
+  }
+
+  .feature-card {
+    width: min(30ch, 82vw);
+  }
+}
+
+/* ---- a colour per journey ------------------------------------------------
+ * The same three hues the network takes on inside each journey. Setting --neon
+ * on the card is enough: the perimeter light, the glyph and the call to action
+ * all read from it, so one property recolours the whole surface.
+ */
+
+.routes button[data-journey='assets'] {
+  --neon: #ffb352;
+  --neon-deep: #c9761a;
+}
+
+.routes button[data-journey='money'] {
+  --neon: #4fe6a8;
+  --neon-deep: #16a06a;
+}
+
+.routes button[data-journey='settlement'] {
+  --neon: #b98cff;
+  --neon-deep: #6d3fd4;
+}
+
+.routes button[data-journey] .swirl {
+  background:
+    radial-gradient(38% 46% at 26% 30%, color-mix(in srgb, var(--neon) 55%, transparent) 0%, transparent 70%),
+    radial-gradient(34% 40% at 74% 66%, color-mix(in srgb, var(--neon-deep) 60%, transparent) 0%, transparent 72%),
+    radial-gradient(50% 50% at 50% 50%, rgba(10, 22, 44, 0.55) 0%, transparent 78%);
+}
+
+.routes button[data-journey] .route-glyph {
+  filter: drop-shadow(0 0 9px color-mix(in srgb, var(--neon) 60%, transparent));
+}
+
+/*
+ * Separated rather than abutting. Three cards sharing edges read as one control
+ * with three regions; three cards with air between them read as three choices,
+ * which is what they are.
+ */
+.routes {
+  gap: clamp(14px, 1.6vw, 26px);
+}
+
+.routes li {
+  /* Each drifts on its own cycle, so the row is never quite still and no two
+     cards move together. */
+  animation: card-drift 9s var(--ease) infinite;
+}
+
+.routes li:nth-child(2) {
+  animation-duration: 11s;
+  animation-delay: -3s;
+}
+
+.routes li:nth-child(3) {
+  animation-duration: 10s;
+  animation-delay: -6s;
+}
+
+/* A card being reached for stops drifting. A control that keeps moving under
+   the cursor is harder to hit, and the motion has already done its job by the
+   time somebody has decided to use it. */
+.routes li:hover,
+.routes li:focus-within {
+  animation-play-state: paused;
+}
+
+@keyframes card-drift {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-7px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .routes li {
+    animation: none;
+  }
+}
+
+/* ---- the card on a phone -------------------------------------------------
+ * Dead centre, centred type, and wide enough to be read at arm's length. The
+ * desktop layout places a card beside the node it belongs to; there is no room
+ * for that on a phone, so the leader carries the connection instead and the
+ * card takes the middle of the screen.
+ */
+@media (max-width: 900px) {
+  .feature-card {
+    width: min(34ch, 86vw);
+    text-align: center;
+    justify-items: center;
+    padding: clamp(20px, 3vh, 30px) clamp(18px, 5vw, 26px);
+  }
+
+  .feature-card header {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .feature-card p {
+    text-align: center;
+  }
+
+  /* Copy is centred throughout on a narrow frame, so a card in the middle of
+     the screen belongs to the same composition rather than fighting it. */
+  .chapter-copy,
+  .body-stack,
+  .statement-stack > .line {
+    text-align: center;
+    justify-items: center;
+  }
+
+  .caption,
+  .body {
+    margin-inline: auto;
+  }
+
+  .handover {
+    justify-items: center;
+    text-align: center;
+  }
+
+  .handover button {
+    justify-self: center;
+  }
+
+  .routes-heading {
+    text-align: center;
+  }
+}
+
+/* ---- the mark surfacing in a card corner ---------------------------------
+ * Oversized and pushed past the corner so only a shoulder of the letterform is
+ * ever inside the card, clipped by the card's own rounding. It rises as the
+ * card is reached for and sinks back when it is let go.
+ */
+.route-mark-corner {
+  position: absolute;
+  right: -34px;
+  bottom: -42px;
+  width: 132px;
+  height: auto;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(18px, 22px) rotate(-8deg);
+  transition:
+    opacity 620ms var(--ease),
+    transform 720ms var(--ease);
+  filter: drop-shadow(0 0 22px color-mix(in srgb, var(--neon) 55%, transparent));
+}
+
+.routes button:hover .route-mark-corner,
+.routes button:focus-visible .route-mark-corner {
+  opacity: 0.5;
+  transform: translate(0, 0) rotate(0deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .route-mark-corner {
+    transition: opacity 200ms linear;
+    transform: none;
+  }
+}
