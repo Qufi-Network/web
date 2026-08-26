@@ -39,6 +39,38 @@ export const stage = {
    */
   fogFar: 150,
 
+  /**
+   * How far the camera is standing from the middle of the network.
+   *
+   * Written once a frame by the camera and read by anything whose brightness
+   * has to survive being flown into. Additive sprites do not get dimmer as you
+   * approach them, they get larger, so a structure that is beautifully lit from
+   * eighty units out is a white hole from twenty.
+   */
+  cameraDistance: 120,
+
+  /**
+   * How much the visitor is standing inside one space rather than travelling
+   * the whole network, 0..1.
+   *
+   * The surrounding network has to get out of the way when they are, and not
+   * by dimming alone: at these distances an ordinary participant is a sprite
+   * thirty pixels across, and a dozen of them in front of the structure the
+   * visitor came to look at is fog, however faint each one is.
+   */
+  inside: 0,
+
+  /**
+   * How tall and narrow the frame is, 0..1.
+   *
+   * A phone is not a small desk monitor, it is a different composition: there
+   * is no room beside a structure for the words about it, so the structure
+   * takes the top of the frame and the words take the bottom. The camera has to
+   * know that, because the only way to put an object in the upper half of a
+   * frame is to aim below it.
+   */
+  portrait: 0,
+
   // ---- emergence --------------------------------------------------------
   /** 0..1 threshold against each record's `order`. Drives the whole reveal. */
   reveal: 0,
@@ -194,6 +226,9 @@ export function resetStage() {
   stage.markPresence = 0;
   stage.markBurst = 0;
   stage.fogFar = 150;
+  stage.cameraDistance = 120;
+  stage.inside = 0;
+  stage.portrait = 0;
   stage.reveal = 0;
   stage.dim = 0;
   stage.networkDim = 1;

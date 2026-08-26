@@ -2,9 +2,8 @@ import type { Metadata, Viewport } from 'next';
 import '@fontsource-variable/sora';
 import '@fontsource-variable/jetbrains-mono';
 import './globals.css';
-import './descent.css';
-import './surfaces.css';
-import './economy.css';
+import './network.css';
+import './document.css';
 
 /**
  * Fonts are self-hosted rather than fetched from a font CDN: the opening beat is
@@ -15,18 +14,18 @@ import './economy.css';
 export const metadata: Metadata = {
   metadataBase: new URL('https://qufi.network'),
   title: {
-    default: 'QUFI Network — post-quantum verification and settlement',
-    template: '%s — QUFI Network',
+    default: 'QuFi — the verification layer for the post-quantum economy',
+    template: '%s — QuFi Network',
   },
   description:
-    'QUFI is a post-quantum verification network for money. Independent nodes check every mint, transfer, approval and redemption using post-quantum cryptography, then settle the result.',
+    'QuFi is an independent verification layer beneath high-value digital settlement. Post-quantum signing, proof generation off the settlement path, collateral confirmation, proof-gated movement and recovery pathways, across multiple settlement environments.',
   applicationName: 'QUFI Network',
   openGraph: {
     type: 'website',
-    siteName: 'QUFI Network',
-    title: 'QUFI Network — post-quantum verification and settlement',
+    siteName: 'QuFi Network',
+    title: 'QuFi — the verification layer for the post-quantum economy',
     description:
-      'Independent nodes check every mint, transfer, approval and redemption using post-quantum cryptography, then settle the result.',
+      'An independent verification layer between action and settlement. Verify before value moves.',
   },
   robots: { index: true, follow: true },
 };

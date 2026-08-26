@@ -9,7 +9,7 @@
 export class FrameMonitor {
   private samples: number[] = [];
   private lastAdjust = 0;
-  private raised = false;
+  private raised = 0;
 
   readonly floor: number;
   readonly ceiling: number;
@@ -48,10 +48,22 @@ export class FrameMonitor {
       return this.current;
     }
 
-    // One promotion only. Oscillating between two resolutions looks worse than
-    // sitting at the lower one.
-    if (!this.raised && this.meanFrameTime < 12 && this.current < this.ceiling) {
-      this.raised = true;
+    /*
+     * Coming back up.
+     *
+     * The threshold has to be read against vsync, not against zero. A display
+     * refreshing at 60Hz cannot report a mean frame time below about 16.7ms
+     * however much headroom the GPU has, so a promotion condition of twelve
+     * milliseconds can never be met — resolution only ever went down, and one
+     * heavy moment in the opening left the whole site soft for the rest of the
+     * visit. 17.4ms means "hitting vsync with room to spare", which is the
+     * thing that was meant.
+     *
+     * Two promotions, then it stops. Oscillating between resolutions looks
+     * worse than sitting at the lower one.
+     */
+    if (this.raised < 2 && this.meanFrameTime < 17.4 && this.current < this.ceiling) {
+      this.raised++;
       this.current = Math.min(this.ceiling, this.current + 0.25);
       this.lastAdjust = now;
       return this.current;

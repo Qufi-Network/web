@@ -8,48 +8,36 @@ import { NetworkDriver } from '../../experience/systems/NetworkDriver';
 import { NodeSystem } from '../../experience/systems/NodeSystem';
 import { ParticleField } from '../../experience/systems/ParticleField';
 import { QuFiCore } from '../../experience/systems/QuFiCore';
-import { ScrollDirector } from '../../experience/systems/ScrollDirector';
+import { SpaceDirector } from '../../experience/systems/SpaceDirector';
+import { Spines } from '../../experience/systems/Spines';
+import { Structures } from '../../experience/systems/Structures';
 import { SubstrateLayer } from '../../experience/systems/SubstrateLayer';
-import { NodeLabelProjector } from '../../experience/systems/NodeLabelProjector';
-import { FeatureProjector } from '../../experience/systems/FeatureProjector';
-import { MarkBurst } from '../../experience/systems/MarkBurst';
-import { NodeBurst } from '../../experience/systems/NodeBurst';
-import { YourNode } from '../../experience/systems/YourNode';
-import { DistrictSystem } from '../../experience/systems/DistrictSystem';
-import { AssetJourney } from '../../experience/systems/AssetJourney';
-import { ValueFlow } from '../../experience/systems/ValueFlow';
 
 /**
  * Scene composition.
  *
- * Mount order is load-bearing: frame callbacks run in the order they subscribe,
- * so the driver advances the simulation and uploads its buffers before any
- * system reads them, and the camera is placed before anything is drawn through
- * it. Everything below the interaction system only reads state; nothing else
- * writes.
+ * Mount order is load-bearing: frame callbacks run in the order they subscribe.
+ * The driver advances the simulation before anything reads it, the director
+ * decides where the visitor is before the camera is placed, and the structure
+ * field writes the per-space state texture before the pathways sample it.
+ * Everything below the camera only reads; nothing else writes.
  */
-export function Scene({ scrolling }: { scrolling: boolean }) {
+export function Scene() {
   return (
     <>
       <NetworkDriver />
-      <ScrollDirector active={scrolling} />
+      <SpaceDirector />
       <InteractionSystem />
       <CameraDirector />
       <AdaptiveQuality />
 
       <ParticleField />
       <SubstrateLayer />
-      <DistrictSystem />
+      <Structures />
+      <Spines />
       <ConnectionSystem />
       <NodeSystem />
       <QuFiCore />
-      <AssetJourney />
-      <ValueFlow />
-      <YourNode />
-      <NodeLabelProjector />
-      <FeatureProjector />
-      <MarkBurst />
-      <NodeBurst />
     </>
   );
 }

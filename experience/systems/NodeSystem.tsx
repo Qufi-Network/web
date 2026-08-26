@@ -68,6 +68,7 @@ export function NodeSystem() {
       uSize: { value: 2.35 },
       uPixelRatio: { value: 1 },
       uFogNear: { value: 8 },
+      uNearCut: { value: 7 },
       uFogFar: { value: 150 },
       uDim: { value: 0 },
       uTint: { value: stage.tint },
@@ -87,6 +88,12 @@ export function NodeSystem() {
     u.uPointerAmp.value = stage.pointerAmp;
     u.uPointerRadius.value = stage.pointerRadius;
     u.uDim.value = stage.dim * stage.networkDim;
+    // Standing inside a structure, the network around it has to stop being in
+    // the way. Dimming alone does not do it — a participant four units from
+    // the lens is a thirty-pixel sprite whatever its alpha — so the near cut
+    // moves out and the sprite ceiling comes down together.
+    u.uNearCut.value = 7 + stage.inside * 26;
+    u.uMaxPointSize.value = capability.maxPointSize * (1 - stage.inside * 0.42);
     u.uFogFar.value = stage.fogFar;
     u.uTint.value = stage.tint;
     u.uTintAmount.value = stage.tintAmount;

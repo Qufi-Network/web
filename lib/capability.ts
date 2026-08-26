@@ -18,6 +18,13 @@ export interface Capability {
   fieldCount: number;
   /** Points forming the Core shell. */
   coreCount: number;
+  /**
+   * Points shared out across the seven structures that are not the Core.
+   * Split by each space's declared weight, never evenly: a constellation of
+   * four settlement environments needs more points to read than a gateway of
+   * four rings.
+   */
+  structureCount: number;
   /** Concurrent instructions in flight. */
   maxSignals: number;
   /** Device pixel ratio ceiling. */
@@ -96,6 +103,7 @@ const PRESETS: Record<QualityTier, Omit<Capability, 'tier' | 'touch' | 'webgl'>>
     edgeSegments: 8,
     fieldCount: 900,
     coreCount: 2600,
+    structureCount: 14000,
     maxSignals: 110,
     maxDpr: 2,
     maxPointSize: 44,
@@ -107,6 +115,7 @@ const PRESETS: Record<QualityTier, Omit<Capability, 'tier' | 'touch' | 'webgl'>>
     edgeSegments: 6,
     fieldCount: 620,
     coreCount: 1800,
+    structureCount: 9500,
     maxSignals: 75,
     maxDpr: 2,
     maxPointSize: 38,
@@ -118,6 +127,7 @@ const PRESETS: Record<QualityTier, Omit<Capability, 'tier' | 'touch' | 'webgl'>>
     edgeSegments: 5,
     fieldCount: 420,
     coreCount: 1200,
+    structureCount: 5600,
     maxSignals: 45,
     maxDpr: 1.5,
     maxPointSize: 32,
@@ -129,6 +139,7 @@ const PRESETS: Record<QualityTier, Omit<Capability, 'tier' | 'touch' | 'webgl'>>
     edgeSegments: 4,
     fieldCount: 260,
     coreCount: 700,
+    structureCount: 2900,
     maxSignals: 26,
     maxDpr: 1.25,
     maxPointSize: 26,

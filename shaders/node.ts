@@ -20,6 +20,8 @@ export const NODE_VERTEX = /* glsl */ `
   uniform float uSize;
   uniform float uPixelRatio;
   uniform float uFogNear;
+  /** Distance inside which a participant is foreground clutter, not network. */
+  uniform float uNearCut;
   uniform float uFogFar;
   uniform float uDim;
   uniform float uMaxPointSize;
@@ -106,7 +108,7 @@ export const NODE_VERTEX = /* glsl */ `
     float depth = qufiDepthFade(viewDepth, uFogNear, uFogFar);
     // Nodes that drift within a few units of the lens would otherwise smear
     // across the frame during the traverse.
-    float nearFade = smoothstep(1.5, 7.0, viewDepth);
+    float nearFade = smoothstep(uNearCut * 0.22, uNearCut, viewDepth);
 
     vAlpha = eased * depth * nearFade * uDim * mix(0.32, 1.0, online)
            * (0.45 + aImportance * 0.55) * clamp(1.0 - loss, 0.0, 1.0);

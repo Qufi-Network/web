@@ -1,0 +1,1311 @@
+/*
+ * The interface, such as it is.
+ *
+ * There is no navigation bar, no cards, no panels with borders and no page
+ * furniture. What is here: a mark, a coordinate, a set of markers pinned to the
+ * structures themselves, a constellation to move between them, and — only when
+ * the visitor is standing inside a space — the few sentences that space is
+ * allowed to say.
+ *
+ * Type is small, uppercase and technical almost everywhere. It goes large in
+ * exactly two situations: arriving in a space, and reaching the middle of the
+ * Core. Everything else is a label on a place.
+ */
+
+:root {
+  --hud: rgba(255, 255, 255, 0.62);
+  --hud-bright: rgba(255, 255, 255, 0.92);
+  --hud-line: rgba(150, 190, 255, 0.22);
+  --label: clamp(9px, 0.72vw, 11px);
+  --track: 0.24em;
+
+  /*
+   * The line the top of the interface sits on.
+   *
+   * The mark, the three ways out and the coordinate are three separate fixed
+   * elements of three different heights, so aligning their boxes hangs them at
+   * three different places. They share a centre line instead, and each one is
+   * pulled up half its own height onto it. Set above the gutter the rest of the
+   * page uses, because this row is furniture rather than content.
+   */
+  --top-line: max(36px, calc(max(var(--gutter), env(safe-area-inset-top)) - 20px));
+}
+
+/* -------------------------------------------------------------- the boot -- */
+
+/*
+ * Not a spinner.
+ *
+ * The network constructing itself is the load, so this layer says what is
+ * happening rather than how far through it is — and it sits at the bottom of
+ * the frame so that the thing it is describing owns the middle.
+ */
+.boot {
+  position: fixed;
+  left: var(--gutter);
+  bottom: max(var(--gutter), env(safe-area-inset-bottom));
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-family: var(--mono);
+  font-size: var(--label);
+  letter-spacing: var(--track);
+  text-transform: uppercase;
+  pointer-events: none;
+}
+
+.boot-line {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: rgba(255, 255, 255, 0.3);
+  transition:
+    color 700ms var(--ease),
+    opacity 700ms var(--ease),
+    transform 700ms var(--ease);
+  opacity: 0;
+  transform: translateY(6px);
+}
+
+.boot-line[data-state='waiting'] {
+  opacity: 0.28;
+  transform: none;
+}
+
+.boot-line[data-state='active'] {
+  opacity: 1;
+  transform: none;
+  color: var(--hud-bright);
+}
+
+.boot-line[data-state='done'] {
+  opacity: 0.42;
+  transform: none;
+  color: var(--hud);
+}
+
+.boot-tick {
+  width: 5px;
+  height: 5px;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  flex: none;
+}
+
+.boot-line[data-state='active'] .boot-tick {
+  background: var(--signal);
+  border-color: var(--signal);
+  box-shadow: 0 0 12px rgba(76, 201, 255, 0.8);
+}
+
+.boot-line[data-state='done'] .boot-tick {
+  background: currentColor;
+}
+
+/* ------------------------------------------------------- the first words -- */
+
+/*
+ * Two lines, once, and then they go away.
+ *
+ * There is no hero behind this and there is not going to be one — the network
+ * is the hero, and this sits over it for four seconds.
+ */
+.opening {
+  position: fixed;
+  inset: 0;
+  height: 100dvh;
+  z-index: 6;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  padding: 0 var(--gutter);
+  pointer-events: none;
+}
+
+.opening-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(16px, 2.2vw, 28px);
+}
+
+.opening-mark {
+  margin: 0;
+  font-size: clamp(46px, 9vw, 120px);
+  font-weight: 200;
+  letter-spacing: 0.18em;
+  line-height: 1;
+  text-indent: 0.18em;
+  color: var(--ice);
+  opacity: 0;
+  filter: blur(14px);
+  transform: scale(1.06);
+  transition:
+    opacity 1600ms var(--ease),
+    filter 1600ms var(--ease),
+    transform 2400ms var(--ease);
+}
+
+.opening[data-title='0'] .opening-mark,
+.opening[data-title='1'] .opening-mark {
+  opacity: 1;
+  filter: blur(0);
+  transform: none;
+}
+
+.opening[data-title='2'] .opening-mark {
+  opacity: 0;
+  filter: blur(18px);
+  transform: scale(1.1);
+}
+
+.opening-line {
+  margin: 0;
+  max-width: 22ch;
+  font-family: var(--mono);
+  font-size: clamp(10px, 1.05vw, 13px);
+  font-weight: 400;
+  letter-spacing: 0.3em;
+  line-height: 2;
+  text-transform: uppercase;
+  color: var(--ice-faint);
+  opacity: 0;
+  transform: translateY(10px);
+  transition:
+    opacity 1400ms var(--ease),
+    transform 1400ms var(--ease);
+}
+
+.opening[data-title='1'] .opening-line {
+  opacity: 1;
+  transform: none;
+}
+
+/* --------------------------------------------------------------- the HUD -- */
+
+.hud {
+  position: fixed;
+  inset: 0;
+  height: 100vh;
+  height: 100dvh;
+  z-index: 5;
+  pointer-events: none;
+  /*
+   * No browser gesture anywhere over the environment. The body cannot scroll
+   * and there is nothing to zoom, so every pan and pinch belongs to the
+   * network — including the ones that begin on the interface.
+   */
+  touch-action: none;
+}
+
+.hud > * {
+  pointer-events: auto;
+}
+
+.hud[data-show='false'] {
+  opacity: 0;
+  transition: opacity 600ms var(--ease);
+}
+
+.hud[data-show='true'] {
+  opacity: 1;
+  transition: opacity 1400ms var(--ease);
+}
+
+/* ---- the mark, which is also the way back -------------------------------- */
+
+.hud-mark {
+  position: absolute;
+  top: var(--top-line);
+  transform: translateY(-50%);
+  left: var(--gutter);
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 0;
+  background: none;
+  border: 0;
+  color: var(--ice);
+  cursor: pointer;
+  line-height: 0;
+}
+
+.hud-mark .mark-corner {
+  width: clamp(26px, 2.4vw, 34px);
+  opacity: 1;
+  transform: none;
+}
+
+/*
+ * The wordmark sits beside the Q at the height of its letters, not at the
+ * height of its box: matching the artwork to the icon's full height makes the
+ * lockup top-heavy, because the Q is a circle and the word is lowercase with a
+ * descender. Two thirds reads as the same size.
+ */
+.hud-mark-word {
+  display: block;
+  height: clamp(15px, 1.5vw, 20px);
+  width: auto;
+  opacity: 0.94;
+}
+
+.hud-mark:focus-visible {
+  outline: 1px solid var(--signal);
+  outline-offset: 10px;
+}
+
+/* ---- the two ways out ---------------------------------------------------- */
+
+/*
+ * Everything else in this interface moves the camera. These two leave, and that
+ * difference has to be visible before it is clicked — so they are the only
+ * controls on the page with an edge around them.
+ *
+ * The edge is a bracket rather than a box: four corners drawn with a conic
+ * gradient masked to the border, which lights on approach without ever becoming
+ * a button with a fill. Centred at the top, between the mark and the
+ * coordinate, where a masthead would be if this site had one.
+ */
+.links {
+  position: absolute;
+  /*
+   * A little above the gutter the mark sits on. These are taller than the mark
+   * — a glyph with a frame around it against a bare letterform — so aligning
+   * their boxes hangs them below it. Aligning what the eye reads as the middle
+   * means lifting them.
+   */
+  top: var(--top-line);
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  gap: clamp(8px, 1vw, 14px);
+}
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 15px 9px 11px;
+  border: 1px solid rgba(150, 190, 255, 0.18);
+  color: var(--hud);
+  font-family: var(--mono);
+  font-size: var(--label);
+  letter-spacing: var(--track);
+  text-transform: uppercase;
+  text-decoration: none;
+  white-space: nowrap;
+  background: rgba(6, 10, 20, 0.42);
+  backdrop-filter: blur(6px);
+  transition:
+    color 420ms var(--ease),
+    border-color 420ms var(--ease),
+    background 420ms var(--ease);
+}
+
+/*
+ * On approach each control takes its subject's colour — the same cyan, green
+ * and gold the one-pager gives to verification, signing and held assets. The
+ * glyph goes first and furthest, because the glyph is the part that is a
+ * picture of the thing.
+ */
+.link:hover,
+.link:focus-visible {
+  color: var(--ice);
+  border-color: color-mix(in srgb, var(--tone) 62%, transparent);
+  background: color-mix(in srgb, var(--tone) 10%, rgba(6, 10, 20, 0.55));
+}
+
+.link:hover .glyph,
+.link:focus-visible .glyph,
+.link[data-here='true'] .glyph {
+  color: var(--tone);
+  opacity: 1;
+  filter: drop-shadow(0 0 7px color-mix(in srgb, var(--tone) 55%, transparent));
+}
+
+.link:focus-visible {
+  outline: 1px solid var(--signal);
+  outline-offset: 3px;
+}
+
+/*
+ * The one the visitor is already on states that it is, and stops behaving like
+ * a way somewhere: it keeps its edge but gives up its hover.
+ */
+.link[data-here='true'] {
+  color: var(--ice);
+  border-color: color-mix(in srgb, var(--tone) 38%, transparent);
+  background: color-mix(in srgb, var(--tone) 7%, rgba(6, 10, 20, 0.5));
+  cursor: default;
+}
+
+.glyph-lit {
+  fill: currentColor;
+  stroke: none;
+}
+
+.link-face {
+  display: block;
+  line-height: 0;
+}
+
+.glyph {
+  display: block;
+  width: clamp(15px, 1.5vw, 18px);
+  height: auto;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.15;
+  stroke-linejoin: miter;
+  stroke-linecap: butt;
+  vector-effect: non-scaling-stroke;
+  opacity: 0.82;
+  color: inherit;
+  transition:
+    opacity 420ms var(--ease),
+    color 420ms var(--ease),
+    filter 420ms var(--ease);
+}
+
+/* ---- the coordinate ------------------------------------------------------ */
+
+/*
+ * Where you are, written the way an address inside an infrastructure would be
+ * written. It is the only thing on screen that changes when you move.
+ */
+.coordinate {
+  position: absolute;
+  top: var(--top-line);
+  transform: translateY(-50%);
+  right: var(--gutter);
+  /*
+   * A paragraph, and paragraphs have margins. An absolutely positioned box is
+   * still offset by its own margin, so the default one em was quietly holding
+   * this eleven pixels below the line the mark and the ways out share.
+   */
+  margin: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  font-family: var(--mono);
+  font-size: var(--label);
+  letter-spacing: var(--track);
+  text-transform: uppercase;
+  color: var(--hud);
+  text-align: right;
+}
+
+.coordinate-index {
+  color: var(--signal);
+}
+
+.coordinate-path {
+  color: var(--hud-bright);
+}
+
+/* ---- markers pinned to the structures ------------------------------------ */
+
+/*
+ * Every structure carries its own name, in the frame, at its own position.
+ *
+ * These are positioned from the render loop rather than from React: the numbers
+ * change sixty times a second and re-rendering eight components to move a label
+ * is work nobody asked for. The transform is written straight to the node.
+ */
+.markers {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.marker {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 6px 12px 6px 8px;
+  margin: 0;
+  background: none;
+  border: 0;
+  color: var(--hud);
+  font-family: var(--mono);
+  font-size: var(--label);
+  letter-spacing: var(--track);
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: pointer;
+  opacity: 0;
+  transition: color 400ms var(--ease);
+  will-change: transform, opacity;
+}
+
+.marker[data-hover='true'],
+.marker:focus-visible {
+  color: var(--hud-bright);
+}
+
+.marker:focus-visible {
+  outline: 1px solid var(--signal);
+  outline-offset: 2px;
+}
+
+.marker-dot {
+  width: 6px;
+  height: 6px;
+  flex: none;
+  border: 1px solid currentColor;
+  transform: rotate(45deg);
+  transition:
+    background 400ms var(--ease),
+    box-shadow 400ms var(--ease);
+}
+
+.marker[data-hover='true'] .marker-dot {
+  background: var(--tone, var(--signal));
+  border-color: var(--tone, var(--signal));
+  box-shadow: 0 0 14px var(--tone, var(--signal));
+}
+
+.marker-index {
+  color: var(--tone, var(--signal));
+  opacity: 0.9;
+}
+
+/* ---- the constellation --------------------------------------------------- */
+
+/*
+ * A navigation system rather than a menu.
+ *
+ * It is a map of the actual layout: each space sits where it sits in the
+ * volume, seen from above. Moving between spaces on it is therefore the same
+ * operation as moving between them in the scene, which is the whole idea.
+ */
+.constellation {
+  position: absolute;
+  left: var(--gutter);
+  bottom: max(var(--gutter), env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.constellation-title {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: var(--label);
+  letter-spacing: var(--track);
+  text-transform: uppercase;
+  color: var(--hud);
+}
+
+.constellation-map {
+  position: relative;
+  width: clamp(150px, 15vw, 208px);
+  aspect-ratio: 1;
+  /* Labels open past the edge of the map; nothing here may be clipped. */
+  overflow: visible;
+}
+
+.constellation-map svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.constellation-link {
+  stroke: var(--hud-line);
+  stroke-width: 0.5;
+  fill: none;
+}
+
+.constellation-node {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  margin: -15px 0 0 -15px;
+  padding: 0;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+}
+
+.constellation-node::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.34);
+  transition:
+    background 400ms var(--ease),
+    box-shadow 400ms var(--ease),
+    transform 400ms var(--ease);
+}
+
+.constellation-node:hover::before,
+.constellation-node:focus-visible::before,
+.constellation-node[data-active='true']::before {
+  background: var(--tone, var(--signal));
+  box-shadow: 0 0 16px var(--tone, var(--signal));
+  transform: scale(1.6);
+}
+
+.constellation-node[data-active='true'] {
+  cursor: default;
+}
+
+.constellation-node:focus-visible {
+  outline: 1px solid var(--signal);
+  outline-offset: 0;
+  border-radius: 50%;
+}
+
+/*
+ * Each point names itself on approach.
+ *
+ * A map of eight unlabelled dots tells the visitor how the network is shaped
+ * and nothing about what is in it. The label opens away from the edge it is
+ * nearest, sits above the pathways rather than under them, and never pushes the
+ * map around: it is out of flow entirely.
+ */
+.constellation-label {
+  position: absolute;
+  top: 50%;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 7px;
+  transform: translateY(-50%);
+  font-family: var(--mono);
+  font-size: var(--label);
+  letter-spacing: var(--track);
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--ice);
+  background: rgba(4, 6, 11, 0.82);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 260ms var(--ease);
+}
+
+.constellation-label i {
+  font-style: normal;
+  color: var(--tone, var(--signal));
+}
+
+.constellation-node[data-side='right'] .constellation-label {
+  left: calc(50% + 9px);
+}
+
+.constellation-node[data-side='left'] .constellation-label {
+  right: calc(50% + 9px);
+}
+
+.constellation-node[data-near='true'] .constellation-label,
+.constellation-node:focus-visible .constellation-label,
+.constellation-node[data-active='true'] .constellation-label {
+  opacity: 1;
+}
+
+/*
+ * Inside a space, the reading column wants the whole lower left.
+ *
+ * So the map gives it up and becomes a row of ticks along the bottom right,
+ * beside the way out. It is still the fastest route from one space to another,
+ * which is the only job it has once the visitor is already somewhere.
+ */
+.hud[data-inside='true'] .constellation {
+  left: auto;
+  right: var(--gutter);
+  bottom: calc(max(var(--gutter), env(safe-area-inset-bottom)) + 74px);
+  flex-direction: row;
+  align-items: center;
+  gap: 14px;
+}
+
+.hud[data-inside='true'] .constellation-title,
+.hud[data-inside='true'] .constellation-map svg {
+  display: none;
+}
+
+.hud[data-inside='true'] .constellation-map {
+  width: auto;
+  height: 26px;
+  aspect-ratio: auto;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.hud[data-inside='true'] .constellation-node {
+  position: relative;
+  left: auto !important;
+  top: auto !important;
+  width: 26px;
+  height: 26px;
+  margin: 0;
+}
+
+/* ---- travel readout and the way back ------------------------------------- */
+
+.travel {
+  position: absolute;
+  right: var(--gutter);
+  bottom: max(var(--gutter), env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12px;
+  text-align: right;
+}
+
+.travel-hint {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: var(--label);
+  letter-spacing: var(--track);
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.44);
+  transition: opacity 800ms var(--ease);
+}
+
+.travel-rail {
+  width: clamp(90px, 9vw, 130px);
+  height: 1px;
+  background: var(--hud-line);
+  position: relative;
+}
+
+.travel-rail i {
+  position: absolute;
+  top: -2px;
+  left: 0;
+  width: 5px;
+  height: 5px;
+  margin-left: -2px;
+  background: var(--signal);
+  box-shadow: 0 0 12px rgba(76, 201, 255, 0.9);
+}
+
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0 12px 16px;
+  background: none;
+  border: 0;
+  color: var(--hud-bright);
+  font-family: var(--mono);
+  font-size: var(--label);
+  letter-spacing: var(--track);
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: color 400ms var(--ease);
+}
+
+.back:hover,
+.back:focus-visible {
+  color: var(--signal);
+}
+
+.back:focus-visible {
+  outline: 1px solid var(--signal);
+  outline-offset: 6px;
+}
+
+.back-arrow {
+  width: 22px;
+  height: 1px;
+  background: currentColor;
+  position: relative;
+  transition: width 400ms var(--ease);
+}
+
+.back-arrow::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: -2.5px;
+  width: 6px;
+  height: 6px;
+  border-left: 1px solid currentColor;
+  border-bottom: 1px solid currentColor;
+  transform: rotate(45deg);
+}
+
+.back:hover .back-arrow {
+  width: 32px;
+}
+
+/* -------------------------------------------------------- inside a space -- */
+
+/*
+ * The one place type is allowed to be large.
+ *
+ * Anchored to the lower left and kept to a column, so the structure it is
+ * describing keeps the middle and the right of the frame. Nothing here is a
+ * card: there is no surface, no border and no background — the words are simply
+ * in the space with the object.
+ */
+/*
+ * The words are words, not a surface.
+ *
+ * Nothing in this column is interactive, and on a phone it covers the bottom
+ * half of the screen — which is where a thumb naturally starts a swipe. Letting
+ * it take pointer events means the network stops moving whenever the visitor
+ * reaches for it in the most obvious place.
+ */
+.space,
+.travel-hint,
+.travel-rail,
+.markers,
+.coordinate {
+  pointer-events: none;
+}
+
+.space {
+  position: absolute;
+  left: var(--gutter);
+  bottom: calc(max(var(--gutter), env(safe-area-inset-bottom)) + clamp(10px, 2vw, 26px));
+  width: min(46ch, 44vw);
+  display: flex;
+  flex-direction: column;
+  gap: clamp(14px, 1.6vw, 22px);
+  opacity: 0;
+  transform: translateY(18px);
+  /*
+   * Out faster than in.
+   *
+   * The middle of the Core is the one place where this column and the closing
+   * statement want the same frame, and a nine-hundred-millisecond crossfade put
+   * both of them on screen at once with the words overlapping. Leaving takes
+   * four hundred and arriving waits five, so the handover reads as one thing
+   * replacing another.
+   */
+  transition:
+    opacity 420ms var(--ease),
+    transform 420ms var(--ease);
+}
+
+.space[data-show='true'] {
+  transition:
+    opacity 900ms var(--ease),
+    transform 900ms var(--ease);
+}
+
+.space[data-show='true'] {
+  opacity: 1;
+  transform: none;
+}
+
+/*
+ * The only surface in the site, and it is not one.
+ *
+ * Standing inside a structure means the structure is behind the words, and a
+ * structure at full brightness will win. This is a very wide, very soft fall
+ * from the left edge — no border, no box, nothing with an edge the eye can
+ * find — carrying just enough to hold white type at AA over a lit shell.
+ */
+.space::before {
+  content: '';
+  position: absolute;
+  inset: -55% -60% -70% -100vw;
+  z-index: -1;
+  pointer-events: none;
+  /*
+   * An ellipse anchored off the left edge rather than a linear fall, because a
+   * linear gradient across a box still has a box: its top and bottom edges are
+   * straight lines the eye finds immediately over a moving scene.
+   */
+  background: radial-gradient(
+    68% 58% at 22% 62%,
+    rgba(3, 5, 10, 0.94) 0%,
+    rgba(3, 5, 10, 0.82) 38%,
+    rgba(3, 5, 10, 0.42) 64%,
+    transparent 86%
+  );
+}
+
+.space-eyebrow {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--mono);
+  font-size: var(--label);
+  letter-spacing: var(--track);
+  text-transform: uppercase;
+  color: var(--hud);
+}
+
+.space-eyebrow b {
+  color: var(--tone, var(--signal));
+  font-weight: 400;
+}
+
+.space-rule {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, var(--hud-line), transparent);
+}
+
+/*
+ * The setup clause, for the one statement in the site that is two sentences.
+ * Set at reading size directly above the headline so the pair reads as one
+ * thought rather than as a caption and a title.
+ */
+.space-lead {
+  margin: 0 0 -0.4em;
+  font-size: clamp(14px, 1.35vw, 20px);
+  font-weight: 300;
+  line-height: 1.3;
+  color: var(--ice-faint);
+}
+
+.space-title {
+  margin: 0;
+  font-size: clamp(26px, 3.4vw, 50px);
+  font-weight: 200;
+  line-height: 1.06;
+  letter-spacing: -0.015em;
+  text-transform: uppercase;
+  color: var(--ice);
+  text-wrap: balance;
+}
+
+.space-body {
+  margin: 0;
+  font-size: clamp(13px, 1.05vw, 16px);
+  font-weight: 300;
+  line-height: 1.62;
+  color: var(--ice-soft);
+  max-width: 42ch;
+}
+
+/* ---- the sequence -------------------------------------------------------- */
+
+/*
+ * What this space does, as its own beats. Scrolling moves through them, and the
+ * structure on screen moves with them — the row is a readout of the scene, not
+ * a set of tabs over it.
+ */
+.sequence {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 12px;
+  font-family: var(--mono);
+  font-size: var(--label);
+  letter-spacing: var(--track);
+  text-transform: uppercase;
+}
+
+.sequence-step {
+  color: rgba(255, 255, 255, 0.34);
+  transition: color 500ms var(--ease);
+}
+
+.sequence-step[data-on='true'] {
+  color: var(--ice);
+}
+
+.sequence-step[data-on='true']::after {
+  content: '';
+  display: block;
+  height: 1px;
+  margin-top: 6px;
+  background: var(--tone, var(--signal));
+  box-shadow: 0 0 10px var(--tone, var(--signal));
+}
+
+.sequence-arrow {
+  color: rgba(255, 255, 255, 0.24);
+}
+
+.space-stage {
+  margin: 0;
+  min-height: 3.2em;
+  font-size: clamp(12px, 0.95vw, 14px);
+  font-weight: 300;
+  line-height: 1.7;
+  color: var(--ice-faint);
+  max-width: 44ch;
+}
+
+.space-scroll {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--mono);
+  font-size: var(--label);
+  letter-spacing: var(--track);
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.space-scroll i {
+  display: block;
+  width: clamp(60px, 6vw, 90px);
+  height: 1px;
+  background: var(--hud-line);
+  position: relative;
+}
+
+.space-scroll i::after {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: calc(var(--at, 0) * 100%);
+  background: var(--tone, var(--signal));
+  box-shadow: 0 0 10px var(--tone, var(--signal));
+}
+
+/* ------------------------------------------------------- the centre ------ */
+
+/*
+ * What the network says when the visitor reaches the middle of it.
+ *
+ * The only full-frame moment in the site, and it is four short lines. It is
+ * also not an ending: the way out of it is back into the network.
+ */
+.centre {
+  position: fixed;
+  inset: 0;
+  height: 100dvh;
+  z-index: 6;
+  display: grid;
+  place-items: center;
+  padding: var(--gutter);
+  text-align: center;
+  background: radial-gradient(60% 60% at 50% 50%, rgba(4, 6, 11, 0.72), transparent 78%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 1200ms var(--ease);
+}
+
+.centre[data-show='true'] {
+  opacity: 1;
+  pointer-events: auto;
+  transition-delay: 480ms;
+}
+
+.centre-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(14px, 1.8vw, 24px);
+  max-width: 34ch;
+}
+
+.centre-mark {
+  margin: 0;
+  font-size: clamp(28px, 3.4vw, 46px);
+  font-weight: 200;
+  letter-spacing: 0.2em;
+  text-indent: 0.2em;
+  line-height: 1;
+}
+
+.centre-title {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: var(--label);
+  letter-spacing: 0.36em;
+  text-indent: 0.36em;
+  text-transform: uppercase;
+  color: var(--signal);
+}
+
+.centre-statement {
+  margin: 0;
+  font-size: clamp(22px, 2.9vw, 44px);
+  font-weight: 200;
+  line-height: 1.14;
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+
+.centre-body {
+  margin: 0;
+  font-size: clamp(13px, 1vw, 15px);
+  font-weight: 300;
+  line-height: 1.66;
+  color: var(--ice-faint);
+}
+
+.centre-enter {
+  margin-top: clamp(6px, 1vw, 14px);
+  padding: 14px 26px;
+  background: none;
+  border: 1px solid var(--hud-line);
+  color: var(--ice);
+  font-family: var(--mono);
+  font-size: var(--label);
+  letter-spacing: var(--track);
+  text-indent: var(--track);
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    border-color 500ms var(--ease),
+    color 500ms var(--ease),
+    background 500ms var(--ease);
+}
+
+.centre-enter:hover,
+.centre-enter:focus-visible {
+  border-color: var(--signal);
+  color: var(--signal);
+  background: rgba(76, 201, 255, 0.06);
+}
+
+.centre-enter:focus-visible {
+  outline: 1px solid var(--signal);
+  outline-offset: 4px;
+}
+
+/* ------------------------------------------------------------ the skip --- */
+
+.skip-opening {
+  position: absolute;
+  right: var(--gutter);
+  bottom: max(var(--gutter), env(safe-area-inset-bottom));
+  z-index: 7;
+  padding: 10px 0;
+  background: none;
+  border: 0;
+  color: rgba(255, 255, 255, 0.44);
+  font-family: var(--mono);
+  font-size: var(--label);
+  letter-spacing: var(--track);
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: color 400ms var(--ease);
+}
+
+.skip-opening:hover,
+.skip-opening:focus-visible {
+  color: var(--ice);
+}
+
+/* ---------------------------------------------------------- small screens -- */
+
+/*
+ * A phone is a different composition, not a narrower one.
+ *
+ * The camera puts the structure in the top of the frame; everything here is the
+ * other half of that decision. The words become a sheet along the bottom, full
+ * width, over a scrim that rises from the bottom edge rather than falling in
+ * from the left — a left-hand scrim on a portrait frame darkens the wrong part
+ * of the picture, which is the part the structure is standing in.
+ */
+@media (max-width: 860px), (max-aspect-ratio: 1/1) {
+  .space {
+    left: var(--gutter);
+    right: var(--gutter);
+    width: auto;
+    bottom: calc(max(var(--gutter), env(safe-area-inset-bottom)) + 84px);
+    gap: clamp(10px, 2.4vw, 16px);
+  }
+
+  .space::before {
+    inset: -32% -50vw -400% -50vw;
+    background: linear-gradient(
+      180deg,
+      transparent 0%,
+      rgba(3, 5, 10, 0.5) 22%,
+      rgba(3, 5, 10, 0.86) 48%,
+      rgba(3, 5, 10, 0.96) 100%
+    );
+  }
+
+  .space-title {
+    font-size: clamp(24px, 7.4vw, 40px);
+    line-height: 1.04;
+  }
+
+  .space-lead {
+    font-size: clamp(13px, 3.8vw, 17px);
+  }
+
+  .space-body {
+    font-size: clamp(13px, 3.7vw, 16px);
+    max-width: none;
+  }
+
+  .space-stage {
+    min-height: 3.4em;
+    font-size: clamp(12px, 3.4vw, 15px);
+    max-width: none;
+  }
+
+  /* The rail and the way out share one line, so the sheet keeps its depth. */
+  .travel {
+    left: var(--gutter);
+    right: var(--gutter);
+    bottom: calc(max(var(--gutter), env(safe-area-inset-bottom)) + 42px);
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    text-align: left;
+  }
+
+  .travel-rail {
+    width: auto;
+    flex: 1;
+  }
+
+  .back {
+    padding: 10px 0;
+  }
+
+  /* And the map becomes what it is on a phone: eight places you can tap. */
+  .constellation,
+  .hud[data-inside='true'] .constellation {
+    left: var(--gutter);
+    right: var(--gutter);
+    bottom: max(var(--gutter), env(safe-area-inset-bottom));
+    flex-direction: row;
+    align-items: center;
+    gap: 0;
+  }
+
+  .constellation-title,
+  .constellation-map svg,
+  .hud[data-inside='true'] .constellation-map svg {
+    display: none;
+  }
+
+  .constellation-map,
+  .hud[data-inside='true'] .constellation-map {
+    width: 100%;
+    height: 30px;
+    aspect-ratio: auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0;
+  }
+
+  .constellation-node,
+  .hud[data-inside='true'] .constellation-node {
+    position: relative;
+    left: auto !important;
+    top: auto !important;
+    width: 32px;
+    height: 32px;
+    margin: 0;
+  }
+
+  /*
+   * The label would have to open sideways from a point that is already at the
+   * edge of the screen. The coordinate in the corner names where the visitor
+   * is, and a tap goes there, so nothing is lost by letting it go.
+   */
+  .constellation-label {
+    display: none;
+  }
+
+  /*
+   * There is no room across the top for a mark, two ways out and an address.
+   * The address goes, because the reading column already opens with the number
+   * and name of wherever the visitor is — and the two ways out cannot go, so
+   * they take the right-hand end of the row the coordinate had.
+   */
+  .coordinate {
+    display: none;
+  }
+
+  /*
+   * Three of these will not fit across a phone with their words attached, so
+   * the words come off and the glyphs carry it. The names are still on the
+   * elements, so nothing is lost to anyone reading the page rather than
+   * looking at it.
+   */
+  .links {
+    left: auto;
+    right: var(--gutter);
+    transform: translateY(-50%);
+    gap: 6px;
+  }
+
+  .link {
+    padding: 9px;
+    gap: 0;
+  }
+
+  .link-label {
+    display: none;
+  }
+
+  .glyph {
+    width: 17px;
+  }
+
+  .marker {
+    font-size: 9px;
+    padding: 5px 8px;
+  }
+
+  .opening-line {
+    letter-spacing: 0.22em;
+  }
+}
+
+/* -------------------------------------------------------- reduced motion -- */
+
+@media (prefers-reduced-motion: reduce) {
+  .opening-mark,
+  .opening-line,
+  .space,
+  .centre,
+  .boot-line {
+    transition-duration: 1ms;
+  }
+}
+
+/* --------------------------------------------------------------- utility -- */
+
+/*
+ * The markers layer passes the pointer through; the markers themselves do not.
+ * Their pointer-events are also driven per frame, so a label faded almost out
+ * cannot be clicked by accident.
+ */
+.marker {
+  pointer-events: auto;
+}
+
+/* Names for the map points. Read aloud, never drawn. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/*
+ * The treatment layers used to live inside the overlay and inherited its fixed
+ * box. They sit at the top level now, so they have to establish it themselves —
+ * an absolute layer against a body that is only as tall as its content covers
+ * nothing at all.
+ */
+.grain,
+.vignette {
+  position: fixed;
+  z-index: 4;
+  pointer-events: none;
+}

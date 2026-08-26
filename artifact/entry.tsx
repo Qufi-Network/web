@@ -8,64 +8,92 @@
  * does with this entry.
  *
  * The document markup below is the same content `app/page.tsx` renders, kept in
- * one place by importing nothing from Next.
+ * one place by importing nothing from Next. If one changes, both change.
  */
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import '@fontsource-variable/sora';
 import '@fontsource-variable/jetbrains-mono';
 import '../app/globals.css';
-import '../app/descent.css';
-import '../app/surfaces.css';
-import '../app/economy.css';
+import '../app/network.css';
 import { ExperienceRoot } from '../components/experience/ExperienceRoot';
 
 function Document() {
   return (
     <main className="document">
-      <h1>QUFI Network</h1>
-      <p className="lede">A network designed for the quantum era.</p>
+      <h1>QuFi</h1>
+      <p className="lede">The verification layer for the post-quantum economy.</p>
 
       <p>
-        Every signature protecting Bitcoin, Solana, SWIFT and the banking system today rests on
-        mathematics a large quantum computer is expected to break. QUFI is the network that verifies
-        value without relying on it — independent nodes that check every mint, transfer, approval
-        and redemption using post-quantum cryptography, then settle the result.
+        QuFi sits beneath high-value digital settlement, providing an independent verification layer
+        between action and settlement. It does not replace the environments that settle value; it
+        verifies what they are about to settle.
       </p>
 
-      <h2>How verification works</h2>
+      <h2>01 — Core</h2>
       <p>
-        <strong>Instruct.</strong> Someone submits a mint, a transfer, an approval or a redemption.
-        It carries a hybrid post-quantum signature — two independent schemes, so one broken scheme
-        does not break the instruction.
-      </p>
-      <p>
-        <strong>Verify.</strong> Independent nodes check the signature, confirm the collateral
-        genuinely exists, and check the registry to make sure the instruction has not been used
-        before. A threshold of nodes must agree, then co-sign as a group.
-      </p>
-      <p>
-        <strong>Settle.</strong> The instruction executes, the nullifier is marked spent so it can
-        never be replayed, and a record is written that anyone can verify independently.
+        <strong>The verification layer.</strong> An instruction is defined, the network checks it
+        independently and away from the settlement path, and the settlement environment receives a
+        verified result. Instruct, verify, settle.
       </p>
 
-      <h2>Assets, money and settlement</h2>
+      <h2>02 — Post-quantum signing</h2>
       <p>
-        An economic transaction has two legs and a place they meet. QUFI carries all three: a
-        representation of defined rights to a real-world asset, a monetary leg to trade it against,
-        and settlement that links the movement of one to the movement of the other so neither
-        completes on its own.
+        QuFi enables verification designed for a world where today’s cryptographic assumptions can no
+        longer be taken for granted. A signature is assembled under a post-quantum scheme, the
+        network verifies it against that scheme, and what travels onward is the proof that
+        verification happened.
+      </p>
+
+      <h2>03 — Proof</h2>
+      <p>
+        QuFi moves computationally intensive verification away from the settlement path and returns a
+        compact proof. The expensive work happens inside the network; settlement receives the result
+        rather than the work.
+      </p>
+
+      <h2>04 — Collateral confirmation</h2>
+      <p>
+        Assets can be verified before they move. An asset is held rather than passed, the field
+        confirms it genuinely exists, and only then does the pathway open.
+      </p>
+
+      <h2>05 — Proof-gated movement</h2>
+      <p>
+        Movement becomes conditional on verified proof. Value arrives at the gateway and waits; the
+        pathway opens only on a valid proof. What is verified passes, and what is not, does not.
+      </p>
+
+      <h2>06 — Recovery</h2>
+      <p>
+        Recovery pathways allow verified processes to continue when a route, environment or
+        connection changes. When a route is lost the network detects the break, reorganises, and the
+        process continues on the pathway that forms.
+      </p>
+
+      <h2>07 — Multiple settlement environments</h2>
+      <p>
+        QuFi is designed to operate beneath multiple settlement environments rather than replacing
+        them. One verification layer runs underneath several architectures, and each environment
+        settles what the layer has verified.
+      </p>
+
+      <h2>08 — High-value flows</h2>
+      <p>
+        Three kinds of value move through the network. Digital assets: tokenised value and high-value
+        settlement. Money: stablecoins, deposits and cross-border settlement. Trade finance:
+        invoices, receivables and other high-value financial flows.
       </p>
 
       <h2>Cryptography</h2>
       <dl>
         <div>
           <dt>Signatures</dt>
-          <dd>ML-DSA-65 and SPHINCS+, used together as a hybrid</dd>
+          <dd>Hybrid post-quantum signing</dd>
         </div>
         <div>
           <dt>Encryption</dt>
-          <dd>ML-KEM lattice key encapsulation</dd>
+          <dd>Lattice key encapsulation</dd>
         </div>
         <div>
           <dt>Approval</dt>
@@ -81,11 +109,10 @@ function Document() {
         </div>
       </dl>
 
-      <h2>Genesis nodes</h2>
+      <h2>Verify before value moves.</h2>
       <p>
-        QUFI begins with one thousand genesis nodes: independent operators who verify the first
-        instructions the network settles, and hold a share of the threshold that approves them.
-        Registering interest is not an allocation.
+        An independent verification layer designed for the post-quantum economy. QuFi is not trying
+        to replace the systems that settle value — it is the verification layer beneath them.
       </p>
 
       <h2>About this page</h2>

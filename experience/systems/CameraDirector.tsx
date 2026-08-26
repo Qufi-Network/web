@@ -54,7 +54,8 @@ export function CameraDirector() {
 
     // Everything that fades with distance reads this, so a wide shot stays
     // legible without every system needing its own per-chapter tuning.
-    stage.fogFar = Math.max(150, camera.position.length() * 2.5);
+    stage.cameraDistance = camera.position.length();
+    stage.fogFar = Math.max(150, stage.cameraDistance * 2.5);
 
     if (Math.abs(camera.fov - c.fov) > 0.01) {
       camera.fov += (c.fov - camera.fov) * follow;

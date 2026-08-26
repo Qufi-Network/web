@@ -25,10 +25,15 @@ export const CORE_VERTEX = /* glsl */ `
   uniform float uFogFar;
   uniform float uDim;
   uniform float uMaxPointSize;
+  /** How much of the Core the visitor is standing inside, 0..1. */
+  uniform float uFocus;
+  /** Where they are in INSTRUCT -> VERIFY -> SETTLE, 0..1. */
+  uniform float uStage;
 
   varying float vAlpha;
   varying float vCharge;
   varying float vBand;
+  varying float vSweep;
 
 
   void main() {
@@ -47,6 +52,10 @@ export const CORE_VERTEX = /* glsl */ `
       sin(uTime * 1.3 + aSeed * 2.7)
     ) * 0.09 * (1.0 - eased * 0.82);
 
+    // Inside, the shell opens out so the interior is a place rather than a
+    // surface, and the visitor can see the layers they are between.
+    settled *= 1.0 + uFocus * 0.18;
+
     vec3 world = mix(scattered, settled, eased);
 
     vec4 mvPosition = modelViewMatrix * vec4(world, 1.0);
@@ -56,7 +65,15 @@ export const CORE_VERTEX = /* glsl */ `
     // Interference banding across the shell, so the surface shows structure
     // instead of even coverage.
     float fringe = 0.55 + 0.45 * sin(aBand * 9.0 + uTime * 0.6);
-    vCharge = eased * fringe;
+
+    // An instruction crossing the Core. The band each point sits on is its
+    // position from pole to pole, so a narrow window sweeping that band is one
+    // thing travelling through the structure rather than the structure pulsing.
+    float front = uStage * 1.3 - 0.15;
+    float sweep = exp(-pow((aBand - front) * 4.2, 2.0)) * uFocus;
+    vSweep = sweep;
+
+    vCharge = eased * fringe + sweep * 0.7;
     vBand = fringe;
 
     float size = uSize * (0.5 + fringe * 0.9) * (0.55 + eased * 0.8);
@@ -64,6 +81,7 @@ export const CORE_VERTEX = /* glsl */ `
 
     float depth = qufiDepthFade(viewDepth, uFogNear, uFogFar);
     vAlpha = mix(0.22, 1.0, eased) * depth * smoothstep(0.6, 4.0, viewDepth) * uDim * uCoherence;
+    vAlpha *= 1.0 + sweep * 1.4;
   }
 `;
 
@@ -89,6 +107,7 @@ export const CORE_FRAGMENT = /* glsl */ `
   varying float vAlpha;
   varying float vCharge;
   varying float vBand;
+  varying float vSweep;
 
   void main() {
     vec2 p = gl_PointCoord - 0.5;

@@ -60,6 +60,7 @@ export function ParticleField() {
       uPointerAmp: { value: 0 },
       uPointerRadius: { value: 9 },
       uFogNear: { value: 10 },
+      uNearCut: { value: 12 },
       uFogFar: { value: 190 },
       uDim: { value: 0 },
       uTint: { value: stage.tint },
@@ -75,6 +76,7 @@ export function ParticleField() {
     u.uPointerAmp.value = stage.pointerAmp;
     u.uPointerRadius.value = stage.pointerRadius;
     u.uDim.value = stage.dim * stage.fieldDim * 0.55;
+    u.uNearCut.value = 12 + stage.inside * 40;
     u.uFogFar.value = stage.fogFar * 1.3;
     u.uTint.value = stage.tint;
     u.uTintAmount.value = stage.tintAmount;

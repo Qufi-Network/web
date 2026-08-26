@@ -18,6 +18,7 @@ import {
 import { createRng } from '../../network/rng';
 import { fibonacciSphere } from '../../network/rng';
 import { useNetwork } from '../NetworkContext';
+import { spaceRuntime } from '../navigation';
 import { stage } from '../stage';
 
 /**
@@ -151,6 +152,8 @@ export function QuFiCore() {
       uMaxPointSize: { value: capability.maxPointSize },
       uTint: { value: stage.tint },
       uTintAmount: { value: 0 },
+      uFocus: { value: 0 },
+      uStage: { value: 0 },
     }),
     [capability.maxPointSize],
   );
@@ -181,11 +184,32 @@ export function QuFiCore() {
       group.current.rotation.y = stage.time * 0.045;
       group.current.rotation.x = Math.sin(stage.time * 0.11) * 0.14;
     }
+    const core = spaceRuntime[0];
+
+    /*
+     * Surviving being flown past.
+     *
+     * Additive sprites do not get dimmer as the camera approaches, they get
+     * larger — and at the middle distance the whole shell projects into a small
+     * enough area that two thousand of them saturate to a white hole with no
+     * structure in it. So the Core steps back while the visitor is travelling
+     * through the network, and comes back to full the moment they are actually
+     * coming to see it.
+     */
+    const proximity = 1 - Math.min(1, Math.max(0, (stage.cameraDistance - 46) / 54));
+    const flyby = 1 - 0.62 * proximity * (1 - core.focus);
+    // And it is one of the eight, so it steps back when the visitor is standing
+    // in one of the other seven. Without this the Core is the brightest thing
+    // in every frame of the site, including the ones about something else.
+    const elsewhere = 1 - stage.inside * (1 - core.focus) * 0.84;
+
     const shellUniform = shellMaterial.current?.uniforms;
     if (shellUniform) {
       shellUniform.uTime.value = stage.time;
       shellUniform.uCoherence.value = stage.coherence;
-      shellUniform.uDim.value = stage.dim;
+      shellUniform.uDim.value = stage.dim * flyby * elsewhere;
+      shellUniform.uFocus.value = core.focus;
+      shellUniform.uStage.value = core.stage;
       shellUniform.uFogFar.value = stage.fogFar;
       shellUniform.uTint.value = stage.tint;
       shellUniform.uTintAmount.value = stage.tintAmount;
@@ -198,7 +222,7 @@ export function QuFiCore() {
       chordUniform.uFogFar.value = stage.fogFar;
       chordUniform.uTint.value = stage.tint;
       chordUniform.uTintAmount.value = stage.tintAmount;
-      chordUniform.uDim.value = stage.dim;
+      chordUniform.uDim.value = stage.dim * flyby * elsewhere * (1 + core.focus * 1.6);
     }
   });
 

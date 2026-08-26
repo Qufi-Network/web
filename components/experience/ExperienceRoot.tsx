@@ -3,34 +3,40 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { NetworkProvider } from '../../experience/NetworkContext';
-import { beatAt, buildIntroTimeline, type TimelineHandles } from '../../experience/IntroTimeline';
+import { buildOpening, type OpeningHandles } from '../../experience/Opening';
 import { experience } from '../../experience/ExperienceState';
+import {
+  enterSpace,
+  nav,
+  probe,
+  request,
+  returnToNetwork,
+  spaceRuntime,
+  stageTo,
+  travelTo,
+} from '../../experience/navigation';
 import { resetStage, stage } from '../../experience/stage';
 import { detectCapability, dprFor, type Capability } from '../../lib/capability';
 import { Scene } from './Scene';
-import { IntroOverlay } from '../overlay/IntroOverlay';
-import { Loader } from '../overlay/Loader';
-import { ScrollPrompt } from '../overlay/ScrollPrompt';
-import { Creed } from '../overlay/Creed';
-import { CornerMark } from '../overlay/CornerMark';
-import { ChapterLayer } from '../overlay/ChapterLayer';
-import { NodeLabels } from '../overlay/NodeLabels';
-import { FeatureCard } from '../overlay/FeatureCard';
-import { CHAPTERS, CHAPTER_SPAN } from '../../experience/Chapters';
+import { Boot } from '../overlay/Boot';
+import { Centre } from '../overlay/Centre';
+import { NetworkHUD } from '../overlay/NetworkHUD';
 import { StaticNetwork } from './StaticNetwork';
 
 /**
- * Mounts the experience.
+ * Mounts the environment.
  *
  * Everything that has to look at the device happens here and nowhere else:
  * capability detection, the motion preference, WebGL availability, and building
- * the timeline. The scene below it can then assume it is running somewhere that
- * can actually render it.
+ * the opening. What is below can then assume it is running somewhere that can
+ * actually render it.
+ *
+ * There is no scroll track under this and no document length to descend. The
+ * viewport is the frame, the canvas fills it, and the visitor moves by moving.
  */
 export function ExperienceRoot() {
   const [capability, setCapability] = useState<Capability | null>(null);
-  const [inside, setInside] = useState(false);
-  const handles = useRef<TimelineHandles | null>(null);
+  const opening = useRef<OpeningHandles | null>(null);
 
   useEffect(() => {
     const detected = detectCapability();
@@ -47,26 +53,23 @@ export function ExperienceRoot() {
     if (!detected.webgl) return;
 
     resetStage();
-    const built = buildIntroTimeline({
-      reducedMotion,
-      portrait: window.innerWidth < 860,
-      nodeCount: detected.nodeCount,
-    });
-    handles.current = built;
+    nav.set({ mode: 'INTRO', boot: 0, title: -1 });
+
+    const built = buildOpening({ reducedMotion, nodeCount: detected.nodeCount });
+    opening.current = built;
     if (!reducedMotion) built.timeline.play();
 
     // A tab that has been away for a while would otherwise resume mid-sequence
     // with a frame delta measured in seconds.
     const onVisibility = () => {
       if (document.hidden) built.timeline.pause();
-      else if (!reducedMotion) built.timeline.play();
+      else if (!reducedMotion && nav.get().mode === 'INTRO') built.timeline.play();
     };
     document.addEventListener('visibilitychange', onVisibility);
 
-    // Development instrumentation. Art-directing a thirty-second sequence means
-    // looking at second nineteen repeatedly, and waiting nineteen seconds each
-    // time is not a workflow. Gated behind both the build mode and an explicit
-    // query parameter so it cannot reach a visitor.
+    // Development instrumentation. Art-directing a twenty-second sequence means
+    // looking at second fourteen repeatedly, and waiting fourteen seconds each
+    // time is not a workflow.
     const debug =
       process.env.NODE_ENV !== 'production' &&
       new URLSearchParams(window.location.search).has('stats');
@@ -74,61 +77,43 @@ export function ExperienceRoot() {
       (window as unknown as { __qufi?: unknown }).__qufi = {
         timeline: built.timeline,
         stage,
+        nav,
+        probe,
+        request,
+        spaceRuntime,
         experience,
-        // Scrubbing with callbacks enabled re-fires every beat between here and
-        // there, which is both wrong for a scrub and unstable. Suppress them and
-        // set the beat that belongs to the destination instead.
-        seek: (seconds: number) => {
-          built.timeline.pause().time(seconds, true);
-          experience.set({ beat: beatAt(seconds), elapsed: seconds });
+        enterSpace,
+        returnToNetwork,
+        travelTo,
+        stageTo,
+        seek: (seconds: number) => built.timeline.pause().time(seconds, true),
+        /** Straight to the global view, for harnesses that start from there. */
+        online: () => {
+          built.timeline.pause().progress(1, false);
+          nav.set({ mode: 'ORBIT', entered: true, online: true, boot: 2, title: -1 });
         },
       };
     }
 
-    // A refresh in the middle of the descent should start at the opening again,
-    // not halfway down a track that no longer exists.
-    if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
-    window.scrollTo(0, 0);
-
     return () => {
-      delete document.documentElement.dataset.inside;
       document.removeEventListener('visibilitychange', onVisibility);
       if (debug) delete (window as unknown as { __qufi?: unknown }).__qufi;
       built.dispose();
-      handles.current = null;
+      opening.current = null;
     };
   }, []);
 
   const onSkip = useCallback(() => {
-    handles.current?.skip();
-  }, []);
-
-  const onEnter = useCallback(() => {
-    const built = handles.current;
-    if (built) {
-      built.timeline.pause();
-      built.enter();
-    }
-    experience.set({ phase: 'DISCOVER' });
-    // Descent only becomes possible once the visitor has accepted the
-    // invitation. Until then the page has no scroll to give.
-    setInside(true);
-    document.documentElement.dataset.inside = 'true';
-    // Two frames so the scroll track has been laid out before we move into it.
-    requestAnimationFrame(() =>
-      requestAnimationFrame(() => window.scrollTo({ top: 1, behavior: 'smooth' })),
-    );
+    opening.current?.skip();
   }, []);
 
   // Server render and first paint are the accessible document alone. The scene
-  // only exists once we know what this device is — but the loader has to be up
-  // before that, because those are exactly the seconds it exists to explain.
-  if (!capability) return <Loader />;
+  // only exists once we know what this device is.
+  if (!capability) return null;
   if (!capability.webgl) return <StaticNetwork />;
 
   return (
     <NetworkProvider capability={capability}>
-      <Loader />
       <div className="stage" aria-hidden="true">
         <Canvas
           flat
@@ -143,7 +128,7 @@ export function ExperienceRoot() {
           camera={{
             fov: stage.camera.fov,
             near: 0.4,
-            far: 400,
+            far: 900,
             position: [stage.camera.px, stage.camera.py, stage.camera.pz],
           }}
           onCreated={({ gl }) => {
@@ -157,7 +142,7 @@ export function ExperienceRoot() {
               'webglcontextlost',
               (event) => {
                 event.preventDefault();
-                handles.current?.timeline.pause();
+                opening.current?.timeline.pause();
                 experience.set({ degraded: true, phase: 'EXIT' });
                 setCapability((current) => (current ? { ...current, webgl: false } : current));
               },
@@ -165,29 +150,16 @@ export function ExperienceRoot() {
             );
           }}
         >
-          <Scene scrolling={inside} />
+          <Scene />
         </Canvas>
       </div>
-      <IntroOverlay onEnter={onEnter} onSkip={onSkip} />
-      <Creed />
-      <CornerMark />
-      <ScrollPrompt />
-      <NodeLabels active={inside} />
-      <FeatureCard active={inside} />
-      <ChapterLayer active={inside} />
 
-      {/*
-        The scroll track. It carries no content of its own — it exists so the
-        document has a length for the descent to be measured against, which is
-        what lets the scrollbar mean depth rather than page position.
-      */}
-      {inside ? (
-        <div
-          className="track"
-          aria-hidden="true"
-          style={{ height: `${CHAPTERS.length * CHAPTER_SPAN * 100}vh` }}
-        />
-      ) : null}
+      <Boot onSkip={onSkip} />
+      <NetworkHUD />
+      <Centre />
+
+      <div className="grain" aria-hidden="true" />
+      <div className="vignette" aria-hidden="true" />
     </NetworkProvider>
   );
 }

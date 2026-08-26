@@ -20,6 +20,8 @@ export const FIELD_VERTEX = /* glsl */ `
   uniform float uFogNear;
   uniform float uFogFar;
   uniform float uDim;
+  /** Distance inside which the medium is fog on the lens, not atmosphere. */
+  uniform float uNearCut;
 
   varying float vAlpha;
   varying float vTemp;
@@ -39,7 +41,7 @@ export const FIELD_VERTEX = /* glsl */ `
     // instead of reading as a static dust layer.
     float breathe = 0.45 + 0.55 * sin(uTime * 0.7 + aSeed * TAU);
     float depth = qufiDepthFade(viewDepth, uFogNear, uFogFar);
-    vAlpha = breathe * depth * smoothstep(2.0, 12.0, viewDepth) * uDim;
+    vAlpha = breathe * depth * smoothstep(uNearCut * 0.18, uNearCut, viewDepth) * uDim;
     vTemp = aSeed;
   }
 `;
