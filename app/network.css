@@ -632,7 +632,15 @@
 }
 
 .hud[data-inside='true'] .constellation-title,
-.hud[data-inside='true'] .constellation-map svg {
+.hud[data-inside='true'] .constellation-map svg,
+/*
+ * And the names go with it. In a row along the bottom edge a label has nowhere
+ * to open — the last point is already at the right of the frame and its name
+ * runs off it — and the coordinate in the corner is naming the same space
+ * anyway. On the map proper, where the points have room around them, the names
+ * stay.
+ */
+.hud[data-inside='true'] .constellation-label {
   display: none;
 }
 
