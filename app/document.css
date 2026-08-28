@@ -80,6 +80,14 @@
   padding: clamp(28px, 7vh, 76px) var(--gutter) clamp(60px, 12vh, 130px);
 }
 
+/*
+ * A page of products is a figure and a column, which needs more width than a
+ * measure of prose. The measure inside the column is still a measure of prose.
+ */
+.doc-body:has(.product) {
+  max-width: 92ch;
+}
+
 .doc-eyebrow {
   margin: 0 0 clamp(14px, 2vw, 22px);
   display: flex;
@@ -182,6 +190,242 @@
 
 .doc-pending h2 {
   color: var(--signal);
+}
+
+/* -------------------------------------------------------------- products -- */
+
+/*
+ * A product is a figure and a column beside it.
+ *
+ * The figure is drawn in the same vocabulary as the network — stroked geometry,
+ * a few lit points, no fills — and in the product's own colour. It is sticky on
+ * a wide screen, so the diagram stays with the words that describe it while they
+ * scroll past; on a narrow one it goes above them and stops trying.
+ */
+.product {
+  margin-top: clamp(46px, 8vh, 96px);
+  padding-top: clamp(24px, 4vh, 44px);
+  border-top: 1px solid rgba(150, 190, 255, 0.14);
+  display: grid;
+  grid-template-columns: clamp(150px, 22%, 210px) 1fr;
+  gap: clamp(22px, 3.5vw, 46px);
+  align-items: start;
+}
+
+.product-figure {
+  position: sticky;
+  top: calc(var(--top-line) + 54px);
+  line-height: 0;
+}
+
+.figure {
+  display: block;
+  width: 100%;
+  height: auto;
+  color: var(--tone, var(--signal));
+  overflow: visible;
+}
+
+.figure-line {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.15;
+  stroke-linejoin: miter;
+  stroke-linecap: butt;
+  vector-effect: non-scaling-stroke;
+  opacity: 0.72;
+}
+
+/* The parts that are context rather than claim. */
+.figure-soft {
+  opacity: 0.3;
+}
+
+.figure-lit {
+  fill: currentColor;
+  stroke: none;
+  filter: drop-shadow(0 0 6px currentColor);
+}
+
+/*
+ * Two things move, and only because the movement is the point: the tie between
+ * what is held and what is issued, and the shell around what is being kept.
+ * Everything else holds still so it can be read.
+ */
+.figure-tie {
+  opacity: 1;
+  stroke-dasharray: 4 6;
+  animation: figure-tie 2.6s linear infinite;
+}
+
+@keyframes figure-tie {
+  to {
+    stroke-dashoffset: -20;
+  }
+}
+
+.figure-turn {
+  transform-origin: 50% 50%;
+  animation: figure-turn 42s linear infinite;
+}
+
+/*
+ * An SVG transform resolves against the view box unless told otherwise, so a
+ * shape whose own centre is not the centre of the square wobbles rather than
+ * turning. The cage sits high in its square, to leave room for the three ways
+ * out below it.
+ */
+.figure-cage {
+  transform-origin: 100px 76px;
+}
+
+@keyframes figure-turn {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .figure-tie,
+  .figure-turn {
+    animation: none;
+  }
+}
+
+/* ---- the column beside it ------------------------------------------------ */
+
+.product-eyebrow {
+  margin: 0 0 10px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--mono);
+  font-size: var(--label);
+  letter-spacing: var(--track);
+  text-transform: uppercase;
+  color: var(--hud);
+}
+
+.product-eyebrow b {
+  color: var(--tone, var(--signal));
+  font-weight: 400;
+}
+
+/*
+ * The one place on this site where type is not uppercase.
+ *
+ * These are names of things rather than statements about them, and uppercasing
+ * a name changes it: uBTC becomes UBTC, which is a different word from the one
+ * written on the product.
+ */
+.product-name {
+  margin: 0;
+  font-size: clamp(26px, 3.2vw, 42px);
+  font-weight: 200;
+  line-height: 1.06;
+  letter-spacing: -0.015em;
+}
+
+.product-lede {
+  margin: clamp(12px, 1.6vw, 18px) 0 clamp(16px, 2vw, 24px);
+  font-size: clamp(15px, 1.35vw, 19px);
+  font-weight: 300;
+  line-height: 1.5;
+  color: var(--ice);
+  max-width: 40ch;
+}
+
+.product-body {
+  margin: 0 0 1.05em;
+  font-size: clamp(14px, 1.1vw, 16px);
+  font-weight: 300;
+  line-height: 1.72;
+  color: var(--ice-soft);
+}
+
+.product-parts {
+  margin: clamp(18px, 2.6vh, 28px) 0 0;
+  display: grid;
+  gap: 0;
+}
+
+.product-parts div {
+  display: grid;
+  grid-template-columns: minmax(0, 13ch) 1fr;
+  gap: 8px 18px;
+  padding: 11px 0;
+  border-top: 1px solid rgba(150, 190, 255, 0.1);
+}
+
+.product-parts dt {
+  font-family: var(--mono);
+  font-size: var(--label);
+  letter-spacing: var(--track);
+  text-transform: uppercase;
+  color: var(--tone, var(--signal));
+  padding-top: 2px;
+}
+
+.product-parts dd {
+  margin: 0;
+  font-size: clamp(13px, 1.05vw, 15px);
+  font-weight: 300;
+  line-height: 1.62;
+  color: var(--ice-faint);
+}
+
+/*
+ * What is running and what is not.
+ *
+ * The one piece of this page that is not a claim about the product but a claim
+ * about its state, so it is set apart: a mono line with a lit point when the
+ * thing is deployed and a hollow one when it is not.
+ */
+.product-status {
+  margin: clamp(18px, 2.6vh, 26px) 0 0;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  font-family: var(--mono);
+  font-size: var(--label);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--hud);
+}
+
+.product-status i {
+  width: 6px;
+  height: 6px;
+  flex: none;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+}
+
+.product-status[data-live='true'] {
+  color: var(--tone, var(--signal));
+}
+
+.product-status[data-live='true'] i {
+  background: currentColor;
+  box-shadow: 0 0 10px currentColor;
+}
+
+/* On a narrow screen the figure goes above the words and stops following. */
+@media (max-width: 860px) {
+  .product {
+    grid-template-columns: 1fr;
+    gap: clamp(18px, 4vw, 28px);
+  }
+
+  .product-figure {
+    position: static;
+    width: clamp(132px, 40vw, 180px);
+  }
+
+  .product-parts div {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
 }
 
 /* ----------------------------------------------------------------- foot -- */
