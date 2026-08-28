@@ -13,10 +13,10 @@ import { InteractionSystem } from '../../experience/systems/InteractionSystem';
 import { NetworkDriver } from '../../experience/systems/NetworkDriver';
 import { ParticleField } from '../../experience/systems/ParticleField';
 import { SubstrateLayer } from '../../experience/systems/SubstrateLayer';
-import { FlowSystem } from '../../experience/lifecycle/FlowSystem';
+import { SceneSystem } from '../../experience/lifecycle/SceneSystem';
 import { LifecycleDirector } from '../../experience/lifecycle/LifecycleDirector';
-import type { Stage } from '../../experience/lifecycle/stages';
-import { life, resetFlow } from '../../experience/lifecycle/life';
+import type { Journey } from '../../experience/lifecycle/journey';
+import { life } from '../../experience/lifecycle/life';
 import { LifecycleLayer } from '../overlay/LifecycleLayer';
 import { LifecycleMarks } from '../overlay/LifecycleMarks';
 import { QufiMark } from '../overlay/QufiMark';
@@ -36,7 +36,7 @@ import { QUFI_WORD, QUFI_WORD_SIZE } from '../../assets/word';
  * them. Same hand, different subject, and a visitor arriving from the network
  * should know immediately that they have gone somewhere else.
  */
-export function LifecycleRoot({ stages, tone }: { stages: Stage[]; tone: string }) {
+export function LifecycleRoot({ journey }: { journey: Journey }) {
   const [capability, setCapability] = useState<Capability | null>(null);
 
   useEffect(() => {
@@ -48,7 +48,6 @@ export function LifecycleRoot({ stages, tone }: { stages: Stage[]; tone: string 
     if (!detected.webgl) return;
 
     resetStage();
-    resetFlow();
     life.reset();
     // No opening sequence here: the visitor has already been through one to get
     // to this page, and a second is a toll rather than an arrival.
@@ -61,7 +60,7 @@ export function LifecycleRoot({ stages, tone }: { stages: Stage[]; tone: string 
       process.env.NODE_ENV !== 'production' &&
       new URLSearchParams(window.location.search).has('stats');
     if (debug) {
-      (window as unknown as { __ubtc?: unknown }).__ubtc = { life, stage, STAGES: stages };
+      (window as unknown as { __ubtc?: unknown }).__ubtc = { life, stage, journey };
     }
     return () => {
       if (debug) delete (window as unknown as { __ubtc?: unknown }).__ubtc;
@@ -77,7 +76,7 @@ export function LifecycleRoot({ stages, tone }: { stages: Stage[]; tone: string 
 
   return (
     <NetworkProvider capability={capability}>
-      <div className="stage" style={{ '--tone': tone } as React.CSSProperties} aria-hidden="true">
+      <div className="stage" style={{ '--tone': journey.tone } as React.CSSProperties} aria-hidden="true">
         <Canvas
           flat
           frameloop="always"
@@ -102,7 +101,7 @@ export function LifecycleRoot({ stages, tone }: { stages: Stage[]; tone: string 
           }}
         >
           <NetworkDriver />
-          <LifecycleDirector />
+          <LifecycleDirector journey={journey} />
           <InteractionSystem />
           <CameraDirector />
           <AdaptiveQuality />
@@ -115,7 +114,7 @@ export function LifecycleRoot({ stages, tone }: { stages: Stage[]; tone: string 
           */}
           <ParticleField />
           <SubstrateLayer />
-          <FlowSystem />
+          <SceneSystem journey={journey} />
         </Canvas>
       </div>
 
@@ -131,8 +130,8 @@ export function LifecycleRoot({ stages, tone }: { stages: Stage[]; tone: string 
         />
       </Link>
 
-      <LifecycleMarks />
-      <LifecycleLayer stages={stages} tone={tone} />
+      <LifecycleMarks marks={journey.marks} />
+      <LifecycleLayer journey={journey} />
 
       <div className="grain" aria-hidden="true" />
       <div className="vignette" aria-hidden="true" />

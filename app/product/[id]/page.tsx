@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { PRODUCTS } from '../../../components/site/catalogue';
 import { ProductPage } from '../../../components/site/ProductPage';
-import { journeyFor } from '../../../experience/lifecycle/journeys';
+import { journeyFor } from '../../../experience/lifecycle/journeys/index';
 
 export function generateStaticParams() {
   return PRODUCTS.map((product) => ({ id: product.id }));
@@ -31,7 +31,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
   const { id } = await params;
   const product = PRODUCTS.find((entry) => entry.id === id);
   if (!product) notFound();
-  const stages = journeyFor(id);
+  const journey = journeyFor(id);
 
   return (
     <>
@@ -44,10 +44,10 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
           <p key={paragraph.slice(0, 32)}>{paragraph}</p>
         ))}
 
-        {stages ? (
+        {journey ? (
           <>
-            <h2>The lifecycle</h2>
-            {stages.map((stage) => (
+            <h2>Step by step</h2>
+            {journey.stages.map((stage) => (
               <section key={stage.id}>
                 <h2>
                   {stage.index} — {stage.title}

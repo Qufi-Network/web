@@ -24,13 +24,13 @@ import { useLife } from '../../experience/lifecycle/life';
  */
 export function ProductPage({ id }: { id: string }) {
   const product = PRODUCTS.find((entry) => entry.id === id);
-  const stages = journeyFor(id);
-  const [reading, setReading] = useState(!stages);
+  const journey = journeyFor(id);
+  const [reading, setReading] = useState(!journey);
 
   if (!product) return null;
-  if (!stages || reading) {
+  if (!journey || reading) {
     return (
-      <div className="read" data-walked={String(Boolean(stages))}>
+      <div className="read" data-walked={String(Boolean(journey))}>
         <ProductSigil tone={product.tone} />
         <ProductDetail id={id} />
       </div>
@@ -39,7 +39,7 @@ export function ProductPage({ id }: { id: string }) {
 
   return (
     <>
-      <LifecycleRoot stages={stages} tone={product.tone} />
+      <LifecycleRoot journey={journey} />
       <ProductSigil tone={product.tone} />
       <Ending id={id} onRead={() => setReading(true)} />
     </>
@@ -56,9 +56,9 @@ export function ProductPage({ id }: { id: string }) {
  */
 function Ending({ id, onRead }: { id: string; onRead: () => void }) {
   const at = useLife((s) => s.at);
-  const stages = journeyFor(id);
+  const journey = journeyFor(id);
   const product = PRODUCTS.find((entry) => entry.id === id);
-  const total = stages?.length ?? 1;
+  const total = journey?.stages.length ?? 1;
   // The last third of the last stage.
   const done = at > total - 0.34;
 

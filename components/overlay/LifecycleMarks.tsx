@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { MARKS } from '../../experience/lifecycle/marks';
+import type { Mark } from '../../experience/lifecycle/journey';
 
 /**
  * What you are looking at, said next to it.
@@ -14,7 +14,7 @@ import { MARKS } from '../../experience/lifecycle/marks';
  * times a second, and re-rendering eight components to move a label is work
  * nobody asked for.
  */
-export function LifecycleMarks() {
+export function LifecycleMarks({ marks }: { marks: Mark[] }) {
   const host = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -30,7 +30,7 @@ export function LifecycleMarks() {
 
       for (let i = 0; i < nodes.length; i++) {
         const node = nodes[i];
-        const mark = MARKS[i];
+        const mark = marks[i];
         if (mark.on < 0.01) {
           if (node.style.opacity !== '0') {
             node.style.opacity = '0';
@@ -46,11 +46,11 @@ export function LifecycleMarks() {
 
     frame = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(frame);
-  }, []);
+  }, [marks]);
 
   return (
     <div className="life-marks" ref={host} aria-hidden="true">
-      {MARKS.map((mark) => (
+      {marks.map((mark) => (
         <p key={mark.id} className="life-mark-label" data-id={mark.id}>
           <i />
           {mark.text}

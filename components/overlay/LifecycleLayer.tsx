@@ -1,6 +1,6 @@
 'use client';
 
-import type { Stage } from '../../experience/lifecycle/stages';
+import type { Journey } from '../../experience/lifecycle/journey';
 import { useLife } from '../../experience/lifecycle/life';
 
 /**
@@ -14,7 +14,8 @@ import { useLife } from '../../experience/lifecycle/life';
  * being able to see how much of it is left is worth more here than it is on a
  * map where everything is equally reachable.
  */
-export function LifecycleLayer({ stages: STAGES, tone }: { stages: Stage[]; tone: string }) {
+export function LifecycleLayer({ journey }: { journey: Journey }) {
+  const STAGES = journey.stages;
   const index = useLife((s) => s.stage);
   const beat = useLife((s) => s.beat);
   const local = useLife((s) => s.local);
@@ -31,11 +32,13 @@ export function LifecycleLayer({ stages: STAGES, tone }: { stages: Stage[]; tone
       className="life"
       data-show={String(ready)}
       data-ending={String(ending)}
-      style={{ '--tone': tone } as React.CSSProperties}
+      style={{ '--tone': journey.tone } as React.CSSProperties}
     >
       <p className="coordinate life-coordinate" aria-live="polite">
         <span className="coordinate-index">{stage.index}</span>
-        <span className="coordinate-path">UBTC / {stage.nav}</span>
+        <span className="coordinate-path">
+          {journey.nav} / {stage.nav}
+        </span>
       </p>
 
       <section className="space life-words" data-show="true" key={stage.id}>

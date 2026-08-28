@@ -2,7 +2,6 @@
 
 import Link from 'next/link';
 import { PRODUCTS } from './catalogue';
-import { JOURNEYS } from '../../experience/lifecycle/journeys';
 import { QUFI_MARK } from '../../assets/mark';
 
 /**
@@ -26,7 +25,6 @@ export function Launcher() {
   return (
     <div className="doors">
       {PRODUCTS.map((product) => {
-        const walkable = Boolean(JOURNEYS[product.id]);
         return (
           <Link
             key={product.id}
@@ -64,13 +62,12 @@ export function Launcher() {
             </span>
 
             {/*
-              What clicking does. It matters that this is not the same on all
-              four: two of them are a journey and two of them are, for now, a
-              page — and a door that lies about what is behind it is worse than
-              a plain one.
+              What clicking does. All four are a journey now, so all four say
+              so — a door that lies about what is behind it is worse than a
+              plain one, and so is one that undersells it.
             */}
             <span className="door-go">
-              <span>{walkable ? 'Walk it' : 'Read it'}</span>
+              <span>Walk it</span>
               <i aria-hidden="true" />
             </span>
           </Link>

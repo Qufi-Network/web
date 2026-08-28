@@ -14,12 +14,17 @@ import { stage } from '../stage';
  * without it, every timeline ease is applied to the camera raw, and the joins
  * between moves are visible as a change of velocity.
  */
+function damp(current: number, target: number, rate: number, delta: number): number {
+  return current + (target - current) * (1 - Math.exp(-delta * rate));
+}
+
 export function CameraDirector() {
   const camera = useThree((state) => state.camera) as PerspectiveCamera;
   const desired = useRef(new Vector3());
   const target = useRef(new Vector3(0, 0, 0));
   const targetDesired = useRef(new Vector3());
   const chase = useRef(new Vector3());
+  const roll = useRef(0);
 
   useFrame((_, rawDelta) => {
     const delta = Math.min(rawDelta, 1 / 20);
@@ -51,6 +56,17 @@ export function CameraDirector() {
     camera.position.lerp(desired.current, follow);
     target.current.lerp(targetDesired.current, follow);
     camera.lookAt(target.current);
+
+    /*
+     * And a bank into the turn.
+     *
+     * Applied after the aim rather than as part of it, because looking at
+     * something and being level are two separate questions and the second one
+     * only has an answer once the first is settled. Small numbers: enough that
+     * a turn is felt, not enough that anybody notices the horizon moving.
+     */
+    roll.current = damp(roll.current, c.roll, 3.2, delta);
+    if (Math.abs(roll.current) > 0.0002) camera.rotateZ(roll.current);
 
     // Everything that fades with distance reads this, so a wide shot stays
     // legible without every system needing its own per-chapter tuning.
