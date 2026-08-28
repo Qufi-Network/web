@@ -64,6 +64,7 @@ export const SCENE_VERTEX = /* glsl */ `
   const float SPIN     = 4.0;
   const float ESCORT   = 5.0;
   const float MARK     = 6.0;
+  const float SCAN     = 7.0;
 
   vec4 figureState(float id) {
     return texture2D(uState, vec2((id + 0.5) / uFigures, 0.25));
@@ -226,7 +227,7 @@ export const SCENE_VERTEX = /* glsl */ `
     }
 
     /* ---- and the mark itself ---------------------------------------------- */
-    else {
+    else if (kind < MARK + 0.5) {
       billboard = 1.0;
       world = pathAt(travel);
       float form = qufiEaseOut(clamp(presence * 1.4 - u * 0.4, 0.0, 1.0));
@@ -246,6 +247,38 @@ export const SCENE_VERTEX = /* glsl */ `
       charge = 0.78 - sub * 0.18 + activity * 0.2;
       alpha = presence * mix(0.7, 1.0, form);
       soft = max(soft, (1.0 - form) * 0.7);
+    }
+
+    /* ---- and something being read across ---------------------------------- */
+    else {
+      // It comes in from wherever it came from, in one piece: a hand does not
+      // assemble out of dust, it arrives.
+      world = mix(aOrigin, position, qufiEaseOut(clamp(presence, 0.0, 1.0)));
+
+      /*
+       * The reader, running across it.
+       *
+       * The point's own u is where along the scan it sits, and the journey
+       * drives the head of it — so the band is a line moving over the figure.
+       * What it has already passed stays lit, which is the difference between
+       * a scan and a light sweeping about, and the parts the reader is
+       * actually interested in are the ones that stay lit.
+       */
+      float band = 1.0 - smoothstep(0.0, 0.07, abs(u - extra));
+      float read = smoothstep(extra + 0.05, extra - 0.03, u);
+      float wanted = sub;
+
+      charge = 0.22 + band * 0.68 + wanted * read * 0.6 + activity * 0.1;
+      /*
+       * The skin has to be a surface rather than a rumour.
+       *
+       * It is not the subject — the pattern under it is — but a scan of
+       * something you cannot see the shape of is a light show. So the skin
+       * carries enough to draw a hand, and everything else is what changes.
+       */
+      alpha = presence * (0.4 + band * 0.45 + wanted * (0.18 + read * 0.6));
+      soft = max(soft, (1.0 - wanted) * (1.0 - band) * 0.4);
+      colour = mix(colour, vec3(1.0, 0.97, 0.92), band * 0.4);
     }
 
     if (alpha * uDim < 0.002) {

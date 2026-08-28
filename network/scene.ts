@@ -18,9 +18,9 @@ import { inBall, type Placed, type Shape, type Vec3 } from './shapes';
 /**
  * How a figure behaves when the journey brings it in.
  *
- * Six behaviours cover every scene the site has: things that assemble out of
+ * Seven behaviours cover every scene the site has: things that assemble out of
  * nothing, things that arrive from somewhere, things that fall, things that
- * stand still, things that turn, and things that travel.
+ * stand still, things that turn, things that travel, and things that are read.
  */
 export const Behaviour = {
   /** Comes together out of scattered material where it stands. */
@@ -37,6 +37,15 @@ export const Behaviour = {
   Escort: 5,
   /** Rides the journey's path, facing the camera. The marks. */
   Mark: 6,
+  /**
+   * Arrives from wherever it came from, and is then read across.
+   *
+   * A band travels along the figure and what it has passed stays lit. It is
+   * how a scanner works and there was no way to say it with the others: every
+   * one of them describes a thing arriving or moving, and this describes a
+   * thing being looked at.
+   */
+  Scan: 7,
 } as const;
 
 export type BehaviourKind = (typeof Behaviour)[keyof typeof Behaviour];

@@ -29,13 +29,14 @@ import {
   escort,
   gates,
   grid,
-  palm,
+  scanned,
   shards,
   sheet,
   tree,
   weave,
   type Vec3,
 } from '../../../network/shapes';
+import { HAND_POINTS } from '../../../assets/hand-points';
 import { during, since, type Journey, type Mark, type Stage } from '../journey';
 
 /* ----------------------------------------------------------- the geography -- */
@@ -225,21 +226,32 @@ const figures: Figure[] = [
   {
     id: 'scanner',
     at: SCANNER,
-    shape: gates(2, 13, 5),
+    shape: gates(2, 21, 6),
     behaviour: Behaviour.Hold,
     tone: STEEL,
     share: 0.05,
     scatter: 16,
   },
+  /*
+   * The hand, and the reader running across it.
+   *
+   * Sampled off the VEYNS render rather than drawn from an anatomy
+   * description, because a hand built out of a description reads as a diagram
+   * of a hand. It comes in from the right, the way somebody actually puts a
+   * palm into a reader, and the scan follows it in: the band starts at the
+   * wrist and runs out to the fingertips, and the veins it has passed stay lit.
+   */
   {
     id: 'hand',
     at: SCANNER,
-    shape: palm(0.62, [SKIN, VEIN]),
-    behaviour: Behaviour.Assemble,
+    shape: scanned(HAND_POINTS, [SKIN, VEIN], 16),
+    behaviour: Behaviour.Scan,
     tone: SKIN,
-    share: 0.13,
-    scatter: 12,
-    size: 1.05,
+    from: [SCANNER[0] + 74, SCANNER[1] - 5, SCANNER[2] + 4],
+    // The largest share in the scene, because a hand is the one figure here
+    // that has to read as a photograph rather than as a shape that means one.
+    share: 0.3,
+    size: 0.85,
   },
 
   {
@@ -347,7 +359,14 @@ function score(at: number, state: Float32Array) {
    * first and the veins light after it, which is the order a reader actually
    * works in — the hand is there, and then the pattern under it is read.
    */
-  set('hand', since(at, 4.2, 0.6), 0.2 + reading * 0.55 + authorised * 0.35);
+  /*
+   * In from the right, and then read across.
+   *
+   * Presence slides it into the reader; the spare number is the head of the
+   * scan, which only starts once the hand is actually there. It stays at one
+   * afterwards, so the pattern it read is still lit while the bitcoin moves.
+   */
+  set('hand', since(at, 4.15, 0.5), 0.2 + reading * 0.5 + authorised * 0.3, since(at, 4.7, 0.6));
 
   set('owner', since(at, 5.0, 0.6), moving);
   set('chain', since(at, 2.3, 0.7), 0.34);
@@ -374,8 +393,8 @@ const stages: Stage[] = [
     ],
     focus: TREE,
     from: [-0.36, 0.28, 0.89],
-    far: 66,
-    near: 46,
+    far: 74,
+    near: 54,
     swing: 0.3,
     fov: 46,
     roll: -1.2,
@@ -396,12 +415,12 @@ const stages: Stage[] = [
     ],
     focus: [0, 1, 0],
     from: [-0.3, 0.22, 0.93],
-    far: 74,
-    near: 50,
+    far: 96,
+    near: 70,
     swing: 0.32,
     fov: 46,
     roll: -1.5,
-    chase: 0.3,
+    chase: 0.15,
     frame: 0.24,
   },
   {
@@ -440,8 +459,8 @@ const stages: Stage[] = [
     ],
     focus: [-14, 18, 8],
     from: [-0.24, 0.2, 0.95],
-    far: 62,
-    near: 44,
+    far: 70,
+    near: 50,
     swing: 0.28,
     fov: 46,
     roll: -1.2,
@@ -460,14 +479,14 @@ const stages: Stage[] = [
       'The match happens on the device. What leaves the device is an authorisation, never a template.',
       'And that authorisation is signed under the same post-quantum keys as everything else here.',
     ],
-    focus: [34, 0, 20],
+    focus: [38, -1, 22],
     from: [0.16, 0.2, 0.97],
-    far: 66,
-    near: 40,
+    far: 76,
+    near: 52,
     swing: -0.24,
     fov: 46,
     roll: 1.4,
-    chase: 0.35,
+    chase: 0,
     frame: 0.22,
   },
   {
@@ -484,8 +503,8 @@ const stages: Stage[] = [
     ],
     focus: [42, -8, 4],
     from: [0.1, 0.28, 0.95],
-    far: 92,
-    near: 68,
+    far: 102,
+    near: 78,
     swing: 0.22,
     fov: 50,
     roll: 1.8,
@@ -537,7 +556,7 @@ export const VAULT_JOURNEY: Journey = {
   path: PATH,
   bend: BEND,
   markScale: 5,
-  budget: 0.7,
+  budget: 0.86,
   traveller: 'authority',
   travelAt,
   score,
