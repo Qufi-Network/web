@@ -127,24 +127,6 @@
   transform: rotate(45deg);
 }
 
-/* Each label takes the colour of the thing it names. */
-.life-mark-label[data-id='deposit'],
-.life-mark-label[data-id='chain'],
-.life-mark-label[data-id='anchors'] {
-  color: #ffb03a;
-}
-
-.life-mark-label[data-id='unit'] {
-  color: #3be08f;
-}
-
-.life-mark-label[data-id='verifier'],
-.life-mark-label[data-id='vault'],
-.life-mark-label[data-id='holder'],
-.life-mark-label[data-id='registry'] {
-  color: #a08cf0;
-}
-
 /* ---- the rail ------------------------------------------------------------ */
 
 .life-rail {

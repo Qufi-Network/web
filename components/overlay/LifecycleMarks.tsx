@@ -51,7 +51,12 @@ export function LifecycleMarks({ marks }: { marks: Mark[] }) {
   return (
     <div className="life-marks" ref={host} aria-hidden="true">
       {marks.map((mark) => (
-        <p key={mark.id} className="life-mark-label" data-id={mark.id}>
+        <p
+          key={mark.id}
+          className="life-mark-label"
+          data-id={mark.id}
+          style={mark.tone ? { color: mark.tone } : undefined}
+        >
           <i />
           {mark.text}
         </p>

@@ -35,7 +35,7 @@ import {
   type Vec3,
 } from '../../../network/shapes';
 import { UBTC_POINTS } from '../../../assets/ubtc-points';
-import { during, pathAt, since, type Journey, type Mark, type Stage } from '../journey';
+import { during, since, type Journey, type Mark, type Stage } from '../journey';
 
 /* ----------------------------------------------------------- the geography -- */
 
@@ -49,8 +49,18 @@ export const HOLDER: Vec3 = [44, -8, -34];
 export const REGISTRY: Vec3 = [10, 27, -14];
 /** The Bitcoin chain, running underneath all of it. */
 export const CHAIN: Vec3 = [0, -29, 6];
-/** Where bitcoin comes from, and where it goes back to. */
+/** Where the deposit comes in from, out beyond the vault. */
 const OUTSIDE: Vec3 = [-112, -20, 54];
+/**
+ * And where the underlying bitcoin goes when it is redeemed.
+ *
+ * Out past the holder rather than back the way it came, because that is what
+ * happens: redemption returns the bitcoin to whoever is holding the unit, and
+ * they are on the other side of the network from the vault. It also means the
+ * release crosses the whole scene, which is the one stage where something
+ * ought to.
+ */
+const RETURN: Vec3 = [92, -20, -62];
 
 const to = (from: Vec3, at: Vec3): Vec3 => [at[0] - from[0], at[1] - from[1], at[2] - from[2]];
 
@@ -79,8 +89,6 @@ const BEND: Vec3[] = [
   [2, 14, 4],
   [-6, -12, -12],
 ];
-
-const scratch: Vec3 = [0, 0, 0];
 
 /** Where the unit is, in legs along that path. */
 function travelAt(at: number): number {
@@ -206,10 +214,10 @@ const figures: Figure[] = [
   {
     id: 'registry',
     at: REGISTRY,
-    shape: grid(11, 6, 3.1),
+    shape: grid(9, 5, 3.4),
     behaviour: Behaviour.Hold,
     tone: STEEL,
-    share: 0.09,
+    share: 0.12,
     scatter: 20,
   },
   {
@@ -223,8 +231,8 @@ const figures: Figure[] = [
   },
   {
     id: 'release',
-    at: OUTSIDE,
-    shape: stream(to(OUTSIDE, VAULT), 7),
+    at: RETURN,
+    shape: stream(to(RETURN, VAULT), 8),
     behaviour: Behaviour.Stream,
     tone: GOLD,
     share: 0.07,
@@ -268,7 +276,7 @@ function score(at: number, state: Float32Array) {
   };
 
   // How much collateral is sitting in the vault, and for how long.
-  const held = since(at, 1.7, 0.35) * (1 - since(at, 4.72, 0.3));
+  const held = since(at, 1.86, 0.3) * (1 - since(at, 4.72, 0.3));
   // A check running: at the mint, at the transfer, and at the redemption.
   const checking = Math.max(
     during(at, 2.42, 0.6),
@@ -286,7 +294,10 @@ function score(at: number, state: Float32Array) {
   // empty scene has been asked to take it on trust that one is coming.
   set('vault', since(at, 0.02, 0.55), checking * 0.2, held);
   set('keys', since(at, 0, 0.32), during(at, 0.3, 0.9));
-  set('deposit', since(at, 1.15, 0.7) * (1 - since(at, 4.66, 0.3)), held);
+  // Slow enough that it is still on its way while the stage about it is being
+  // read: a deposit that finished arriving during the previous stage leaves
+  // this one looking at an empty corridor.
+  set('deposit', since(at, 1.12, 0.86) * (1 - since(at, 4.66, 0.3)), held);
   set('gates', since(at, 1.8, 0.55), 0.2 + checking * 0.8);
   set('chain', since(at, 2.1, 0.8), 0.34);
 
@@ -322,8 +333,8 @@ const stages: Stage[] = [
     ],
     focus: VAULT,
     from: [-0.42, 0.3, 0.86],
-    far: 60,
-    near: 46,
+    far: 72,
+    near: 54,
     swing: 0.3,
     fov: 44,
     roll: -1.2,
@@ -342,12 +353,12 @@ const stages: Stage[] = [
       'The network watches for it, on a node of its own and a public index as a fallback.',
       'Only once Bitcoin has confirmed it does the deposit count as collateral.',
     ],
-    focus: [-74, -5, 38],
-    from: [0.36, 0.26, 0.9],
-    far: 64,
-    near: 44,
+    focus: [-56, 1, 30],
+    from: [0.3, 0.24, 0.92],
+    far: 82,
+    near: 58,
     swing: -0.26,
-    fov: 47,
+    fov: 48,
     roll: 1.1,
     chase: 0,
     frame: 0.22,
@@ -411,15 +422,15 @@ const stages: Stage[] = [
       'The bitcoin leaves the vault and returns to its owner.',
       'The third anchor goes to Bitcoin, and the whole lifecycle is now on the chain.',
     ],
-    focus: [6, 13, -6],
-    from: [0.34, 0.2, 0.92],
-    far: 80,
-    near: 58,
+    focus: [16, -2, -12],
+    from: [0.1, 0.28, 0.95],
+    far: 108,
+    near: 84,
     swing: -0.28,
-    fov: 48,
+    fov: 50,
     roll: -1,
-    chase: 0.35,
-    frame: 0.2,
+    chase: 0.3,
+    frame: 0.22,
   },
   {
     id: 'record',
@@ -446,14 +457,14 @@ const stages: Stage[] = [
 ];
 
 const marks: Mark[] = [
-  { id: 'vault', text: 'The vault', at: VAULT, during: [0, 1, 2, 4], lift: 12, x: 0, y: 0, on: 0 },
-  { id: 'deposit', text: 'Bitcoin, arriving', at: [-82, -12, 42], during: [1], x: 0, y: 0, on: 0 },
-  { id: 'gates', text: 'Verification', at: CORE, during: [2, 3, 4], lift: 13, x: 0, y: 0, on: 0 },
-  { id: 'unit', text: 'uBTC', at: 'travel', during: [2, 3, 4], lift: 7, x: 0, y: 0, on: 0 },
-  { id: 'holder', text: 'The holder', at: HOLDER, during: [3], lift: 10, x: 0, y: 0, on: 0 },
-  { id: 'chain', text: 'Bitcoin', at: CHAIN, during: [2, 3, 4, 5], lift: -6, x: 0, y: 0, on: 0 },
-  { id: 'registry', text: 'Spent-nullifier registry', at: REGISTRY, during: [4, 5], lift: 10, x: 0, y: 0, on: 0 },
-  { id: 'anchors', text: 'Three anchors', at: [10, CHAIN[1] + 7, CHAIN[2]], during: [5], x: 0, y: 0, on: 0 },
+  { id: 'vault', text: 'The vault', at: VAULT, during: [0, 1, 2, 4], lift: 12, tone: '#8f7ce8', x: 0, y: 0, on: 0 },
+  { id: 'deposit', text: 'Bitcoin, arriving', at: [-70, -8, 38], during: [1], tone: '#ffb03a', x: 0, y: 0, on: 0 },
+  { id: 'gates', text: 'Verification', at: CORE, during: [2, 3, 4], lift: 13, tone: '#8f7ce8', x: 0, y: 0, on: 0 },
+  { id: 'unit', text: 'uBTC', at: 'travel', during: [2, 3, 4], lift: 7, tone: '#3be08f', x: 0, y: 0, on: 0 },
+  { id: 'holder', text: 'The holder', at: HOLDER, during: [3], lift: 10, tone: '#8f7ce8', x: 0, y: 0, on: 0 },
+  { id: 'chain', text: 'Bitcoin', at: CHAIN, during: [2, 3, 4, 5], lift: -6, tone: '#ffb03a', x: 0, y: 0, on: 0 },
+  { id: 'registry', text: 'Spent-nullifier registry', at: REGISTRY, during: [4, 5], lift: 10, tone: '#8f97c0', x: 0, y: 0, on: 0 },
+  { id: 'anchors', text: 'Three anchors', at: [10, CHAIN[1] + 7, CHAIN[2]], during: [5], tone: '#ffb03a', x: 0, y: 0, on: 0 },
 ];
 
 export const UBTC_JOURNEY: Journey = {
@@ -471,8 +482,3 @@ export const UBTC_JOURNEY: Journey = {
   travelAt,
   score,
 };
-
-/** Where the unit is in world space, for anything that has to follow it. */
-export function unitPoint(at: number): Vec3 {
-  return pathAt(PATH, BEND, travelAt(at), scratch);
-}

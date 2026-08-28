@@ -80,6 +80,14 @@ export interface Mark {
   during: number[];
   /** How far above the thing it names. */
   lift?: number;
+  /**
+   * The colour it wears.
+   *
+   * Held here rather than in a stylesheet keyed by name: four journeys name
+   * four different sets of things, and a rule that says the label called
+   * `vault` is violet is a rule that only knows about one of them.
+   */
+  tone?: string;
   /** Screen position, filled each frame. */
   x: number;
   y: number;

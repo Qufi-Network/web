@@ -345,6 +345,35 @@ export function lattice(radius: number, nodes: number, chordShare = 0.5): Shape 
   };
 }
 
+/**
+ * Only the chords: the agreement without the parties.
+ *
+ * Split from `lattice` because the two want different treatment — the parties
+ * are dense and lit, the agreement between them is a thin haze — and one figure
+ * cannot be both. Same seats, because both compute them the same way.
+ */
+export function chords(radius: number, nodes: number): Shape {
+  return (count, rng) => {
+    const out: Placed[] = [];
+    const places: Vec3[] = [];
+    for (let i = 0; i < nodes; i++) {
+      const dir = fibonacciSphere(i, nodes);
+      places.push([dir[0] * radius, dir[1] * radius * 0.7, dir[2] * radius]);
+    }
+    for (let i = 0; i < count; i++) {
+      const a = places[Math.floor(rng() * nodes)];
+      const b = places[Math.floor(rng() * nodes)];
+      const t = rng();
+      out.push({
+        p: [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t],
+        sub: 0,
+        u: rng(),
+      });
+    }
+    return out;
+  };
+}
+
 /** A curved link from the figure's own place to somewhere else. */
 export function arc(to: Vec3, lift: number): Shape {
   return (count, rng) => {

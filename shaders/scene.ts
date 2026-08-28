@@ -131,6 +131,7 @@ export const SCENE_VERTEX = /* glsl */ `
     float soft = aTrait.z;
     vec3 colour = aColour;
     float billboard = 0.0;
+    float grow = 0.0;   // a point the journey wants noticed
 
     /* ---- coming together out of nothing ----------------------------------- */
     if (kind < ASSEMBLE + 0.5) {
@@ -202,8 +203,11 @@ export const SCENE_VERTEX = /* glsl */ `
        * parts of is not a place.
        */
       float pass = smoothstep(sub * 0.28, sub * 0.28 + 0.42, activity);
-      charge = 0.3 + pass * 0.7 + struck * 0.3;
-      alpha = (0.34 + pass * 0.5 + struck * 0.28) * presence;
+      charge = 0.3 + pass * 0.7 + struck * 0.4;
+      alpha = (0.34 + pass * 0.5 + struck * 0.4) * presence;
+      // A struck entry is drawn larger as well as redder. One cell of a grid of
+      // sixty is four points, and four points changing colour is not an event.
+      grow = struck * 0.9;
     }
 
     /* ---- riding the path -------------------------------------------------- */
@@ -258,7 +262,7 @@ export const SCENE_VERTEX = /* glsl */ `
     float viewDepth = -mvPosition.z;
     gl_Position = projectionMatrix * mvPosition;
 
-    float size = uSize * aTrait.y * (0.55 + charge * 0.9);
+    float size = uSize * aTrait.y * (0.55 + charge * 0.9) * (1.0 + grow);
     float ceiling = uMaxPointSize * 0.44;
     if (soft > 0.5) {
       size *= 0.5;

@@ -33,9 +33,9 @@ import { during, since, type Journey, type Mark, type Stage } from '../journey';
 
 /* ----------------------------------------------------------- the geography -- */
 
-const BUYER: Vec3 = [-44, 5, 22];
+const BUYER: Vec3 = [-38, 6, 26];
 const CORE: Vec3 = [0, 0, 0];
-const SELLER: Vec3 = [46, -5, -30];
+const SELLER: Vec3 = [40, -6, -28];
 const CHAIN: Vec3 = [0, -28, 6];
 const HOLD_GOODS: Vec3 = [-24, -2, 14];
 const HOLD_MONEY: Vec3 = [26, 2, -18];
@@ -45,7 +45,7 @@ const to = (from: Vec3, at: Vec3): Vec3 => [at[0] - from[0], at[1] - from[1], at
 /* -------------------------------------------------------------- the palette -- */
 
 const VIOLET: Vec3 = [0.66, 0.48, 1.0];
-const PALE: Vec3 = [0.82, 0.8, 1.0];
+const PALE: Vec3 = [0.7, 0.64, 1.0];
 const GOODS: Vec3 = [1.0, 0.66, 0.28];
 const MONEY: Vec3 = [0.42, 0.86, 1.0];
 const DARK: Vec3 = [0.28, 0.26, 0.46];
@@ -243,10 +243,10 @@ function score(at: number, state: Float32Array) {
   set('seller', since(at, 0.2, 0.5), during(at, 0.8, 0.8));
 
   set('instrument', since(at, 1.2, 0.7), 0.2 + signing * 0.5 + crossing * 0.3);
-  set('seals', since(at, 2.1, 0.6), 0.14 + signing * 0.86);
+  set('seals', since(at, 2.1, 0.6), 0.3 + signing * 0.7);
 
-  set('lock-goods', locked, signing * 0.3 + crossing * 0.5);
-  set('lock-money', since(at, 3.6, 0.6), crossing * 0.5);
+  set('lock-goods', locked * (1 - crossing * 0.75), signing * 0.3 + crossing * 0.5);
+  set('lock-money', since(at, 3.6, 0.6) * (1 - crossing * 0.75), crossing * 0.5);
 
   set('chain', since(at, 4.5, 0.7), 0.34);
   set('anchor-credit', since(at, 3.1, 0.32));
@@ -278,15 +278,15 @@ const stages: Stage[] = [
       'The other has money and needs certainty that goods will follow.',
       'Today a bank stands between them holding both, and everybody pays for that.',
     ],
-    focus: [0, 0, -2],
-    from: [-0.24, 0.3, 0.92],
-    far: 96,
-    near: 74,
+    focus: [4, -2, -8],
+    from: [-0.66, 0.28, 0.7],
+    far: 112,
+    near: 88,
     swing: 0.24,
-    fov: 48,
+    fov: 50,
     roll: -1,
     chase: 0,
-    frame: 0.18,
+    frame: 0.16,
   },
   {
     id: 'instrument',
@@ -302,8 +302,8 @@ const stages: Stage[] = [
     ],
     focus: [0, 1, 0],
     from: [-0.34, 0.2, 0.92],
-    far: 54,
-    near: 32,
+    far: 68,
+    near: 46,
     swing: 0.3,
     fov: 45,
     roll: -1.4,
@@ -324,8 +324,8 @@ const stages: Stage[] = [
     ],
     focus: [1, 0, 2],
     from: [0.3, 0.16, 0.94],
-    far: 46,
-    near: 26,
+    far: 58,
+    near: 36,
     swing: -0.34,
     fov: 44,
     roll: 1.5,
@@ -367,14 +367,14 @@ const stages: Stage[] = [
       'Either the whole swap completed, or nothing did and both sides still hold what they had.',
     ],
     focus: [0, 0, -4],
-    from: [-0.08, 0.26, 0.96],
-    far: 62,
-    near: 44,
+    from: [-0.05, 0.44, 0.9],
+    far: 126,
+    near: 100,
     swing: 0.2,
     fov: 52,
     roll: 2,
-    chase: 0.72,
-    frame: 0.22,
+    chase: 0,
+    frame: 0.18,
   },
   {
     id: 'settled',
@@ -401,13 +401,13 @@ const stages: Stage[] = [
 ];
 
 const marks: Mark[] = [
-  { id: 'buyer', text: 'The buyer', at: BUYER, during: [0, 3, 4], lift: 10, x: 0, y: 0, on: 0 },
-  { id: 'seller', text: 'The seller', at: SELLER, during: [0, 3, 4], lift: 10, x: 0, y: 0, on: 0 },
-  { id: 'instrument', text: 'The letter of credit', at: CORE, during: [1, 2], lift: 11, x: 0, y: 0, on: 0 },
-  { id: 'seals', text: 'Signatures', at: [0, -10, 0], during: [2], x: 0, y: 0, on: 0 },
-  { id: 'goods', text: 'The shipment leg', at: HOLD_GOODS, during: [3], lift: 9, x: 0, y: 0, on: 0 },
-  { id: 'money', text: 'The payment leg', at: HOLD_MONEY, during: [3], lift: 9, x: 0, y: 0, on: 0 },
-  { id: 'chain', text: 'Anchored', at: CHAIN, during: [5], lift: -6, x: 0, y: 0, on: 0 },
+  { id: 'buyer', text: 'The buyer', at: BUYER, during: [0, 3, 4], lift: 10, tone: '#a97bff', x: 0, y: 0, on: 0 },
+  { id: 'seller', text: 'The seller', at: SELLER, during: [0, 3, 4], lift: 10, tone: '#a97bff', x: 0, y: 0, on: 0 },
+  { id: 'instrument', text: 'The letter of credit', at: CORE, during: [1, 2], lift: 11, tone: '#cfc8ff', x: 0, y: 0, on: 0 },
+  { id: 'seals', text: 'Signatures', at: [0, -10, 0], during: [2], tone: '#a97bff', x: 0, y: 0, on: 0 },
+  { id: 'goods', text: 'The shipment leg', at: HOLD_GOODS, during: [3], lift: 9, tone: '#ffa94d', x: 0, y: 0, on: 0 },
+  { id: 'money', text: 'The payment leg', at: HOLD_MONEY, during: [3], lift: 9, tone: '#6cd8ff', x: 0, y: 0, on: 0 },
+  { id: 'chain', text: 'Anchored', at: CHAIN, during: [5], lift: -6, tone: '#ffa94d', x: 0, y: 0, on: 0 },
 ];
 
 export const SETTLE_JOURNEY: Journey = {

@@ -13,6 +13,12 @@ import { pathToFileURL } from 'node:url';
 
 const product = process.argv[2] ?? 'ubtc';
 const stops = Number(process.argv[3] ?? 13);
+/*
+ * A phone is not a small desktop, it is a different composition: the words go
+ * under the scene rather than beside it, and the camera aims below its subject
+ * to lift it into the top half. That is worth looking at rather than assuming.
+ */
+const tall = process.argv[4] === 'mobile';
 
 const pw = await import(pathToFileURL('C:/ubtc/frontend/node_modules/playwright/index.js').href);
 const { chromium } = pw.default ?? pw;
@@ -39,7 +45,12 @@ const browser = await chromium.launch({
   ],
 });
 
-const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+const page = await browser.newPage({
+  viewport: tall ? { width: 390, height: 844 } : { width: 1440, height: 900 },
+  deviceScaleFactor: tall ? 2 : 1,
+  isMobile: tall,
+  hasTouch: tall,
+});
 const problems = [];
 page.on('pageerror', (e) => problems.push(`pageerror: ${e.message}`));
 page.on('console', (m) => {
@@ -67,7 +78,30 @@ for (let i = 0; i < stops; i++) {
   await page.waitForTimeout(200);
 
   const notches = Math.round(at / NOTCH);
-  for (let n = 0; n < notches; n++) await page.mouse.wheel(0, 62);
+  if (tall) {
+    // A context with touch enabled does not deliver wheel events at all, so on
+    // a phone the route is driven the way a thumb drives it.
+    const cdp = await page.context().newCDPSession(page);
+    const swipes = Math.ceil((at * 220) / 320);
+    for (let n = 0; n < swipes; n++) {
+      const from = { x: 195, y: 620 };
+      await cdp.send('Input.dispatchTouchEvent', {
+        type: 'touchStart',
+        touchPoints: [{ x: from.x, y: from.y }],
+      });
+      for (let step = 1; step <= 8; step++) {
+        await cdp.send('Input.dispatchTouchEvent', {
+          type: 'touchMove',
+          touchPoints: [{ x: from.x, y: from.y - (step * 320) / 8 }],
+        });
+      }
+      await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+      await page.waitForTimeout(40);
+    }
+    await cdp.detach();
+  } else {
+    for (let n = 0; n < notches; n++) await page.mouse.wheel(0, 62);
+  }
   await page.waitForTimeout(1100);
 
   const state = await page.evaluate(() => {
@@ -88,7 +122,7 @@ for (let i = 0; i < stops; i++) {
       `  stage ${state.stage}  ${state.fps}fps  eye ${state.px.toFixed(0)},${state.py.toFixed(0)},${state.pz.toFixed(0)}` +
       `  fov ${state.fov.toFixed(0)}`,
   );
-  await page.screenshot({ path: `${out}/w-${product}-${String(i).padStart(2, '0')}.png` });
+  await page.screenshot({ path: `${out}/w-${product}${tall ? '-m' : ''}-${String(i).padStart(2, '0')}.png` });
 }
 
 await browser.close();

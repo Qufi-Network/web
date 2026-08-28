@@ -14,7 +14,7 @@
  */
 
 import { Behaviour, type Figure } from '../../../network/scene';
-import { arc, ball, blocks, escort, lattice, ring, type Vec3 } from '../../../network/shapes';
+import { arc, ball, blocks, chords, escort, lattice, ring, type Vec3 } from '../../../network/shapes';
 import { during, since, type Journey, type Mark, type Stage } from '../journey';
 
 /* ----------------------------------------------------------- the geography -- */
@@ -25,14 +25,14 @@ const ARRIVE: Vec3 = [-64, 10, 42];
 const DEPART: Vec3 = [62, -8, -36];
 const CHAIN: Vec3 = [0, -32, 6];
 /** The operator that goes dark in the last stage. */
-const ABSENT: Vec3 = [-16, 14, 18];
+const ABSENT: Vec3 = [-20, 17, 22];
 
 const to = (from: Vec3, at: Vec3): Vec3 => [at[0] - from[0], at[1] - from[1], at[2] - from[2]];
 
 /* -------------------------------------------------------------- the palette -- */
 
-const CYAN: Vec3 = [0.3, 0.79, 1.0];
-const ICE: Vec3 = [0.82, 0.95, 1.0];
+const CYAN: Vec3 = [0.26, 0.72, 1.0];
+const ICE: Vec3 = [0.74, 0.9, 1.0];
 const DEEP: Vec3 = [0.2, 0.42, 0.72];
 const GOLD: Vec3 = [1.0, 0.66, 0.28];
 const DARK: Vec3 = [0.18, 0.3, 0.46];
@@ -91,17 +91,29 @@ const figures: Figure[] = [
   {
     id: 'operators',
     at: CORE,
-    shape: lattice(26, 14, 0.46),
+    shape: lattice(32, 14, 0),
     behaviour: Behaviour.Assemble,
     tone: CYAN,
-    share: 0.3,
-    scatter: 34,
+    share: 0.26,
+    scatter: 40,
+  },
+  // What they have agreed, drawn thin: it is the relation between the parties
+  // rather than a thing standing beside them.
+  {
+    id: 'agreement',
+    at: CORE,
+    shape: chords(32, 14),
+    behaviour: Behaviour.Hold,
+    tone: DEEP,
+    share: 0.12,
+    scatter: 40,
+    soft: true,
   },
   // The share of them that has to agree, drawn as a band that closes.
   {
     id: 'threshold',
     at: CORE,
-    shape: ring(30, 1.4),
+    shape: ring(38, 1.6),
     behaviour: Behaviour.Hold,
     tone: ICE,
     share: 0.1,
@@ -173,11 +185,8 @@ function score(at: number, state: Float32Array) {
   set('link-out', since(at, 4.1, 0.6), 0.1);
   set('link-chain', since(at, 4.4, 0.6), 0.1);
 
-  set(
-    'operators',
-    since(at, 0, 0.6),
-    0.2 + generating * 0.5 + checking * 0.5 + agreed * 0.3,
-  );
+  set('operators', since(at, 0, 0.6), 0.18 + generating * 0.4 + checking * 0.34 + agreed * 0.2);
+  set('agreement', since(at, 1.1, 0.8), 0.14 + generating * 0.4 + agreed * 0.4);
   set('threshold', since(at, 3.7, 0.6), 0.2 + agreed * 0.8);
   set('absent', since(at, 0.4, 0.6) * (1 - gone), 0.3);
 
@@ -208,8 +217,8 @@ const stages: Stage[] = [
     ],
     focus: CORE,
     from: [-0.3, 0.26, 0.92],
-    far: 96,
-    near: 66,
+    far: 128,
+    near: 94,
     swing: 0.3,
     fov: 48,
     roll: -1,
@@ -230,8 +239,8 @@ const stages: Stage[] = [
     ],
     focus: [0, 0, 2],
     from: [0.26, 0.2, 0.94],
-    far: 70,
-    near: 44,
+    far: 104,
+    near: 74,
     swing: -0.32,
     fov: 46,
     roll: 1.4,
@@ -252,12 +261,12 @@ const stages: Stage[] = [
     ],
     focus: [-16, 4, 14],
     from: [-0.12, 0.28, 0.95],
-    far: 62,
-    near: 42,
+    far: 86,
+    near: 62,
     swing: 0.24,
     fov: 50,
     roll: 1.6,
-    chase: 0.75,
+    chase: 0.6,
     frame: 0.24,
   },
   {
@@ -274,8 +283,8 @@ const stages: Stage[] = [
     ],
     focus: [0, 2, 0],
     from: [-0.2, 0.24, 0.95],
-    far: 58,
-    near: 38,
+    far: 100,
+    near: 76,
     swing: 0.3,
     fov: 48,
     roll: -1.4,
@@ -296,12 +305,12 @@ const stages: Stage[] = [
     ],
     focus: [4, 0, -6],
     from: [0.24, 0.22, 0.94],
-    far: 84,
-    near: 60,
+    far: 116,
+    near: 88,
     swing: -0.26,
     fov: 50,
     roll: -1.2,
-    chase: 0.3,
+    chase: 0.2,
     frame: 0.2,
   },
   {
@@ -318,8 +327,8 @@ const stages: Stage[] = [
     ],
     focus: [2, -4, -2],
     from: [0.06, 0.3, 0.95],
-    far: 128,
-    near: 104,
+    far: 150,
+    near: 124,
     swing: 0.18,
     fov: 52,
     roll: 0,
@@ -329,11 +338,11 @@ const stages: Stage[] = [
 ];
 
 const marks: Mark[] = [
-  { id: 'operators', text: 'Independent operators', at: CORE, during: [0, 1, 3], lift: 32, x: 0, y: 0, on: 0 },
-  { id: 'instruction', text: 'The instruction', at: 'travel', during: [2, 3], lift: 7, x: 0, y: 0, on: 0 },
-  { id: 'threshold', text: 'The threshold', at: [0, -32, 0], during: [4], x: 0, y: 0, on: 0 },
-  { id: 'absent', text: 'Gone dark', at: ABSENT, during: [5], lift: 7, x: 0, y: 0, on: 0 },
-  { id: 'chain', text: 'Anchored', at: CHAIN, during: [4, 5], lift: -6, x: 0, y: 0, on: 0 },
+  { id: 'operators', text: 'Independent operators', at: CORE, during: [0, 1, 3], lift: 32, tone: '#4cc9ff', x: 0, y: 0, on: 0 },
+  { id: 'instruction', text: 'The instruction', at: 'travel', during: [2, 3], lift: 7, tone: '#d6f2ff', x: 0, y: 0, on: 0 },
+  { id: 'threshold', text: 'The threshold', at: [0, -32, 0], during: [4], tone: '#d6f2ff', x: 0, y: 0, on: 0 },
+  { id: 'absent', text: 'Gone dark', at: ABSENT, during: [5], lift: 7, tone: '#5b7fa8', x: 0, y: 0, on: 0 },
+  { id: 'chain', text: 'Anchored', at: CHAIN, during: [4, 5], lift: -6, tone: '#ffa94d', x: 0, y: 0, on: 0 },
 ];
 
 export const NODES_JOURNEY: Journey = {
