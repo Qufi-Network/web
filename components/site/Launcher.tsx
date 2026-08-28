@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { PRODUCTS } from './catalogue';
 import { JOURNEYS } from '../../experience/lifecycle/journeys';
+import { QUFI_MARK } from '../../assets/mark';
 
 /**
  * Four ways in, two to a row.
@@ -17,6 +18,9 @@ import { JOURNEYS } from '../../experience/lifecycle/journeys';
  * The written product is at the far end of the walk rather than here. A visitor
  * who wants to read rather than travel gets there in one more click; a visitor
  * who wants to understand gets the better version first.
+ *
+ * Going near one brings the mark into its bottom corner, cropped by both edges
+ * and in that product's colour — the card answering before it has been asked.
  */
 export function Launcher() {
   return (
@@ -28,8 +32,24 @@ export function Launcher() {
             key={product.id}
             className="door"
             href={`/product/${product.id}`}
-            style={{ '--tone': product.tone } as React.CSSProperties}
+            style={
+              {
+                '--tone': product.tone,
+                '--mark': `url(${QUFI_MARK})`,
+              } as React.CSSProperties
+            }
           >
+            {/*
+              The mark, arriving into the corner of the card the visitor is
+              reaching for. Cropped by two edges so it reads as coming in rather
+              than as a logo that was always sitting there, and wearing the
+              product's colour so the card answers in the product's voice.
+            */}
+            <span className="door-sigil" aria-hidden="true">
+              <i className="door-sigil-fill" />
+              <i className="door-sigil-edge" />
+            </span>
+
             <span className="door-figure" aria-hidden="true">
               <product.Figure />
             </span>
