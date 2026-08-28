@@ -73,47 +73,51 @@ export function SettleFigure({ className = '' }: Props) {
       aria-hidden="true"
       focusable="false"
     >
-      {/* The two parties. */}
-      <path className="figure-line" d="M34 62 60 88 34 114 8 88Z" />
-      <path className="figure-line" d="M166 62 192 88 166 114 140 88Z" />
-      <circle className="figure-lit" cx="34" cy="88" r="3.6" />
-      <circle className="figure-lit" cx="166" cy="88" r="3.6" />
+      {/* Three parties: the buyer, the seller, and the verifier above them. */}
+      <path className="figure-line" d="M32 128 54 150 32 172 10 150Z" />
+      <path className="figure-line" d="M168 128 190 150 168 172 146 150Z" />
+      <path className="figure-line" d="M100 16 122 38 100 60 78 38Z" />
+      <circle className="figure-lit" cx="32" cy="150" r="3.4" />
+      <circle className="figure-lit" cx="168" cy="150" r="3.4" />
+      <circle className="figure-lit" cx="100" cy="38" r="3.4" />
 
-      {/* The undertaking between them, sealed by more than one signature. */}
-      <path className="figure-line" d="M100 40 138 66v52l-38 26-38-26V66Z" />
-      <path className="figure-line figure-soft" d="M100 40v52M100 92l38 26M100 92l-38 26" />
-      <circle className="figure-lit figure-sign" cx="100" cy="92" r="4.2" />
-
-      {/* The two paths, crossing. */}
-      <path className="figure-line figure-soft" id="settle-out" d="M52 76C82 46 118 46 148 76" />
-      <path className="figure-line figure-soft" id="settle-back" d="M148 104c-30 30-66 30-96 0" />
+      {/* The credit the three of them are party to. */}
+      <path className="figure-line" d="M100 74 133 93v38l-33 19-33-19V93Z" />
+      <path className="figure-line figure-soft" d="M80 102h40M80 114h40M80 126h26" />
+      <path className="figure-line figure-soft" d="M100 60v14" />
 
       {/*
-        Both at once, on one clock. An atomic swap that showed one token
-        arriving before the other would be drawing the thing it rules out.
+        Two of the three seals filled, and the third an outline. Release takes
+        two signatures, so a drawing with three filled would be drawing a rule
+        the product does not have.
       */}
-      <circle className="figure-lit figure-carry" r="3.4">
-        <animateMotion dur="5s" repeatCount="indefinite" calcMode="linear">
-          <mpath href="#settle-out" />
+      <circle className="figure-lit figure-sign" cx="100" cy="82" r="4.6" />
+      <circle className="figure-lit figure-sign" cx="70" cy="140" r="4.6" />
+      <circle className="figure-line" cx="130" cy="140" r="4.4" />
+
+      {/* The documents, up from the seller to be checked. */}
+      <path className="figure-line figure-soft" id="settle-docs" d="M154 138c-20-6-38-12-46-24" />
+      <circle className="figure-lit figure-carry" r="2.8">
+        <animateMotion dur="7s" repeatCount="indefinite" keyPoints="0;0;1;1" keyTimes="0;0.06;0.34;1" calcMode="linear">
+          <mpath href="#settle-docs" />
         </animateMotion>
       </circle>
+
+      {/*
+        And the payment: in from the buyer, held while the checking happens,
+        and out to the seller once it has been signed for. One token, because
+        it is one payment, and the pause in the middle is the whole point.
+      */}
+      <path className="figure-line figure-soft" id="settle-flow" d="M40 144c18-16 38-24 60-24s42 8 60 24" />
       <circle className="figure-lit figure-carry" r="3.4">
-        <animateMotion dur="5s" repeatCount="indefinite" calcMode="linear">
-          <mpath href="#settle-back" />
+        <animateMotion dur="7s" repeatCount="indefinite" keyPoints="0;0.5;0.5;1;1" keyTimes="0;0.24;0.66;0.9;1" calcMode="linear">
+          <mpath href="#settle-flow" />
         </animateMotion>
       </circle>
     </svg>
   );
 }
 
-/**
- * Quantum Vault — one core, three ways out.
- *
- * The cage is the custody and the three descending paths are the redemption
- * tree that actually exists in the protocol: an immediate path, and two that
- * open on their own after a delay. The lit one is the one that does not need
- * anybody else.
- */
 export function VaultFigure({ className = '' }: Props) {
   return (
     <svg

@@ -30,7 +30,7 @@ import {
   boxEdges,
   escort,
   gates,
-  ring,
+  disc,
   sheet,
   type Vec3,
 } from '../../../network/shapes';
@@ -46,12 +46,12 @@ const VERIFIER: Vec3 = [4, 30, -8];
 const CREDIT: Vec3 = [0, 0, 0];
 const CHAIN: Vec3 = [0, -28, 6];
 /** Where the payment waits while the documents are checked. */
-const ESCROW: Vec3 = [0, -13, 3];
+const ESCROW: Vec3 = [-2, -21, 10];
 
 /** One seal apiece, on the line between each party and the instrument. */
-const SEAL_BUYER: Vec3 = [-17, 3, 12];
-const SEAL_SELLER: Vec3 = [17, -2, -12];
-const SEAL_VERIFIER: Vec3 = [2, 15, -4];
+const SEAL_BUYER: Vec3 = [-13, 3, 7];
+const SEAL_SELLER: Vec3 = [13, 2, -5];
+const SEAL_VERIFIER: Vec3 = [0, 12, 1];
 
 const to = (from: Vec3, at: Vec3): Vec3 => [at[0] - from[0], at[1] - from[1], at[2] - from[2]];
 
@@ -90,7 +90,10 @@ function travelAt(at: number): number {
 
 /** And where the documents are, on the lane that runs the other way. */
 function documentsAt(at: number): number {
-  return 2 + since(at, 2.25, 0.8);
+  // Short of the instrument rather than into it: a document is presented
+  // against a credit, and a camera following it the whole way ends up inside
+  // the page it was presented to.
+  return 2 + since(at, 2.25, 0.8) * 0.82;
 }
 
 /* --------------------------------------------------------------- the figures -- */
@@ -183,7 +186,7 @@ const figures: Figure[] = [
   {
     id: 'escrow',
     at: ESCROW,
-    shape: boxEdges(6, 0.14),
+    shape: boxEdges(7, 0.12),
     behaviour: Behaviour.Assemble,
     tone: MONEY,
     share: 0.06,
@@ -210,28 +213,28 @@ const figures: Figure[] = [
   {
     id: 'seal-buyer',
     at: SEAL_BUYER,
-    shape: ring(4.2, 0.7),
+    shape: disc(5.2),
     behaviour: Behaviour.Hold,
     tone: VIOLET,
-    share: 0.035,
+    share: 0.05,
     scatter: 10,
   },
   {
     id: 'seal-seller',
     at: SEAL_SELLER,
-    shape: ring(4.2, 0.7),
+    shape: disc(5.2),
     behaviour: Behaviour.Hold,
     tone: VIOLET,
-    share: 0.035,
+    share: 0.05,
     scatter: 10,
   },
   {
     id: 'seal-verifier',
     at: SEAL_VERIFIER,
-    shape: ring(4.2, 0.7),
+    shape: disc(5.2),
     behaviour: Behaviour.Hold,
     tone: ICE,
-    share: 0.035,
+    share: 0.05,
     scatter: 10,
   },
 
@@ -283,11 +286,11 @@ const figures: Figure[] = [
   {
     id: 'deposit',
     at: CREDIT,
-    shape: escort(3.4, 0.18),
+    shape: escort(2.8, 0.16),
     behaviour: Behaviour.Escort,
     tone: MONEY,
     share: 0.11,
-    lag: 0.6,
+    lag: 0.45,
     size: 1.05,
   },
 ];
@@ -409,14 +412,14 @@ const stages: Stage[] = [
       'It is presented against the credit, along with everything else the terms name.',
       'Each one is signed by whoever issued it, and each signature is post-quantum.',
     ],
-    focus: [20, -6, -14],
+    focus: [24, -8, -10],
     from: [0.02, 0.28, 0.96],
-    far: 74,
-    near: 52,
+    far: 92,
+    near: 68,
     swing: -0.24,
     fov: 50,
     roll: 1.6,
-    chase: 0.7,
+    chase: 0.45,
     frame: 0.24,
   },
   {
@@ -455,8 +458,8 @@ const stages: Stage[] = [
     ],
     focus: [0, 4, 0],
     from: [-0.28, 0.2, 0.94],
-    far: 62,
-    near: 40,
+    far: 74,
+    near: 52,
     swing: 0.32,
     fov: 45,
     roll: -1.5,
@@ -477,12 +480,12 @@ const stages: Stage[] = [
     ],
     focus: [24, -6, -16],
     from: [0.04, 0.3, 0.95],
-    far: 96,
-    near: 72,
+    far: 104,
+    near: 80,
     swing: 0.2,
     fov: 52,
     roll: 1.8,
-    chase: 0.75,
+    chase: 0.6,
     frame: 0.22,
   },
 ];

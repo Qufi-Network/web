@@ -132,6 +132,32 @@ export function ring(radius: number, band = 0.5): Shape {
   };
 }
 
+/**
+ * A seal: a filled disc with a heavier rim, standing upright.
+ *
+ * `ring` lies flat, which is right for a coin edge on and wrong for a
+ * signature — a seal is pressed onto a page, so it faces the way the page
+ * faces. The rim carries the weight and the middle is scattered, the way wax
+ * is thick at the edge and thin where it spread.
+ */
+export function disc(radius: number, rim = 0.62): Shape {
+  return (count, rng) => {
+    const out: Placed[] = [];
+    const edge = Math.floor(count * rim);
+    for (let i = 0; i < edge; i++) {
+      const a = (i / edge) * TAU;
+      const r = radius * (0.94 + rng() * 0.12);
+      out.push({ p: [Math.cos(a) * r, Math.sin(a) * r, (rng() - 0.5) * 0.5], sub: 1, u: i / edge });
+    }
+    for (let i = edge; i < count; i++) {
+      const a = rng() * TAU;
+      const r = radius * 0.8 * Math.sqrt(rng());
+      out.push({ p: [Math.cos(a) * r, Math.sin(a) * r, (rng() - 0.5) * 0.5], sub: 0, u: rng() });
+    }
+    return out;
+  };
+}
+
 /* ----------------------------------------------------------- instruments -- */
 
 /**
@@ -261,6 +287,216 @@ export function grid(cols: number, rows: number, spacing: number, spent = 0.5): 
         }
       }
     }
+    return out;
+  };
+}
+
+/**
+ * A spending tree: a trunk, and the conditions that hang off it.
+ *
+ * A Taproot output can be spent by its key or by one of the scripts committed
+ * into it, and the difference between those two is the whole of what a vault
+ * is. So it is drawn as what it is — one path straight up the middle and a fan
+ * of others around it.
+ *
+ * `sub` is 1 on the key path and 0 everywhere else, which is what the shader
+ * strikes out: a journey that gives up the key path can draw it and then put
+ * it out, and that is a good deal clearer than never drawing it.
+ */
+export function tree(height: number, branches: number, spread = 12): Shape {
+  return (count, rng) => {
+    const out: Placed[] = [];
+    const trunk = Math.floor(count * 0.22);
+    for (let i = 0; i < trunk; i++) {
+      const t = (i + 0.5) / trunk;
+      out.push({
+        p: [(rng() - 0.5) * 0.7, -height * 0.5 + t * height * 0.5, (rng() - 0.5) * 0.7],
+        sub: 0,
+        u: t * 0.4,
+      });
+    }
+
+    const per = Math.max(6, Math.floor((count - trunk) / branches));
+    for (let b = 0; b < branches; b++) {
+      // The key path goes straight on; the script paths fan out around it.
+      const angle = b === 0 ? 0 : ((b - 1) / (branches - 1)) * TAU;
+      const lean = b === 0 ? 0 : spread;
+      for (let i = 0; i < per; i++) {
+        const t = (i + 0.5) / per;
+        const reach = height * (b === 0 ? 0.5 : 0.42);
+        out.push({
+          p: [
+            Math.cos(angle) * lean * t + (rng() - 0.5) * 0.6,
+            t * reach + (rng() - 0.5) * 0.6,
+            Math.sin(angle) * lean * t + (rng() - 0.5) * 0.6,
+          ],
+          sub: b === 0 ? 1 : 0,
+          u: 0.4 + t * 0.6,
+        });
+      }
+    }
+    return out;
+  };
+}
+
+/**
+ * A woven cage: great circles at different tilts, closing around what they
+ * enclose.
+ *
+ * The readable shape for something being wrapped rather than merely contained.
+ * A box says the thing is inside; this says something has been put around it.
+ */
+export function weave(radius: number, loops = 5): Shape {
+  return (count, rng) => {
+    const out: Placed[] = [];
+    const per = Math.max(12, Math.floor(count / loops));
+    for (let l = 0; l < loops; l++) {
+      // Each loop is a circle tilted away from the last by an irrational-ish
+      // fraction of a turn, so no two of them ever lie flat against each other.
+      const tilt = (l / loops) * Math.PI * 0.618;
+      const turn = (l / loops) * TAU * 0.618;
+      for (let i = 0; i < per; i++) {
+        const a = (i / per) * TAU;
+        const r = radius * (0.97 + rng() * 0.06);
+        const x = Math.cos(a) * r;
+        const y = Math.sin(a) * r;
+        const yt = y * Math.cos(tilt);
+        const zt = y * Math.sin(tilt);
+        out.push({
+          p: [x * Math.cos(turn) - zt * Math.sin(turn), yt, x * Math.sin(turn) + zt * Math.cos(turn)],
+          sub: l,
+          u: (l + i / per) / loops,
+        });
+      }
+    }
+    return out;
+  };
+}
+
+/**
+ * A hand, palm to the camera, with the veins under it.
+ *
+ * Ported from the anatomy the VEYNS work is built on — a cupped palm with a
+ * mound under each knuckle and the thenar mound at the thumb, five fingers off
+ * their knuckles, and the vascular arch across the middle of it. The veins are
+ * the point rather than decoration: what a scanner reads is the pattern under
+ * the skin, not the outline, so they are carried in `sub` and drawn brighter.
+ *
+ * Scaled by `size` against a hand about twenty units across, which is the
+ * frame the anatomy was authored in.
+ */
+export function palm(size = 1, tones?: [Vec3, Vec3]): Shape {
+  const fingers: Array<{ base: Vec3; dir: Vec3; length: number }> = [
+    { base: [-11.5, -7, 1.5], dir: [-0.78, 0.55, 0.2], length: 12 },
+    { base: [-8.6, 8, 2.2], dir: [-0.14, 0.99, 0.06], length: 15 },
+    { base: [-2.8, 9.2, 2.6], dir: [-0.03, 1, 0.05], length: 17.5 },
+    { base: [3.0, 8.6, 2.4], dir: [0.1, 0.99, 0.05], length: 16 },
+    { base: [8.4, 7.2, 1.8], dir: [0.24, 0.96, 0.04], length: 11.5 },
+  ];
+
+  /** Cupped, with a mound under each knuckle and one at the root of the thumb. */
+  const surface = (x: number, y: number) => {
+    const cup = 2.4 - (x / 12) * (x / 12) * 3.4;
+    const roll = Math.max(0, (y + 22) / 30) * 0.8;
+    let mounds = 0;
+    for (const kx of [-8.6, -2.8, 3.0, 8.4]) {
+      const dx = x - kx;
+      const dy = y - 7.6;
+      mounds += 1.15 * Math.exp(-(dx * dx) / 3.4 - (dy * dy) / 6.5);
+    }
+    const tx = x + 8.6;
+    const ty = y + 4.5;
+    mounds += 1.5 * Math.exp(-(tx * tx + ty * ty) / 16);
+    return cup + roll + mounds;
+  };
+
+  const inside = (x: number, y: number) => {
+    if (y < -10 || y > 9) return false;
+    const t = (y + 10) / 19;
+    const half = 7.5 + t * 4.4;
+    return Math.abs(x + (1 - t) * 0.4) < half;
+  };
+
+  return (count, rng) => {
+    const out: Placed[] = [];
+    const put = (x: number, y: number, z: number, sub: number, u: number) => {
+      // Skin and vein are two colours where the journey gives two, because what
+      // a reader looks at is the pattern and not the hand around it.
+      out.push({ p: [x * size, y * size, z * size], sub, u, tone: tones?.[sub] });
+    };
+
+    // The skin: the palm surface itself, and the fingers off their knuckles.
+    const skin = Math.floor(count * 0.46);
+    let guard = 0;
+    let made = 0;
+    while (made < skin && guard++ < skin * 40) {
+      const x = (rng() - 0.5) * 26;
+      const y = -11 + rng() * 21;
+      if (!inside(x, y)) continue;
+      put(x, y, surface(x, y), 0, rng());
+      made++;
+    }
+
+    const perFinger = Math.floor((count * 0.28) / fingers.length);
+    fingers.forEach((finger, index) => {
+      for (let i = 0; i < perFinger; i++) {
+        const t = (i + 0.5) / perFinger;
+        // Fingers taper, and the ones at the edges sit a little lower.
+        const width = (1.9 - t * 0.7) * (index === 0 ? 1.15 : 1);
+        const a = rng() * TAU;
+        const r = Math.sqrt(rng()) * width;
+        put(
+          finger.base[0] + finger.dir[0] * finger.length * t + Math.cos(a) * r,
+          finger.base[1] + finger.dir[1] * finger.length * t + Math.sin(a) * r * 0.5,
+          finger.base[2] + finger.dir[2] * finger.length * t + Math.sin(a) * r * 0.5,
+          0,
+          0.3 + t * 0.7,
+        );
+      }
+    });
+
+    /*
+     * And the veins: a trunk up through the wrist, an arch across the palm,
+     * and one running out to each fingertip. This is the pattern a scanner
+     * actually reads, so it is what the figure is really made of.
+     */
+    const vein = Math.max(0, count - out.length);
+    const arch: Vec3[] = [
+      [-9.5, -1, 0],
+      [-5, 2.5, 0],
+      [0, 3.6, 0],
+      [5, 2.6, 0],
+      [9.5, 0.4, 0],
+    ];
+    const perVein = Math.max(6, Math.floor(vein / (fingers.length + 3)));
+
+    for (let i = 0; i < perVein * 2; i++) {
+      const t = (i + 0.5) / (perVein * 2);
+      const x = -0.6 + Math.sin(t * 2.2) * 0.9;
+      const y = -11 + t * 10;
+      put(x, y, surface(x, y) - 0.5, 1, t * 0.5);
+    }
+
+    for (let i = 0; i < perVein * 2; i++) {
+      const t = (i + 0.5) / (perVein * 2);
+      const at = t * (arch.length - 1);
+      const k = Math.min(arch.length - 2, Math.floor(at));
+      const f = at - k;
+      const x = arch[k][0] + (arch[k + 1][0] - arch[k][0]) * f;
+      const y = arch[k][1] + (arch[k + 1][1] - arch[k][1]) * f;
+      put(x, y, surface(x, y) - 0.5, 1, 0.3 + t * 0.4);
+    }
+
+    fingers.forEach((finger, index) => {
+      const from = arch[Math.min(arch.length - 1, index)];
+      for (let i = 0; i < perVein; i++) {
+        const t = (i + 0.5) / perVein;
+        const x = from[0] + (finger.base[0] + finger.dir[0] * finger.length * 0.75 - from[0]) * t;
+        const y = from[1] + (finger.base[1] + finger.dir[1] * finger.length * 0.75 - from[1]) * t;
+        put(x, y, surface(x, Math.min(9, y)) - 0.4, 1, 0.5 + t * 0.5);
+      }
+    });
+
     return out;
   };
 }
