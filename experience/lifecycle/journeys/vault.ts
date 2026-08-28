@@ -61,8 +61,8 @@ const to = (from: Vec3, at: Vec3): Vec3 => [at[0] - from[0], at[1] - from[1], at
 
 const GOLD: Vec3 = [1.0, 0.69, 0.23];
 const AMBER: Vec3 = [1.0, 0.85, 0.55];
-const SKIN: Vec3 = [0.88, 0.64, 0.44];
-const VEIN: Vec3 = [1.0, 0.72, 0.34];
+const SKIN: Vec3 = [0.9, 0.8, 0.74];
+const VEIN: Vec3 = [1.0, 0.36, 0.24];
 const COOL: Vec3 = [0.5, 0.72, 1.0];
 const STEEL: Vec3 = [0.46, 0.46, 0.58];
 const DARK: Vec3 = [0.34, 0.28, 0.2];
@@ -244,14 +244,14 @@ const figures: Figure[] = [
   {
     id: 'hand',
     at: SCANNER,
-    shape: scanned(HAND_POINTS, [SKIN, VEIN], 16),
+    shape: scanned(HAND_POINTS, [SKIN, VEIN], 13),
     behaviour: Behaviour.Scan,
     tone: SKIN,
     from: [SCANNER[0] + 74, SCANNER[1] - 5, SCANNER[2] + 4],
     // The largest share in the scene, because a hand is the one figure here
     // that has to read as a photograph rather than as a shape that means one.
     share: 0.32,
-    size: 0.95,
+    size: 0.6,
   },
 
   {
@@ -481,8 +481,8 @@ const stages: Stage[] = [
     ],
     focus: [38, -1, 22],
     from: [0.16, 0.2, 0.97],
-    far: 76,
-    near: 52,
+    far: 80,
+    near: 58,
     swing: -0.24,
     fov: 46,
     roll: 1.4,

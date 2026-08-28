@@ -70,6 +70,20 @@ if (!total) {
 }
 console.log(`${product}: ${total} stages`);
 
+/*
+ * Wait for the page to be warm before measuring it.
+ *
+ * A dev server compiles on first request and the client rehydrates after that,
+ * and a harness that starts walking during either one measures the build rather
+ * than the scene — which looks exactly like a performance regression, reads as
+ * twenty frames a second, and backs the input queue up until the run stalls.
+ */
+for (let tries = 0; tries < 24; tries++) {
+  const fps = await page.evaluate(() => window.__ubtc?.stage.fps ?? 0);
+  if (fps >= 35) break;
+  await page.waitForTimeout(500);
+}
+
 await page.mouse.move(720, 450);
 
 for (let i = 0; i < stops; i++) {
@@ -77,7 +91,23 @@ for (let i = 0; i < stops; i++) {
   await page.keyboard.press('Home');
   await page.waitForTimeout(200);
 
-  const notches = Math.round(at / NOTCH);
+  /*
+   * Jumped to the stage, then walked the rest.
+   *
+   * The director takes a digit as "go to stage n", and using it turns fifty
+   * wheel events into at most a handful. That matters for more than patience:
+   * every notch is a round trip to the browser, and sending fifty of them at a
+   * scene drawing at thirty frames a second backs the queue up until the
+   * harness is measuring its own impatience rather than the page.
+   */
+  // The furthest stage whose arrival point is still behind where we are going,
+  // so what is left to walk is always forwards and always short.
+  const stage = Math.max(1, Math.min(total, Math.floor(at - 0.3) + 1));
+  const notches = Math.max(0, Math.round((at - (stage - 1 + 0.3)) / NOTCH));
+  if (!tall && stage >= 1 && at > 0.05) {
+    await page.keyboard.press(String(stage));
+    await page.waitForTimeout(260);
+  }
   if (tall) {
     // A context with touch enabled does not deliver wheel events at all, so on
     // a phone the route is driven the way a thumb drives it.
