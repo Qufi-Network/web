@@ -1,21 +1,25 @@
 /**
- * A letter of credit, and the swap that settles it.
+ * A letter of credit with three parties to it.
  *
- * Two parties who have no reason to trust each other, an undertaking written
- * between them, everyone who has to agree agreeing, and then both legs crossing
- * at the same instant — because the whole difficulty of trade finance is the
- * gap between one side performing and the other side performing, and the answer
- * is to have no gap.
+ * A buyer who will not pay before shipment, a seller who will not ship before
+ * payment, and a verifier whose whole job is to say whether what was promised
+ * was actually done. The payment goes in first and sits where none of the three
+ * can take it; the documents are presented against it; and it moves to the
+ * seller when two of the three sign — which means no single party can release
+ * it, and no single party can hold it hostage.
+ *
+ * That last sentence is the product, so the scene is built to show it. Three
+ * parties standing at three corners, three seals around the instrument, and two
+ * of them filling.
  *
  * It is built out of different shapes from the unit's lifecycle on purpose. An
  * instrument is a page before it is anything else, so the middle of this scene
  * is a sheet with terms ruled across it and seals turning in front of it, where
  * the uBTC walk has a box and a chain. Same hand, different subject.
  *
- * The path has four legs and doubles back on itself, which is how one set of
- * waypoints carries two things crossing in opposite directions at once: the
- * goods ride the first half, the payment rides the second, and both are driven
- * by the same number.
+ * The path doubles back on itself, which is how one set of waypoints carries
+ * two things moving in opposite directions: the documents come up from the
+ * seller on the low lane, and the payment goes down to them on the high one.
  */
 
 import { Behaviour, type Figure } from '../../../network/scene';
@@ -26,6 +30,7 @@ import {
   boxEdges,
   escort,
   gates,
+  ring,
   sheet,
   type Vec3,
 } from '../../../network/shapes';
@@ -33,12 +38,20 @@ import { during, since, type Journey, type Mark, type Stage } from '../journey';
 
 /* ----------------------------------------------------------- the geography -- */
 
-const BUYER: Vec3 = [-38, 6, 26];
-const CORE: Vec3 = [0, 0, 0];
-const SELLER: Vec3 = [40, -6, -28];
+/** The three parties, at three corners. */
+const BUYER: Vec3 = [-40, 4, 24];
+const SELLER: Vec3 = [40, -4, -26];
+const VERIFIER: Vec3 = [4, 30, -8];
+/** Where the instrument stands, and where the payment waits. */
+const CREDIT: Vec3 = [0, 0, 0];
 const CHAIN: Vec3 = [0, -28, 6];
-const HOLD_GOODS: Vec3 = [-13, -17, 8];
-const HOLD_MONEY: Vec3 = [15, -15, -10];
+/** Where the payment waits while the documents are checked. */
+const ESCROW: Vec3 = [0, -13, 3];
+
+/** One seal apiece, on the line between each party and the instrument. */
+const SEAL_BUYER: Vec3 = [-17, 3, 12];
+const SEAL_SELLER: Vec3 = [17, -2, -12];
+const SEAL_VERIFIER: Vec3 = [2, 15, -4];
 
 const to = (from: Vec3, at: Vec3): Vec3 => [at[0] - from[0], at[1] - from[1], at[2] - from[2]];
 
@@ -46,31 +59,38 @@ const to = (from: Vec3, at: Vec3): Vec3 => [at[0] - from[0], at[1] - from[1], at
 
 const VIOLET: Vec3 = [0.66, 0.48, 1.0];
 const PALE: Vec3 = [0.7, 0.64, 1.0];
-const GOODS: Vec3 = [1.0, 0.66, 0.28];
-const MONEY: Vec3 = [0.42, 0.86, 1.0];
+/** The verifier is the one party that is neither buying nor selling. */
+const ICE: Vec3 = [0.62, 0.88, 1.0];
+const MONEY: Vec3 = [1.0, 0.66, 0.28];
+const PAPER: Vec3 = [0.82, 0.86, 1.0];
 const DARK: Vec3 = [0.28, 0.26, 0.46];
 
 /* ----------------------------------------------------------------- the path -- */
 
 /**
- * Buyer, middle, seller, middle, buyer.
+ * Buyer, the credit, the seller, and back to the credit.
  *
- * Out and back, so the two legs of the swap can be two positions on one path:
- * the goods travel the first half while the payment travels the second, and
- * they pass each other in the middle because they are driven by the same
- * number. That is the whole claim the product makes, expressed as geometry.
+ * Three legs off one set of waypoints: the payment rides the first two, out of
+ * the buyer's hands and — much later, and only once it has been signed for —
+ * down to the seller. The documents ride the third, up from the seller to be
+ * checked. They bow in opposite directions so the two are visibly two lanes
+ * rather than one corridor used twice.
  */
-const PATH: Vec3[] = [BUYER, CORE, SELLER, CORE, BUYER];
+const PATH: Vec3[] = [BUYER, ESCROW, SELLER, CREDIT];
 const BEND: Vec3[] = [
-  [0, 9, 8],
-  [0, 12, -4],
-  [0, -9, -8],
-  [0, -12, 6],
+  [0, 6, 6],
+  [2, 14, -2],
+  [-2, -12, 8],
 ];
 
-/** Where the goods are: the first half of the path, during the swap. */
+/** Where the payment is: into the credit, and much later out to the seller. */
 function travelAt(at: number): number {
-  return 2 * since(at, 4.2, 0.66);
+  return since(at, 1.2, 0.75) + since(at, 5.15, 0.7);
+}
+
+/** And where the documents are, on the lane that runs the other way. */
+function documentsAt(at: number): number {
+  return 2 + since(at, 2.25, 0.8);
 }
 
 /* --------------------------------------------------------------- the figures -- */
@@ -79,28 +99,37 @@ const figures: Figure[] = [
   {
     id: 'link-buyer',
     at: BUYER,
-    shape: arc(to(BUYER, CORE), 7),
+    shape: arc(to(BUYER, CREDIT), 6),
     behaviour: Behaviour.Hold,
     tone: DARK,
-    share: 0.025,
+    share: 0.022,
     soft: true,
   },
   {
     id: 'link-seller',
-    at: CORE,
-    shape: arc(to(CORE, SELLER), 8),
+    at: CREDIT,
+    shape: arc(to(CREDIT, SELLER), 7),
     behaviour: Behaviour.Hold,
     tone: DARK,
-    share: 0.025,
+    share: 0.022,
+    soft: true,
+  },
+  {
+    id: 'link-verifier',
+    at: CREDIT,
+    shape: arc(to(CREDIT, VERIFIER), 3),
+    behaviour: Behaviour.Hold,
+    tone: DARK,
+    share: 0.018,
     soft: true,
   },
   {
     id: 'link-chain',
-    at: CORE,
-    shape: arc(to(CORE, CHAIN), 0),
+    at: CREDIT,
+    shape: arc(to(CREDIT, CHAIN), 0),
     behaviour: Behaviour.Hold,
     tone: DARK,
-    share: 0.016,
+    share: 0.014,
     soft: true,
   },
 
@@ -110,7 +139,7 @@ const figures: Figure[] = [
     shape: ball(6.5),
     behaviour: Behaviour.Assemble,
     tone: VIOLET,
-    share: 0.07,
+    share: 0.06,
     scatter: 18,
   },
   {
@@ -119,50 +148,91 @@ const figures: Figure[] = [
     shape: ball(6.5),
     behaviour: Behaviour.Assemble,
     tone: VIOLET,
-    share: 0.07,
+    share: 0.06,
+    scatter: 18,
+  },
+  /*
+   * The third party.
+   *
+   * Drawn in its own colour and standing off the line between the other two,
+   * because that is exactly what it is: neither buying nor selling, and there
+   * only to say whether what was promised was done.
+   */
+  {
+    id: 'verifier',
+    at: VERIFIER,
+    shape: ball(6),
+    behaviour: Behaviour.Assemble,
+    tone: ICE,
+    share: 0.06,
     scatter: 18,
   },
 
-  // The instrument itself: a page, ruled, standing between the two of them.
+  // The instrument itself: a page, ruled, standing between all three of them.
   {
     id: 'instrument',
-    at: CORE,
-    shape: sheet(19, 13, 7),
+    at: CREDIT,
+    shape: sheet(18, 12, 7),
     behaviour: Behaviour.Assemble,
     tone: PALE,
-    share: 0.16,
+    share: 0.13,
     scatter: 20,
     size: 1.05,
   },
-  // And everyone who has to sign it, turning in front of it.
+  // Where the payment waits: visible to everyone, spendable by nobody.
   {
-    id: 'seals',
-    at: CORE,
-    shape: gates(4, 5.5, 2.6),
-    behaviour: Behaviour.Spin,
-    tone: VIOLET,
-    share: 0.11,
-    spin: 0.18,
-  },
-
-  // What each side has committed, held where it can be seen but not taken.
-  {
-    id: 'lock-goods',
-    at: HOLD_GOODS,
-    shape: boxEdges(5.5, 0.15),
-    behaviour: Behaviour.Assemble,
-    tone: GOODS,
-    share: 0.06,
-    scatter: 12,
-  },
-  {
-    id: 'lock-money',
-    at: HOLD_MONEY,
-    shape: boxEdges(5.5, 0.15),
+    id: 'escrow',
+    at: ESCROW,
+    shape: boxEdges(6, 0.14),
     behaviour: Behaviour.Assemble,
     tone: MONEY,
     share: 0.06,
-    scatter: 12,
+    scatter: 14,
+  },
+  // What the checking is made of.
+  {
+    id: 'checks',
+    at: CREDIT,
+    shape: gates(3, 6, 2.8),
+    behaviour: Behaviour.Spin,
+    tone: ICE,
+    share: 0.07,
+    spin: 0.2,
+  },
+
+  /*
+   * Three seals, and two of them fill.
+   *
+   * One on the line from each party to the instrument, so which signature is
+   * whose needs no caption. The seller presents; the other two approve — but
+   * any two of the three will do, which is why none of them can block.
+   */
+  {
+    id: 'seal-buyer',
+    at: SEAL_BUYER,
+    shape: ring(4.2, 0.7),
+    behaviour: Behaviour.Hold,
+    tone: VIOLET,
+    share: 0.035,
+    scatter: 10,
+  },
+  {
+    id: 'seal-seller',
+    at: SEAL_SELLER,
+    shape: ring(4.2, 0.7),
+    behaviour: Behaviour.Hold,
+    tone: VIOLET,
+    share: 0.035,
+    scatter: 10,
+  },
+  {
+    id: 'seal-verifier',
+    at: SEAL_VERIFIER,
+    shape: ring(4.2, 0.7),
+    behaviour: Behaviour.Hold,
+    tone: ICE,
+    share: 0.035,
+    scatter: 10,
   },
 
   {
@@ -170,8 +240,8 @@ const figures: Figure[] = [
     at: CHAIN,
     shape: blocks(170, 20, 1.6),
     behaviour: Behaviour.Hold,
-    tone: GOODS,
-    share: 0.1,
+    tone: MONEY,
+    share: 0.09,
     soft: true,
   },
   {
@@ -179,40 +249,45 @@ const figures: Figure[] = [
     at: [-12, CHAIN[1], CHAIN[2]],
     shape: ball(2.4),
     behaviour: Behaviour.Drop,
-    tone: GOODS,
-    share: 0.03,
+    tone: MONEY,
+    share: 0.028,
     from: [0, 2, 0],
   },
   {
-    id: 'anchor-settle',
+    id: 'anchor-release',
     at: [16, CHAIN[1], CHAIN[2]],
     shape: ball(2.4),
     behaviour: Behaviour.Drop,
-    tone: GOODS,
-    share: 0.03,
+    tone: MONEY,
+    share: 0.028,
     from: [0, 2, 0],
   },
 
-  // The two legs of the swap. They travel in one piece rather than trailing,
-  // because a shipment and a payment are things rather than flows.
+  /*
+   * The documents: a page that travels rather than a swarm.
+   *
+   * A bill of lading is a document, and a document arrives in one piece, so it
+   * rides the path with its tail closed up.
+   */
   {
-    id: 'goods',
-    at: CORE,
-    shape: escort(3.6, 0.16),
+    id: 'documents',
+    at: CREDIT,
+    shape: sheet(9, 6, 4),
     behaviour: Behaviour.Escort,
-    tone: GOODS,
+    tone: PAPER,
     share: 0.1,
-    lag: 0.4,
-    size: 1.05,
+    lag: 0.06,
+    size: 1.0,
   },
+  // And the payment, which moves last.
   {
-    id: 'money',
-    at: CORE,
-    shape: escort(3.6, 0.16),
+    id: 'deposit',
+    at: CREDIT,
+    shape: escort(3.4, 0.18),
     behaviour: Behaviour.Escort,
     tone: MONEY,
-    share: 0.1,
-    lag: 0.4,
+    share: 0.11,
+    lag: 0.6,
     size: 1.05,
   },
 ];
@@ -231,36 +306,48 @@ function score(at: number, state: Float32Array) {
     state[i + 3] = extra;
   };
 
-  const signing = during(at, 2.3, 1.0);
-  const locked = since(at, 3.4, 0.6);
-  const crossing = since(at, 4.2, 0.66);
+  const held = since(at, 1.7, 0.5);
+  const presented = since(at, 2.4, 0.7);
+  const checking = during(at, 3.3, 1.0);
+  const verified = since(at, 3.8, 0.5);
+  const signing = during(at, 4.25, 1.0);
+  const signed = since(at, 4.7, 0.5);
+  const released = since(at, 5.15, 0.7);
 
   set('link-buyer', since(at, 0, 0.6), 0.1);
-  set('link-seller', since(at, 0.2, 0.7), 0.1);
-  set('link-chain', since(at, 4.6, 0.7), 0.1);
+  set('link-seller', since(at, 0.15, 0.7), 0.1);
+  set('link-verifier', since(at, 0.3, 0.7), 0.1);
+  set('link-chain', since(at, 4.9, 0.7), 0.1);
 
-  set('buyer', since(at, 0, 0.35), during(at, 0.4, 0.8));
-  set('seller', since(at, 0.06, 0.4), during(at, 0.7, 0.8));
+  set('buyer', since(at, 0, 0.35), during(at, 0.35, 0.7));
+  set('seller', since(at, 0.06, 0.4), during(at, 0.62, 0.7));
+  set('verifier', since(at, 0.12, 0.45), during(at, 0.9, 0.8) + checking * 0.6);
 
-  set('instrument', since(at, 1.2, 0.7), 0.2 + signing * 0.5 + crossing * 0.3);
-  set('seals', since(at, 2.1, 0.6), 0.3 + signing * 0.7);
-
-  set('lock-goods', locked * (1 - crossing * 0.75), signing * 0.3 + crossing * 0.5);
-  set('lock-money', since(at, 3.6, 0.6) * (1 - crossing * 0.75), crossing * 0.5);
-
-  set('chain', since(at, 4.5, 0.7), 0.34);
-  set('anchor-credit', since(at, 3.1, 0.32));
-  set('anchor-settle', since(at, 5.0, 0.32));
+  set('instrument', since(at, 0.9, 0.7), 0.2 + presented * 0.3 + signing * 0.5);
+  set('escrow', held, 0.2 + held * 0.4 - released * 0.5);
+  set('checks', since(at, 2.9, 0.6), 0.16 + checking * 0.84);
 
   /*
-   * Both legs, at the same instant.
+   * Two of the three.
    *
-   * The goods ride the first half of the path and the payment rides the second,
-   * off the same number — so there is no arrangement of the route where one has
-   * moved and the other has not. That is the product.
+   * The seller is the one presenting, so the other two are the ones approving
+   * here — but the third seal stays lit enough to be seen, because the point is
+   * that any two of them would have done, and no one of them could have
+   * refused on their own.
    */
-  set('goods', locked, 0.4 + crossing * 0.6, 0, travel);
-  set('money', since(at, 3.6, 0.6), 0.4 + crossing * 0.6, 0, 2 + travel);
+  const seals = since(at, 4.1, 0.5);
+  set('seal-buyer', seals, 0.25 + signed * 0.75);
+  set('seal-verifier', seals, 0.25 + signed * 0.75);
+  set('seal-seller', seals, 0.22);
+
+  set('chain', since(at, 4.9, 0.7), 0.34);
+  set('anchor-credit', since(at, 2.0, 0.32));
+  set('anchor-release', since(at, 5.85, 0.32));
+
+  // The documents come up the low lane once they have been issued.
+  set('documents', presented, 0.3 + checking * 0.7, 0, documentsAt(at));
+  // And the payment sits in the credit until two signatures move it.
+  set('deposit', since(at, 1.15, 0.4), 0.35 + released * 0.65);
 }
 
 /* ------------------------------------------------------------------ the stages -- */
@@ -270,143 +357,145 @@ const stages: Stage[] = [
     id: 'parties',
     index: '01',
     nav: 'PARTIES',
-    title: 'TWO PARTIES, NO TRUST',
-    body: 'A seller who will not ship until they are sure of payment, and a buyer who will not pay until they are sure of shipment. Every letter of credit ever written exists because of that gap.',
-    beats: ['BUYER', 'SELLER', 'THE GAP'],
+    title: 'A BUYER, A SELLER, AND A VERIFIER',
+    body: 'The seller will not ship until they are sure of payment. The buyer will not pay until they are sure of shipment. A third party exists to say whether what was promised was actually done — and none of the three can move the money on their own.',
+    beats: ['BUYER', 'SELLER', 'VERIFIER'],
     says: [
-      'One side has goods and needs certainty that money will follow.',
-      'The other has money and needs certainty that goods will follow.',
-      'Today a bank stands between them holding both, and everybody pays for that.',
+      'One side has money and needs certainty that goods will follow.',
+      'The other has goods and needs certainty that money will follow.',
+      'And a third checks the documents, without being on either side of the trade.',
     ],
-    focus: [4, -2, -8],
-    from: [-0.66, 0.28, 0.7],
-    far: 112,
-    near: 88,
+    focus: [2, 4, -6],
+    from: [-0.6, 0.3, 0.74],
+    far: 118,
+    near: 92,
     swing: 0.24,
     fov: 50,
     roll: -1,
     chase: 0,
-    frame: 0.3,
+    frame: 0.34,
   },
   {
-    id: 'instrument',
+    id: 'credit',
     index: '02',
-    nav: 'INSTRUMENT',
-    title: 'THE CREDIT IS WRITTEN',
-    body: 'A letter of credit is an instruction that several parties have to agree to before anybody is paid. Here it is written as that instruction rather than as a document a bank holds on everyone else’s behalf.',
-    beats: ['TERMS', 'PARTIES', 'INSTRUCTION'],
+    nav: 'CREDIT',
+    title: 'THE PAYMENT GOES IN FIRST',
+    body: 'The credit is written as an instruction the network can check, and the buyer’s payment is committed against it. From here it is visible to all three parties and spendable by none of them — including the buyer.',
+    beats: ['TERMS', 'DEPOSIT', 'HELD'],
     says: [
-      'The terms are what the instruction says, and they are the whole of it.',
-      'Everyone who has to agree is named in it before it is signed by anybody.',
-      'It is not a document held somewhere. It is an instruction the network can check.',
+      'The terms are what the instruction says, and they name everyone who has to agree.',
+      'The buyer’s payment goes in against it before anything ships.',
+      'It is now out of the buyer’s hands, and not yet in the seller’s.',
     ],
-    focus: [0, 1, 0],
-    from: [-0.34, 0.2, 0.92],
+    focus: [0, -4, 0],
+    from: [-0.32, 0.24, 0.92],
+    far: 76,
+    near: 52,
+    swing: 0.3,
+    fov: 46,
+    roll: -1.4,
+    chase: 0.35,
+    frame: 0.24,
+  },
+  {
+    id: 'documents',
+    index: '03',
+    nav: 'DOCUMENTS',
+    title: 'THE DOCUMENTS ARE PRESENTED',
+    body: 'A bill of lading, an inspection certificate, an insurance policy — whatever the terms of the credit name. They are issued by the parties that issue them and presented against the instrument, not posted to a bank and waited on.',
+    beats: ['ISSUED', 'PRESENTED', 'AGAINST THE TERMS'],
+    says: [
+      'The bill of lading is issued when the goods are actually loaded.',
+      'It is presented against the credit, along with everything else the terms name.',
+      'Each one is signed by whoever issued it, and each signature is post-quantum.',
+    ],
+    focus: [20, -6, -14],
+    from: [0.02, 0.28, 0.96],
+    far: 74,
+    near: 52,
+    swing: -0.24,
+    fov: 50,
+    roll: 1.6,
+    chase: 0.7,
+    frame: 0.24,
+  },
+  {
+    id: 'verify',
+    index: '04',
+    nav: 'VERIFY',
+    title: 'CHECKED AGAINST THE TERMS',
+    body: 'The verifier checks each document against what the credit requires: the right goods, the right quantity, the right dates, the right signatures. This is the step a bank charges for, and it is the step that decides whether the payment moves.',
+    beats: ['READ', 'MATCH', 'DECIDE'],
+    says: [
+      'Every document is checked against the clause of the credit it answers.',
+      'A discrepancy is a discrepancy: the terms are machine-readable, so the check is too.',
+      'The verifier signs only what it is satisfied with, and its signature is its own.',
+    ],
+    focus: [2, 8, -4],
+    from: [0.26, 0.22, 0.94],
     far: 68,
     near: 46,
-    swing: 0.3,
-    fov: 45,
-    roll: -1.4,
+    swing: -0.3,
+    fov: 46,
+    roll: 1.4,
     chase: 0,
     frame: 0.24,
   },
   {
     id: 'signatures',
-    index: '03',
-    nav: 'SIGNATURES',
-    title: 'EVERYONE WHO HAS TO AGREE',
-    body: 'Multi-signature approval under post-quantum schemes, so the undertaking survives the arrival of an adversary who can break today’s curves. An instrument that outlives its signatures is not an undertaking.',
-    beats: ['SIGN', 'THRESHOLD', 'BINDING'],
-    says: [
-      'Each party signs under two independent post-quantum schemes.',
-      'The instrument binds when the parties it names have all agreed to it.',
-      'And it stays binding: nothing about it depends on elliptic curves holding.',
-    ],
-    focus: [1, 0, 2],
-    from: [0.3, 0.16, 0.94],
-    far: 58,
-    near: 36,
-    swing: -0.34,
-    fov: 44,
-    roll: 1.5,
-    chase: 0,
-    frame: 0.24,
-  },
-  {
-    id: 'escrow',
-    index: '04',
-    nav: 'ESCROW',
-    title: 'BOTH SIDES COMMIT',
-    body: 'Each leg is committed where the other can verify it and neither can take it. Nothing has moved yet — what has happened is that both sides are now provably able to perform.',
-    beats: ['GOODS', 'PAYMENT', 'PROVABLE'],
-    says: [
-      'The shipment leg is committed against the instrument.',
-      'The payment leg is committed against the same instrument.',
-      'Both are checkable by anyone, and spendable by nobody.',
-    ],
-    focus: [1, -11, 0],
-    from: [0.08, 0.3, 0.95],
-    far: 80,
-    near: 58,
-    swing: 0.26,
-    fov: 50,
-    roll: -1.2,
-    chase: 0,
-    frame: 0.26,
-  },
-  {
-    id: 'swap',
     index: '05',
-    nav: 'SWAP',
-    title: 'THEY CROSS AT ONCE',
-    body: 'Settlement is atomic: the document and the payment complete together or neither of them completes. There is no window in which one side has performed and the other has not.',
-    beats: ['RELEASE', 'CROSS', 'COMPLETE'],
+    nav: 'SIGNATURES',
+    title: 'TWO OF THE THREE SIGN',
+    body: 'Release takes two signatures out of three, under two independent post-quantum schemes. No single party can move the payment, and no single party can hold it: the buyer and the verifier can release without the seller, and the seller and the verifier can release without the buyer.',
+    beats: ['SIGN', 'TWO OF THREE', 'BINDING'],
     says: [
-      'One instruction releases both legs. There is not a first one.',
-      'They pass each other. Neither party is exposed at any point in between.',
-      'Either the whole swap completed, or nothing did and both sides still hold what they had.',
+      'Each party signs with keys that survive an adversary who can break today’s curves.',
+      'Any two of the three are enough. None of them is enough alone.',
+      'Which means nobody at this table has to be trusted — only counted.',
     ],
-    focus: [0, 0, -4],
-    from: [-0.05, 0.44, 0.9],
-    far: 126,
-    near: 100,
+    focus: [0, 4, 0],
+    from: [-0.28, 0.2, 0.94],
+    far: 62,
+    near: 40,
+    swing: 0.32,
+    fov: 45,
+    roll: -1.5,
+    chase: 0,
+    frame: 0.22,
+  },
+  {
+    id: 'release',
+    index: '06',
+    nav: 'RELEASE',
+    title: 'THE PAYMENT MOVES TO THE SELLER',
+    body: 'Two signatures against verified documents, and the deposit goes. Not a bank deciding to pay, and not an instruction to a bank to pay: the condition was met, so the money moved — and the whole of it is anchored where anyone can check it afterwards.',
+    beats: ['CONDITION MET', 'RELEASED', 'ANCHORED'],
+    says: [
+      'The release condition was written into the credit before anything shipped.',
+      'The payment leaves the credit and arrives with the seller.',
+      'And the record of what was presented, checked and signed is on the chain.',
+    ],
+    focus: [24, -6, -16],
+    from: [0.04, 0.3, 0.95],
+    far: 96,
+    near: 72,
     swing: 0.2,
     fov: 52,
-    roll: 2,
-    chase: 0,
-    frame: 0.18,
-  },
-  {
-    id: 'settled',
-    index: '06',
-    nav: 'SETTLED',
-    title: 'NOTHING WAS HELD IN THE MIDDLE',
-    body: 'The instrument, the approvals and the settlement are all anchored, and at no point did an intermediary hold both sides while it decided. What replaced the bank in the middle is a proof.',
-    beats: ['ANCHORED', 'NEUTRAL', 'FINAL'],
-    says: [
-      'The credit and the settlement are both written to the chain.',
-      'No party held the other side at any point, so no party had to be trusted with it.',
-      'And the record is checkable afterwards by anyone, including a court.',
-    ],
-    focus: [4, -10, 0],
-    from: [0.08, 0.3, 0.95],
-    far: 128,
-    near: 106,
-    swing: 0.16,
-    fov: 52,
-    roll: 0,
-    chase: 0,
-    frame: 0.18,
+    roll: 1.8,
+    chase: 0.75,
+    frame: 0.22,
   },
 ];
 
 const marks: Mark[] = [
-  { id: 'buyer', text: 'The buyer', at: BUYER, during: [0, 3, 4], lift: 10, tone: '#a97bff', names: 'buyer', x: 0, y: 0, on: 0 },
-  { id: 'seller', text: 'The seller', at: SELLER, during: [0, 3, 4], lift: 10, tone: '#a97bff', names: 'seller', x: 0, y: 0, on: 0 },
-  { id: 'instrument', text: 'The letter of credit', at: CORE, during: [1, 2], lift: 11, tone: '#cfc8ff', names: 'instrument', x: 0, y: 0, on: 0 },
-  { id: 'seals', text: 'Signatures', at: [0, -10, 0], during: [2], tone: '#a97bff', names: 'seals', x: 0, y: 0, on: 0 },
-  { id: 'goods', text: 'The shipment leg', at: HOLD_GOODS, during: [3], lift: 9, tone: '#ffa94d', names: 'lock-goods', x: 0, y: 0, on: 0 },
-  { id: 'money', text: 'The payment leg', at: HOLD_MONEY, during: [3], lift: 9, tone: '#6cd8ff', names: 'lock-money', x: 0, y: 0, on: 0 },
+  { id: 'buyer', text: 'The buyer', at: BUYER, during: [0, 1, 4], lift: 10, tone: '#a97bff', names: 'buyer', x: 0, y: 0, on: 0 },
+  { id: 'seller', text: 'The seller', at: SELLER, during: [0, 2, 5], lift: 10, tone: '#a97bff', names: 'seller', x: 0, y: 0, on: 0 },
+  { id: 'verifier', text: 'The verifier', at: VERIFIER, during: [0, 3, 4], lift: 10, tone: '#9fdcff', names: 'verifier', x: 0, y: 0, on: 0 },
+  { id: 'instrument', text: 'The letter of credit', at: CREDIT, during: [1, 3, 4], lift: 10, tone: '#cfc8ff', names: 'instrument', x: 0, y: 0, on: 0 },
+  { id: 'escrow', text: 'The payment, held', at: ESCROW, during: [1, 5], lift: 9, tone: '#ffa94d', names: 'escrow', x: 0, y: 0, on: 0 },
+  { id: 'documents', text: 'Bill of lading', at: 'travel', during: [2], lift: 7, tone: '#d2d8ff', names: 'documents', x: 0, y: 0, on: 0 },
+  { id: 'seal-verifier', text: 'Signed', at: SEAL_VERIFIER, during: [4], lift: 7, tone: '#9fdcff', names: 'seal-verifier', x: 0, y: 0, on: 0 },
+  { id: 'seal-buyer', text: 'Signed', at: SEAL_BUYER, during: [4], lift: 7, tone: '#a97bff', names: 'seal-buyer', x: 0, y: 0, on: 0 },
   { id: 'chain', text: 'Anchored', at: CHAIN, during: [5], lift: -6, tone: '#ffa94d', names: 'chain', x: 0, y: 0, on: 0 },
 ];
 
@@ -421,7 +510,7 @@ export const SETTLE_JOURNEY: Journey = {
   bend: BEND,
   markScale: 5,
   budget: 0.66,
-  traveller: 'goods',
+  traveller: 'deposit',
   travelAt,
   score,
 };

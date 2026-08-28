@@ -40,6 +40,12 @@ function damp(current: number, target: number, rate: number, delta: number): num
   return current + (target - current) * (1 - Math.exp(-delta * rate));
 }
 
+/** How present a figure is, or 1 if the bus cannot say yet. */
+function presenceOf(figure: number): number {
+  const value = bus.state[figure * 4];
+  return Number.isFinite(value) ? Math.min(1, value) : 1;
+}
+
 /** Linear read of a per-waypoint scalar at a continuous waypoint position. */
 function sample(values: number[], p: number): number {
   const last = values.length - 1;
@@ -150,9 +156,17 @@ export function LifecycleDirector({ journey }: { journey: Journey }) {
     };
   }, [stages]);
 
-  useEffect(() => {
-    mountJourney(journey);
-  }, [journey]);
+  /*
+   * Sized during the render that mounts the journey rather than in an effect
+   * afterwards.
+   *
+   * An effect runs after the first frame has already been drawn, and a frame
+   * that reads a figure the bus has no room for yet gets `undefined` — which
+   * multiplies into every label as NaN and stays NaN for the rest of the
+   * session, because damping a NaN gives a NaN. One frame of wrong numbers,
+   * permanently.
+   */
+  useMemo(() => mountJourney(journey), [journey]);
 
   const scratch = useMemo(
     () => ({
@@ -380,9 +394,11 @@ export function LifecycleDirector({ journey }: { journey: Journey }) {
       const mark = journey.marks[m];
       const wanted = mark.during.includes(index) ? 1 : 0;
       mark.on = damp(mark.on, wanted, 3.2, delta);
-      // Held back until the thing it names has arrived.
+      // Held back until the thing it names has arrived. Guarded as well as
+      // sized: a label that goes NaN never comes back, so it is worth two
+      // lines to make that impossible rather than unlikely.
       const subject = named[m];
-      if (subject >= 0) mark.on *= Math.min(1, bus.state[subject * 4]);
+      if (subject >= 0) mark.on *= presenceOf(subject);
       if (mark.on < 0.01) continue;
 
       if (mark.at === 'travel') {
@@ -393,7 +409,7 @@ export function LifecycleDirector({ journey }: { journey: Journey }) {
           scratch.point[2],
         );
         // The moving label is only worth showing while the thing it names is.
-        if (traveller >= 0) mark.on *= Math.min(1, bus.state[traveller * 4]);
+        if (traveller >= 0) mark.on *= presenceOf(traveller);
       } else {
         scratch.project.set(mark.at[0], mark.at[1] + (mark.lift ?? 0), mark.at[2]);
       }
