@@ -265,7 +265,11 @@ export const SCENE_VERTEX = /* glsl */ `
        * actually interested in are the ones that stay lit.
        */
       float band = 1.0 - smoothstep(0.0, 0.07, abs(u - extra));
-      float read = smoothstep(extra + 0.05, extra - 0.03, u);
+      // Everything the band has already gone past. Written the way round that
+      // is defined: smoothstep with its edges swapped is undefined in GLSL,
+      // and what an undefined value does to the alpha that follows it is
+      // whatever the driver feels like.
+      float read = 1.0 - smoothstep(extra - 0.03, extra + 0.05, u);
       float wanted = sub;
 
       charge = 0.44 + band * 0.5 + wanted * read * 0.5 + activity * 0.06;
