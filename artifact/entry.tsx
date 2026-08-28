@@ -114,13 +114,6 @@ function Document() {
         An independent verification layer designed for the post-quantum economy. QuFi is not trying
         to replace the systems that settle value — it is the verification layer beneath them.
       </p>
-
-      <h2>About this page</h2>
-      <p>
-        The network rendered on this page is a simulation. Its participants, relationships and
-        traffic are generated locally to show the shape of the architecture; they are not live
-        measurements of a running network, and no figures here describe real network activity.
-      </p>
     </main>
   );
 }

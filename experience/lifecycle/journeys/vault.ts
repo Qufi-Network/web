@@ -198,12 +198,12 @@ const figures: Figure[] = [
   {
     id: 'authority',
     at: VAULT,
-    shape: escort(3.4, 0.2),
+    shape: escort(2.6, 0.22),
     behaviour: Behaviour.Escort,
     tone: AMBER,
-    share: 0.11,
+    share: 0.09,
     lag: 0.7,
-    size: 1.05,
+    size: 1.0,
   },
 ];
 
@@ -332,12 +332,12 @@ const stages: Stage[] = [
     ],
     focus: [22, -4, -14],
     from: [-0.02, 0.28, 0.96],
-    far: 68,
-    near: 48,
+    far: 88,
+    near: 64,
     swing: 0.22,
     fov: 50,
     roll: 1.8,
-    chase: 0.85,
+    chase: 0.5,
     frame: 0.24,
   },
   {
@@ -376,24 +376,24 @@ const stages: Stage[] = [
     ],
     focus: [2, -10, 0],
     from: [0.06, 0.3, 0.95],
-    far: 138,
-    near: 112,
+    far: 88,
+    near: 64,
     swing: 0.16,
     fov: 52,
     roll: 0,
-    chase: 0,
+    chase: 0.5,
     frame: 0.18,
   },
 ];
 
 const marks: Mark[] = [
-  { id: 'keys', text: 'Two schemes', at: KEYS, during: [0], lift: 10, tone: '#ffd89a', x: 0, y: 0, on: 0 },
-  { id: 'vault', text: 'The vault', at: VAULT, during: [1, 2, 4, 5], lift: 14, tone: '#ffb03a', x: 0, y: 0, on: 0 },
-  { id: 'immediate', text: 'Immediate', at: IMMEDIATE, during: [2, 3, 4], lift: 7, tone: '#ffb03a', x: 0, y: 0, on: 0 },
-  { id: 'emergency', text: 'Emergency, after a delay', at: EMERGENCY, during: [2, 4], lift: 8, tone: '#ffd89a', x: 0, y: 0, on: 0 },
-  { id: 'recovery', text: 'Recovery, later again', at: RECOVERY, during: [2, 4], lift: 10, tone: '#9aa0bf', x: 0, y: 0, on: 0 },
-  { id: 'owner', text: 'The owner', at: OWNER, during: [3, 5], lift: 10, tone: '#8fc0ff', x: 0, y: 0, on: 0 },
-  { id: 'chain', text: 'Bitcoin', at: CHAIN, during: [3, 4, 5], lift: -6, tone: '#ffb03a', x: 0, y: 0, on: 0 },
+  { id: 'keys', text: 'Two schemes', at: KEYS, during: [0], lift: 10, tone: '#ffd89a', names: 'keys', x: 0, y: 0, on: 0 },
+  { id: 'vault', text: 'The vault', at: VAULT, during: [1, 2, 4, 5], lift: 14, tone: '#ffb03a', names: 'vault', x: 0, y: 0, on: 0 },
+  { id: 'immediate', text: 'Immediate', at: IMMEDIATE, during: [2, 3, 4], lift: 7, tone: '#ffb03a', names: 'exit-immediate', x: 0, y: 0, on: 0 },
+  { id: 'emergency', text: 'Emergency, after a delay', at: EMERGENCY, during: [2, 4], lift: 8, tone: '#ffd89a', names: 'clock-emergency', x: 0, y: 0, on: 0 },
+  { id: 'recovery', text: 'Recovery, later again', at: RECOVERY, during: [2, 4], lift: 10, tone: '#9aa0bf', names: 'clock-recovery', x: 0, y: 0, on: 0 },
+  { id: 'owner', text: 'The owner', at: OWNER, during: [3, 5], lift: 10, tone: '#8fc0ff', names: 'owner', x: 0, y: 0, on: 0 },
+  { id: 'chain', text: 'Bitcoin', at: CHAIN, during: [3, 4, 5], lift: -6, tone: '#ffb03a', names: 'chain', x: 0, y: 0, on: 0 },
 ];
 
 export const VAULT_JOURNEY: Journey = {

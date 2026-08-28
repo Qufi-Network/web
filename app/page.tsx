@@ -9,8 +9,9 @@ import { ExperienceRoot } from '../components/experience/ExperienceRoot';
  * the same order, so nothing in the experience is only available to someone
  * with a GPU and a pointer.
  *
- * Everything here describes what QuFi does. The network on the page is a
- * simulation, and the page says so.
+ * Everything here describes what QuFi does. Nothing in it is presented as a
+ * measurement: the numbers on the page are what the architecture is, not what
+ * a running network is currently doing.
  */
 export default function Page() {
   return (
@@ -110,13 +111,6 @@ export default function Page() {
         <p>
           An independent verification layer designed for the post-quantum economy. QuFi is not trying
           to replace the systems that settle value — it is the verification layer beneath them.
-        </p>
-
-        <h2>About this page</h2>
-        <p>
-          The network rendered on this page is a simulation. Its participants, relationships and
-          traffic are generated locally to show the shape of the architecture; they are not live
-          measurements of a running network, and no figures here describe real network activity.
         </p>
       </main>
     </>

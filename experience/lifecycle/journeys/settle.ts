@@ -37,8 +37,8 @@ const BUYER: Vec3 = [-38, 6, 26];
 const CORE: Vec3 = [0, 0, 0];
 const SELLER: Vec3 = [40, -6, -28];
 const CHAIN: Vec3 = [0, -28, 6];
-const HOLD_GOODS: Vec3 = [-24, -2, 14];
-const HOLD_MONEY: Vec3 = [26, 2, -18];
+const HOLD_GOODS: Vec3 = [-13, -17, 8];
+const HOLD_MONEY: Vec3 = [15, -15, -10];
 
 const to = (from: Vec3, at: Vec3): Vec3 => [at[0] - from[0], at[1] - from[1], at[2] - from[2]];
 
@@ -239,8 +239,8 @@ function score(at: number, state: Float32Array) {
   set('link-seller', since(at, 0.2, 0.7), 0.1);
   set('link-chain', since(at, 4.6, 0.7), 0.1);
 
-  set('buyer', since(at, 0.02, 0.5), during(at, 0.5, 0.8));
-  set('seller', since(at, 0.2, 0.5), during(at, 0.8, 0.8));
+  set('buyer', since(at, 0, 0.35), during(at, 0.4, 0.8));
+  set('seller', since(at, 0.06, 0.4), during(at, 0.7, 0.8));
 
   set('instrument', since(at, 1.2, 0.7), 0.2 + signing * 0.5 + crossing * 0.3);
   set('seals', since(at, 2.1, 0.6), 0.3 + signing * 0.7);
@@ -286,7 +286,7 @@ const stages: Stage[] = [
     fov: 50,
     roll: -1,
     chase: 0,
-    frame: 0.16,
+    frame: 0.3,
   },
   {
     id: 'instrument',
@@ -344,15 +344,15 @@ const stages: Stage[] = [
       'The payment leg is committed against the same instrument.',
       'Both are checkable by anyone, and spendable by nobody.',
     ],
-    focus: [0, -2, -2],
-    from: [0.06, 0.34, 0.94],
-    far: 72,
-    near: 54,
+    focus: [1, -11, 0],
+    from: [0.08, 0.3, 0.95],
+    far: 80,
+    near: 58,
     swing: 0.26,
     fov: 50,
     roll: -1.2,
     chase: 0,
-    frame: 0.2,
+    frame: 0.26,
   },
   {
     id: 'swap',
@@ -401,13 +401,13 @@ const stages: Stage[] = [
 ];
 
 const marks: Mark[] = [
-  { id: 'buyer', text: 'The buyer', at: BUYER, during: [0, 3, 4], lift: 10, tone: '#a97bff', x: 0, y: 0, on: 0 },
-  { id: 'seller', text: 'The seller', at: SELLER, during: [0, 3, 4], lift: 10, tone: '#a97bff', x: 0, y: 0, on: 0 },
-  { id: 'instrument', text: 'The letter of credit', at: CORE, during: [1, 2], lift: 11, tone: '#cfc8ff', x: 0, y: 0, on: 0 },
-  { id: 'seals', text: 'Signatures', at: [0, -10, 0], during: [2], tone: '#a97bff', x: 0, y: 0, on: 0 },
-  { id: 'goods', text: 'The shipment leg', at: HOLD_GOODS, during: [3], lift: 9, tone: '#ffa94d', x: 0, y: 0, on: 0 },
-  { id: 'money', text: 'The payment leg', at: HOLD_MONEY, during: [3], lift: 9, tone: '#6cd8ff', x: 0, y: 0, on: 0 },
-  { id: 'chain', text: 'Anchored', at: CHAIN, during: [5], lift: -6, tone: '#ffa94d', x: 0, y: 0, on: 0 },
+  { id: 'buyer', text: 'The buyer', at: BUYER, during: [0, 3, 4], lift: 10, tone: '#a97bff', names: 'buyer', x: 0, y: 0, on: 0 },
+  { id: 'seller', text: 'The seller', at: SELLER, during: [0, 3, 4], lift: 10, tone: '#a97bff', names: 'seller', x: 0, y: 0, on: 0 },
+  { id: 'instrument', text: 'The letter of credit', at: CORE, during: [1, 2], lift: 11, tone: '#cfc8ff', names: 'instrument', x: 0, y: 0, on: 0 },
+  { id: 'seals', text: 'Signatures', at: [0, -10, 0], during: [2], tone: '#a97bff', names: 'seals', x: 0, y: 0, on: 0 },
+  { id: 'goods', text: 'The shipment leg', at: HOLD_GOODS, during: [3], lift: 9, tone: '#ffa94d', names: 'lock-goods', x: 0, y: 0, on: 0 },
+  { id: 'money', text: 'The payment leg', at: HOLD_MONEY, during: [3], lift: 9, tone: '#6cd8ff', names: 'lock-money', x: 0, y: 0, on: 0 },
+  { id: 'chain', text: 'Anchored', at: CHAIN, during: [5], lift: -6, tone: '#ffa94d', names: 'chain', x: 0, y: 0, on: 0 },
 ];
 
 export const SETTLE_JOURNEY: Journey = {

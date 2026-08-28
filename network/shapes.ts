@@ -289,14 +289,28 @@ export function stream(from: Vec3, spread = 3): Shape {
   };
 }
 
-/** Scattered key material, before it is anything. */
-export function shards(radius: number): Shape {
+/**
+ * Key material, in as many pieces as there are schemes.
+ *
+ * Two lobes rather than one cloud, because every product on this core signs
+ * under two independent schemes and a single haze of points says one. Which
+ * lobe a point belongs to is in `sub`, so a journey can light them in turn.
+ */
+export function shards(radius: number, lobes = 2): Shape {
   return (count, rng) => {
     const out: Placed[] = [];
-    for (let i = 0; i < count; i++) {
-      const dir = fibonacciSphere(i, count);
-      const r = radius * (0.4 + rng() * 0.7);
-      out.push({ p: [dir[0] * r, dir[1] * r, dir[2] * r], sub: i % 2, u: rng() });
+    const per = Math.max(1, Math.floor(count / lobes));
+    for (let lobe = 0; lobe < lobes; lobe++) {
+      const centre = (lobe - (lobes - 1) / 2) * radius * 1.5;
+      for (let i = 0; i < per; i++) {
+        const dir = fibonacciSphere(i, per);
+        const r = radius * 0.5 * (0.45 + rng() * 0.75);
+        out.push({
+          p: [centre + dir[0] * r, dir[1] * r, dir[2] * r],
+          sub: lobe,
+          u: rng(),
+        });
+      }
     }
     return out;
   };

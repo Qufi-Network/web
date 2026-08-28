@@ -278,7 +278,15 @@ export const SCENE_VERTEX = /* glsl */ `
 
     float depth = qufiDepthFade(viewDepth, uFogNear, uFogFar);
     vAlpha = alpha * depth * smoothstep(1.4, 7.0, viewDepth) * uDim;
-    vCharge = charge;
+    /*
+     * Held to one before it is used.
+     *
+     * The branches above add their reasons for a thing being lit together, and
+     * two reasons at once can total more than one — at which point the fourth
+     * power in the fragment takes the colour past white and every figure in the
+     * scene that happens to be busy comes out the same colour as every other.
+     */
+    vCharge = clamp(charge, 0.0, 1.0);
     vColour = colour;
     vSoft = soft;
   }
@@ -303,7 +311,7 @@ export const SCENE_FRAGMENT = /* glsl */ `
     if (mask * vAlpha < 0.0018) discard;
 
     vec3 colour = mix(vColour * 0.55, vColour, vCharge);
-    colour = mix(colour, vec3(0.94, 0.98, 1.0), pow(max(vCharge, 0.0), 4.0) * 0.5);
+    colour = mix(colour, vec3(0.94, 0.98, 1.0), pow(vCharge, 4.0) * 0.42);
     gl_FragColor = vec4(colour, mask * vAlpha);
   }
 `;

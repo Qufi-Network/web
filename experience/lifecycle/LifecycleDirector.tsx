@@ -66,6 +66,11 @@ export function LifecycleDirector({ journey }: { journey: Journey }) {
     () => journey.figures.findIndex((figure) => figure.id === journey.traveller),
     [journey],
   );
+  // And which row belongs to whatever each label is naming.
+  const named = useMemo(
+    () => journey.marks.map((mark) => journey.figures.findIndex((figure) => figure.id === mark.names)),
+    [journey],
+  );
 
   /* --------------------------------------------------------------- the flight -- */
 
@@ -371,9 +376,13 @@ export function LifecycleDirector({ journey }: { journey: Journey }) {
      * Projected here rather than in the overlay, because this is the only
      * place that has the camera and it already runs once a frame.
      */
-    for (const mark of journey.marks) {
+    for (let m = 0; m < journey.marks.length; m++) {
+      const mark = journey.marks[m];
       const wanted = mark.during.includes(index) ? 1 : 0;
       mark.on = damp(mark.on, wanted, 3.2, delta);
+      // Held back until the thing it names has arrived.
+      const subject = named[m];
+      if (subject >= 0) mark.on *= Math.min(1, bus.state[subject * 4]);
       if (mark.on < 0.01) continue;
 
       if (mark.at === 'travel') {

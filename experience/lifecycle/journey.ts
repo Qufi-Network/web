@@ -78,6 +78,15 @@ export interface Mark {
   at: Vec3 | 'travel';
   /** Which stages it is worth naming in. */
   during: number[];
+  /**
+   * The figure it names, where it names one.
+   *
+   * A label is only true while its subject is there, and the stage it belongs
+   * to starts before the subject does — so naming a thing that has not arrived
+   * yet is a caption pointing at empty space. Given a figure, the label fades
+   * in with it and out with it.
+   */
+  names?: string;
   /** How far above the thing it names. */
   lift?: number;
   /**

@@ -457,14 +457,14 @@ const stages: Stage[] = [
 ];
 
 const marks: Mark[] = [
-  { id: 'vault', text: 'The vault', at: VAULT, during: [0, 1, 2, 4], lift: 12, tone: '#8f7ce8', x: 0, y: 0, on: 0 },
-  { id: 'deposit', text: 'Bitcoin, arriving', at: [-70, -8, 38], during: [1], tone: '#ffb03a', x: 0, y: 0, on: 0 },
-  { id: 'gates', text: 'Verification', at: CORE, during: [2, 3, 4], lift: 13, tone: '#8f7ce8', x: 0, y: 0, on: 0 },
+  { id: 'vault', text: 'The vault', at: VAULT, during: [0, 1, 2, 4], lift: 12, tone: '#8f7ce8', names: 'vault', x: 0, y: 0, on: 0 },
+  { id: 'deposit', text: 'Bitcoin, arriving', at: [-70, -8, 38], during: [1], tone: '#ffb03a', names: 'deposit', x: 0, y: 0, on: 0 },
+  { id: 'gates', text: 'Verification', at: CORE, during: [2, 3, 4], lift: 13, tone: '#8f7ce8', names: 'gates', x: 0, y: 0, on: 0 },
   { id: 'unit', text: 'uBTC', at: 'travel', during: [2, 3, 4], lift: 7, tone: '#3be08f', x: 0, y: 0, on: 0 },
-  { id: 'holder', text: 'The holder', at: HOLDER, during: [3], lift: 10, tone: '#8f7ce8', x: 0, y: 0, on: 0 },
-  { id: 'chain', text: 'Bitcoin', at: CHAIN, during: [2, 3, 4, 5], lift: -6, tone: '#ffb03a', x: 0, y: 0, on: 0 },
-  { id: 'registry', text: 'Spent-nullifier registry', at: REGISTRY, during: [4, 5], lift: 10, tone: '#8f97c0', x: 0, y: 0, on: 0 },
-  { id: 'anchors', text: 'Three anchors', at: [10, CHAIN[1] + 7, CHAIN[2]], during: [5], tone: '#ffb03a', x: 0, y: 0, on: 0 },
+  { id: 'holder', text: 'The holder', at: HOLDER, during: [3], lift: 10, tone: '#8f7ce8', names: 'holder', x: 0, y: 0, on: 0 },
+  { id: 'chain', text: 'Bitcoin', at: CHAIN, during: [2, 3, 4, 5], lift: -6, tone: '#ffb03a', names: 'chain', x: 0, y: 0, on: 0 },
+  { id: 'registry', text: 'Spent-nullifier registry', at: REGISTRY, during: [4, 5], lift: 10, tone: '#8f97c0', names: 'registry', x: 0, y: 0, on: 0 },
+  { id: 'anchors', text: 'Three anchors', at: [10, CHAIN[1] + 7, CHAIN[2]], during: [5], tone: '#ffb03a', names: 'anchor-transfer', x: 0, y: 0, on: 0 },
 ];
 
 export const UBTC_JOURNEY: Journey = {

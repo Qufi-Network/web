@@ -338,11 +338,11 @@ const stages: Stage[] = [
 ];
 
 const marks: Mark[] = [
-  { id: 'operators', text: 'Independent operators', at: CORE, during: [0, 1, 3], lift: 32, tone: '#4cc9ff', x: 0, y: 0, on: 0 },
+  { id: 'operators', text: 'Independent operators', at: CORE, during: [0, 1, 3], lift: 32, tone: '#4cc9ff', names: 'operators', x: 0, y: 0, on: 0 },
   { id: 'instruction', text: 'The instruction', at: 'travel', during: [2, 3], lift: 7, tone: '#d6f2ff', x: 0, y: 0, on: 0 },
-  { id: 'threshold', text: 'The threshold', at: [0, -32, 0], during: [4], tone: '#d6f2ff', x: 0, y: 0, on: 0 },
-  { id: 'absent', text: 'Gone dark', at: ABSENT, during: [5], lift: 7, tone: '#5b7fa8', x: 0, y: 0, on: 0 },
-  { id: 'chain', text: 'Anchored', at: CHAIN, during: [4, 5], lift: -6, tone: '#ffa94d', x: 0, y: 0, on: 0 },
+  { id: 'threshold', text: 'The threshold', at: [0, -32, 0], during: [4], tone: '#d6f2ff', names: 'threshold', x: 0, y: 0, on: 0 },
+  { id: 'absent', text: 'Gone dark', at: ABSENT, during: [5], lift: 7, tone: '#5b7fa8', names: 'absent', x: 0, y: 0, on: 0 },
+  { id: 'chain', text: 'Anchored', at: CHAIN, during: [4, 5], lift: -6, tone: '#ffa94d', names: 'chain', x: 0, y: 0, on: 0 },
 ];
 
 export const NODES_JOURNEY: Journey = {
