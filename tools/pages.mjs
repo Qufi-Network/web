@@ -69,9 +69,9 @@ for (const [path, name] of [
       overflow: document.documentElement.scrollWidth - window.innerWidth,
       // The last thing on the page has to be inside the page.
       footReached: (() => {
-        const foot = document.querySelector('.doc-foot');
-        if (!foot) return false;
-        const bottom = foot.getBoundingClientRect().bottom + window.scrollY;
+        const last = document.querySelector('.doc-body')?.lastElementChild;
+        if (!last) return false;
+        const bottom = last.getBoundingClientRect().bottom + window.scrollY;
         return bottom <= document.documentElement.scrollHeight + 1;
       })(),
       fills: document.documentElement.scrollHeight >= window.innerHeight - 1,

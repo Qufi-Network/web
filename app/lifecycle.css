@@ -1,0 +1,429 @@
+/*
+ * The uBTC lifecycle.
+ *
+ * The reading column is the one the network already uses, so nothing here
+ * redefines it — this is the coordinate, the mark, and the rail across the
+ * bottom that shows how much of the lifecycle is left. A lifecycle has an
+ * order, and being able to see where you are in it is worth more here than on
+ * a map where everything is equally reachable.
+ */
+
+.life {
+  position: fixed;
+  inset: 0;
+  height: 100vh;
+  height: 100dvh;
+  z-index: 5;
+  pointer-events: none;
+  touch-action: none;
+  opacity: 0;
+  transition: opacity 1200ms var(--ease);
+}
+
+.life[data-show='true'] {
+  opacity: 1;
+}
+
+.life > * {
+  pointer-events: auto;
+}
+
+/* The mark is the only way out, in the corner it holds everywhere else. */
+.life-mark {
+  position: fixed;
+  top: var(--top-line);
+  left: var(--gutter);
+  transform: translateY(-50%);
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  line-height: 0;
+  text-decoration: none;
+}
+
+.life-coordinate {
+  pointer-events: none;
+}
+
+/* The coordinate belongs to this journey, so it is this journey's colour. */
+.life-coordinate .coordinate-index {
+  color: #3be08f;
+}
+
+/* And so does the sequence under the heading. */
+.life-words {
+  --tone: #3be08f;
+}
+
+/*
+ * The reading column sits above the rail rather than on the page edge, and it
+ * does not take the pointer.
+ *
+ * Nothing in it is interactive, and on a phone it covers the part of the screen
+ * the ending arrives in — a column of prose that swallows the one button on the
+ * page is the worst kind of bug, because everything looks right.
+ */
+.life-words {
+  bottom: calc(max(var(--gutter), env(safe-area-inset-bottom)) + 76px);
+  pointer-events: none;
+}
+
+/*
+ * And it carries more scrim than a space on the front of the site does. There
+ * the subject is a structure in the middle distance; here it is a lit box eight
+ * units from the lens, and the fall that holds type over the one does not hold
+ * it over the other.
+ */
+.life-words::before {
+  background: radial-gradient(
+    74% 62% at 20% 60%,
+    rgba(3, 5, 10, 0.97) 0%,
+    rgba(3, 5, 10, 0.9) 40%,
+    rgba(3, 5, 10, 0.52) 68%,
+    transparent 88%
+  );
+}
+
+/* ---- what you are looking at --------------------------------------------- */
+
+/*
+ * The names of the things in the scene, pinned to the things.
+ *
+ * A walkthrough that shows six shapes and describes them in a column asks the
+ * visitor to work out which is which. These remove the question, and they leave
+ * again as soon as their subject stops being the subject.
+ */
+.life-marks {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.life-mark-label {
+  position: absolute;
+  left: 0;
+  top: 0;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 4px 10px 4px 0;
+  font-family: var(--mono);
+  font-size: var(--label);
+  letter-spacing: var(--track);
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--ice);
+  opacity: 0;
+  will-change: transform, opacity;
+}
+
+.life-mark-label i {
+  width: 5px;
+  height: 5px;
+  flex: none;
+  border: 1px solid currentColor;
+  transform: rotate(45deg);
+}
+
+/* Each label takes the colour of the thing it names. */
+.life-mark-label[data-id='deposit'],
+.life-mark-label[data-id='chain'],
+.life-mark-label[data-id='anchors'] {
+  color: #ffb03a;
+}
+
+.life-mark-label[data-id='unit'] {
+  color: #3be08f;
+}
+
+.life-mark-label[data-id='verifier'],
+.life-mark-label[data-id='vault'],
+.life-mark-label[data-id='holder'],
+.life-mark-label[data-id='registry'] {
+  color: #a08cf0;
+}
+
+/* ---- the rail ------------------------------------------------------------ */
+
+.life-rail {
+  position: absolute;
+  left: var(--gutter);
+  right: var(--gutter);
+  bottom: max(var(--gutter), env(safe-area-inset-bottom));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 0;
+  pointer-events: none;
+}
+
+.life-rail li {
+  position: relative;
+  padding-top: 15px;
+  font-family: var(--mono);
+  font-size: var(--label);
+  letter-spacing: var(--track);
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.3);
+  transition: color 600ms var(--ease);
+}
+
+/* The line itself, behind the marks. */
+.life-rail::before {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: rgba(150, 190, 255, 0.16);
+}
+
+/* And how far along it the visitor is. */
+.life-rail-run {
+  position: absolute;
+  top: 4px;
+  left: 0;
+  width: var(--run, 0%);
+  height: 1px;
+  /* The unit's own green, not the network's cyan. */
+  background: #3be08f;
+  box-shadow: 0 0 12px rgba(59, 224, 143, 0.75);
+}
+
+.life-rail i {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 9px;
+  height: 9px;
+  margin-left: -4px;
+  border: 1px solid rgba(150, 190, 255, 0.4);
+  transform: rotate(45deg);
+  background: var(--void);
+  transition:
+    background 600ms var(--ease),
+    border-color 600ms var(--ease),
+    box-shadow 600ms var(--ease);
+}
+
+.life-rail li[data-state='done'] {
+  color: rgba(255, 255, 255, 0.52);
+}
+
+.life-rail li[data-state='done'] i {
+  background: #3be08f;
+  border-color: #3be08f;
+}
+
+.life-rail li[data-state='here'] {
+  color: var(--ice);
+}
+
+.life-rail li[data-state='here'] i {
+  background: #3be08f;
+  border-color: #3be08f;
+  box-shadow: 0 0 14px #3be08f;
+}
+
+/* ---- small screens ------------------------------------------------------- */
+
+@media (max-width: 860px), (max-aspect-ratio: 1/1) {
+  .life-words {
+    bottom: calc(max(var(--gutter), env(safe-area-inset-bottom)) + 58px);
+  }
+
+  /*
+   * Six stage names will not fit across a phone. The marks stay — they are the
+   * progress — and the coordinate at the top says which one is current.
+   */
+  .life-rail li span {
+    display: none;
+  }
+
+  .life-rail li {
+    padding-top: 12px;
+  }
+
+  .life-coordinate {
+    display: flex;
+  }
+}
+
+/* ---- the end of the walk ------------------------------------------------- */
+
+/*
+ * What is offered once the visitor has arrived, and not a moment before.
+ *
+ * Two things: the written product, and — where there is one — the transaction
+ * on the chain that shows the walk was describing something real. Held off
+ * screen until the last stage so nothing competes with the walk itself.
+ */
+.ending {
+  position: fixed;
+  right: var(--gutter);
+  bottom: calc(max(var(--gutter), env(safe-area-inset-bottom)) + 68px);
+  z-index: 7;
+  width: min(46ch, 44vw);
+  opacity: 0;
+  transform: translateY(16px);
+  pointer-events: none;
+  transition:
+    opacity 900ms var(--ease),
+    transform 900ms var(--ease);
+}
+
+.ending[data-show='true'] {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
+
+.ending-inner {
+  display: grid;
+  gap: 14px;
+}
+
+/* The evidence, first: it is the stronger of the two things on offer. */
+.ending-proof {
+  display: grid;
+  gap: 6px;
+  padding: clamp(14px, 1.8vw, 20px);
+  border: 1px solid color-mix(in srgb, var(--tone) 46%, transparent);
+  background: color-mix(in srgb, var(--tone) 10%, rgba(4, 6, 11, 0.86));
+  text-decoration: none;
+  transition:
+    border-color 420ms var(--ease),
+    background 420ms var(--ease);
+}
+
+.ending-proof:hover,
+.ending-proof:focus-visible {
+  border-color: var(--tone);
+  background: color-mix(in srgb, var(--tone) 16%, rgba(4, 6, 11, 0.9));
+}
+
+.ending-proof-lead {
+  font-family: var(--mono);
+  font-size: var(--label);
+  letter-spacing: var(--track);
+  text-transform: uppercase;
+  color: var(--tone);
+}
+
+.ending-proof-label {
+  font-size: clamp(14px, 1.2vw, 17px);
+  font-weight: 300;
+  line-height: 1.4;
+  color: var(--ice);
+}
+
+.ending-proof-txid {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.03em;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.44);
+  overflow-wrap: anywhere;
+}
+
+.ending-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 20px;
+}
+
+.ending-go {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 20px;
+  border: 1px solid var(--tone);
+  background: color-mix(in srgb, var(--tone) 14%, rgba(4, 6, 11, 0.86));
+  color: var(--ice);
+  font-family: var(--mono);
+  font-size: var(--label);
+  letter-spacing: var(--track);
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 420ms var(--ease);
+}
+
+.ending-go:hover,
+.ending-go:focus-visible {
+  background: color-mix(in srgb, var(--tone) 26%, rgba(4, 6, 11, 0.9));
+}
+
+.ending-go i {
+  display: block;
+  width: 24px;
+  height: 1px;
+  background: var(--tone);
+  position: relative;
+  transition: width 420ms var(--ease);
+}
+
+.ending-go i::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: -3px;
+  width: 7px;
+  height: 7px;
+  border-top: 1px solid var(--tone);
+  border-right: 1px solid var(--tone);
+  transform: rotate(45deg);
+}
+
+.ending-go:hover i {
+  width: 34px;
+}
+
+.ending-back {
+  font-family: var(--mono);
+  font-size: var(--label);
+  letter-spacing: var(--track);
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.5);
+  text-decoration: none;
+  transition: color 420ms var(--ease);
+}
+
+.ending-back:hover,
+.ending-back:focus-visible {
+  color: var(--ice);
+}
+
+@media (max-width: 860px), (max-aspect-ratio: 1/1) {
+  /*
+   * On a phone the reading column already owns the bottom of the screen, so
+   * the ending sits across the full width above the rail rather than beside
+   * anything.
+   */
+  /*
+   * On a phone the ending takes the bottom of the screen outright and the
+   * reading column steps up out of its way: the walk is over, so what it was
+   * saying matters less than what is being offered.
+   */
+  .ending {
+    left: var(--gutter);
+    right: var(--gutter);
+    width: auto;
+    bottom: calc(max(var(--gutter), env(safe-area-inset-bottom)) + 44px);
+  }
+
+  .life[data-ending='true'] .life-words {
+    opacity: 0;
+    transition: opacity 600ms var(--ease);
+  }
+
+  .ending-proof-txid {
+    display: none;
+  }
+}

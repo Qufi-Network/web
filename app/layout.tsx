@@ -4,6 +4,7 @@ import '@fontsource-variable/jetbrains-mono';
 import './globals.css';
 import './network.css';
 import './document.css';
+import './lifecycle.css';
 
 /**
  * Fonts are self-hosted rather than fetched from a font CDN: the opening beat is

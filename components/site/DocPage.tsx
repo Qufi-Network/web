@@ -73,12 +73,6 @@ export function DocPage({
         {children}
       </main>
 
-      <footer className="doc-foot">
-        <p>
-          The network rendered on the front of this site is a simulation. Nothing here describes
-          live network activity.
-        </p>
-      </footer>
     </div>
   );
 }

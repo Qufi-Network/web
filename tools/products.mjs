@@ -1,11 +1,12 @@
 /**
  * The products page, looked at properly.
  *
- * A page of three figures beside three columns has two failure modes a
- * screenshot of the top will not show: a figure that has come adrift from the
- * words it belongs to, and a status marker that has quietly gone missing from
- * one of them. So each product is scrolled to in turn, measured against its own
- * column, and photographed.
+ * The figures are the navigation here, so the checks are about that: that every
+ * product has one, that they are drawn rather than placed, that choosing one
+ * actually opens it, and that the panel underneath belongs to whichever is
+ * chosen. Then the two things a page like this quietly gets wrong — a status
+ * marker that has gone missing, and a rollout whose dates say one thing while
+ * its rail says another.
  *
  *   node tools/products.mjs [--mobile]
  */
@@ -45,80 +46,98 @@ page.on('pageerror', (e) => problems.push(`pageerror: ${e.message}`));
 
 await page.bringToFront();
 await page.goto('http://localhost:4600/product', { waitUntil: 'domcontentloaded' });
-await page.waitForTimeout(1400);
+await page.waitForTimeout(1500);
 
-const shape = await page.evaluate(() => {
-  const products = [...document.querySelectorAll('.product')].map((el) => ({
-    name: el.querySelector('.product-name')?.textContent ?? '',
-    tone: getComputedStyle(el).getPropertyValue('--tone').trim(),
-    figure: Boolean(el.querySelector('.figure path')),
-    strokes: el.querySelectorAll('.figure path, .figure circle').length,
-    parts: el.querySelectorAll('.product-parts div').length,
-    status: el.querySelector('.product-status')?.textContent?.trim() ?? '',
-    live: el.querySelector('.product-status')?.dataset.live,
-  }));
-  return {
-    products,
-    overflow: document.documentElement.scrollWidth - window.innerWidth,
-    // Every figure has to take the colour of its own product, or the page is
-    // three of the same thing in three positions.
-    tones: new Set(products.map((p) => p.tone)).size,
-  };
-});
+const picks = await page.evaluate(() =>
+  [...document.querySelectorAll('.pick')].map((n) => ({
+    name: n.querySelector('.pick-name')?.textContent ?? '',
+    tone: getComputedStyle(n).getPropertyValue('--tone').trim(),
+    strokes: n.querySelectorAll('.figure path, .figure circle').length,
+    moving: n.querySelectorAll('.figure [class*="figure-"]').length,
+  })),
+);
 
-check('three products', shape.products.length === 3, shape.products.map((p) => p.name).join(' / '));
-check('each has a figure', shape.products.every((p) => p.figure));
+check('every product has a figure to be chosen by', picks.length >= 4, picks.map((p) => p.name).join(' / '));
 check(
   'each figure is drawn rather than placed',
-  shape.products.every((p) => p.strokes >= 5),
-  shape.products.map((p) => p.strokes).join(' / '),
+  picks.every((p) => p.strokes >= 5),
+  picks.map((p) => p.strokes).join(' / '),
 );
-check('three distinct colours', shape.tones === 3, shape.products.map((p) => p.tone).join(' '));
-check('each says what state it is in', shape.products.every((p) => p.status.length > 8));
 check(
-  'and only the deployed one claims to be',
-  shape.products.filter((p) => p.live === 'true').length === 1,
-  shape.products.map((p) => `${p.name}:${p.live}`).join(' '),
+  'each has its own colour',
+  new Set(picks.map((p) => p.tone)).size === picks.length,
+  picks.map((p) => p.tone).join(' '),
 );
-check('no horizontal overflow', shape.overflow <= 0, `${shape.overflow}px`);
+check('no horizontal overflow', await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth) <= 0);
 
-for (const [i, product] of shape.products.entries()) {
-  await page.evaluate((index) => {
-    document.querySelectorAll('.product')[index].scrollIntoView({
-      // Its top, not its middle: on a phone the figure sits above the words and
-      // centring the block puts the figure above the fold.
-      block: 'start',
-      behavior: 'instant',
-    });
-    window.scrollBy(0, -90);
-  }, i);
-  await page.waitForTimeout(500);
+let liveClaims = 0;
 
-  const framed = await page.evaluate((index) => {
-    const el = document.querySelectorAll('.product')[index];
-    const figure = el.querySelector('.figure').getBoundingClientRect();
-    const words = el.querySelector('.product-words').getBoundingClientRect();
-    // Two layouts, two questions. Side by side, the figure has to share the
-    // vertical band with its words rather than float over the next product's.
-    // Stacked, it has to sit directly above them with nothing in between.
-    const stacked = figure.bottom <= words.top + 2;
+for (const [i, pick] of picks.entries()) {
+  await page.click(`.pick >> nth=${i}`);
+  await page.waitForTimeout(900);
+
+  const panel = await page.evaluate(() => {
+    const el = document.querySelector('.panel');
+    const chosen = document.querySelector('.pick[data-here="true"] .pick-name')?.textContent ?? '';
+    const rail = el.querySelector('.timeline-rail');
     return {
-      figureVisible: figure.bottom > -1 && figure.top < window.innerHeight && figure.width > 40,
-      together: stacked
-        ? words.top - figure.bottom < 80
-        : figure.top < words.bottom && figure.bottom > words.top,
-      layout: stacked ? 'stacked' : 'beside',
-      width: Math.round(figure.width),
+      chosen,
+      // The panel has to be the one the chosen tab points at.
+      labelled: el.getAttribute('aria-labelledby'),
+      id: el.id,
+      lede: el.querySelector('.panel-lede')?.textContent?.trim() ?? '',
+      status: el.querySelector('.panel-status')?.textContent?.trim() ?? '',
+      live: el.querySelector('.panel-status')?.dataset.live,
+      anchor: el.querySelector('.anchor-value')?.textContent?.trim() ?? null,
+      stops: [...el.querySelectorAll('.stop')].map((s) => ({
+        where: s.querySelector('.stop-where')?.textContent ?? '',
+        when: s.querySelector('.stop-when')?.textContent ?? '',
+        state: s.dataset.state,
+      })),
+      solid: rail ? getComputedStyle(rail).getPropertyValue('--solid').trim() : null,
     };
-  }, i);
+  });
 
-  check(
-    `${product.name}: the figure is on screen with its words`,
-    framed.figureVisible && framed.together,
-    `${framed.layout}, ${framed.width}px wide`,
-  );
-  await page.screenshot({ path: `${out}/pr-${i}${suffix}.png` });
+  if (panel.live === 'true') liveClaims++;
+
+  check(`${pick.name}: choosing it opens it`, panel.chosen === pick.name, `showing ${panel.chosen}`);
+  check(`${pick.name}: the panel is named by its tab`, panel.labelled === `tab-${panel.id.replace('panel-', '')}`);
+  check(`${pick.name}: it says what state it is in`, panel.status.length > 6, panel.status);
+
+  if (panel.stops.length) {
+    /*
+     * The rail and the dates have to agree. `--solid` is how far along the line
+     * is drawn as real, and it has to reach the last stop that is running or
+     * being built — a rail lit past a date that has not happened is the exact
+     * thing a rollout diagram must not do.
+     */
+    const lastReal = panel.stops.reduce((at, s, index) => (s.state === 'planned' ? at : index), 0);
+    const expected = ((lastReal / (panel.stops.length - 1)) * 100).toFixed(0);
+    const actual = Number.parseFloat(panel.solid).toFixed(0);
+    check(
+      `${pick.name}: the rail is lit as far as the dates allow`,
+      expected === actual,
+      `${panel.stops.length} stops, lit to ${actual}% (dates say ${expected}%)`,
+    );
+    console.log(
+      `      ${panel.stops.map((s) => `${s.where} (${s.when})`).join('  →  ')}`,
+    );
+  }
+
+  await page.screenshot({ path: `${out}/pk-${i}${suffix}.png` });
 }
+
+check('only one product claims to be running', liveClaims === 1, `${liveClaims} claim it`);
+
+// And the one fact this page exists to carry.
+await page.click('.pick >> nth=0');
+await page.waitForTimeout(700);
+const prefix = await page.evaluate(() => ({
+  value: document.querySelector('.anchor-field[data-lit="true"] .anchor-value')?.textContent?.trim(),
+  writes: document.querySelector('.anchor-writes')?.textContent?.trim(),
+}));
+check('the chain prefix is on the page', prefix.value === 'QUANTUM:', String(prefix.value));
+check('and says which instructions write it', /Mint/.test(prefix.writes) && /Transfer/.test(prefix.writes) && /Redeem/.test(prefix.writes), prefix.writes);
 
 await browser.close();
 console.log(problems.length ? `\nPROBLEMS: ${problems.join(', ')}` : '\nthe products read');

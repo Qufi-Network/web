@@ -84,8 +84,13 @@
  * A page of products is a figure and a column, which needs more width than a
  * measure of prose. The measure inside the column is still a measure of prose.
  */
-.doc-body:has(.product) {
-  max-width: 92ch;
+/*
+ * Two doors across a reading measure are two doors thirty characters wide, and
+ * a product name does not fit in thirty characters. A page of doors is not a
+ * page of prose and does not take a prose measure.
+ */
+.doc-body:has(.doors) {
+  max-width: 116ch;
 }
 
 .doc-eyebrow {
@@ -195,28 +200,166 @@
 /* -------------------------------------------------------------- products -- */
 
 /*
- * A product is a figure and a column beside it.
+ * Four doors, two to a row.
  *
- * The figure is drawn in the same vocabulary as the network — stroked geometry,
- * a few lit points, no fills — and in the product's own colour. It is sticky on
- * a wide screen, so the diagram stays with the words that describe it while they
- * scroll past; on a narrow one it goes above them and stops trying.
+ * Each one takes the visitor into that product and starts the walk, so they are
+ * built like doors rather than like tabs: large, the figure at the size it
+ * deserves, the product's own colour on the frame, and a line at the bottom
+ * saying what clicking actually does. Four across would make four small things,
+ * and the whole point is that these are not small things.
  */
-.product {
-  margin-top: clamp(46px, 8vh, 96px);
-  padding-top: clamp(24px, 4vh, 44px);
-  border-top: 1px solid rgba(150, 190, 255, 0.14);
+.doors {
+  margin-top: clamp(32px, 5.5vh, 60px);
   display: grid;
-  grid-template-columns: clamp(150px, 22%, 210px) 1fr;
-  gap: clamp(22px, 3.5vw, 46px);
-  align-items: start;
+  grid-template-columns: repeat(2, 1fr);
+  gap: clamp(12px, 1.8vw, 22px);
 }
 
-.product-figure {
-  position: sticky;
-  top: calc(var(--top-line) + 54px);
-  line-height: 0;
+.door {
+  position: relative;
+  display: grid;
+  grid-template-columns: clamp(76px, 8vw, 112px) 1fr;
+  gap: clamp(14px, 2vw, 26px);
+  align-items: start;
+  padding: clamp(20px, 2.6vw, 30px);
+  border: 1px solid rgba(150, 190, 255, 0.16);
+  background: rgba(6, 10, 20, 0.4);
+  text-decoration: none;
+  overflow: hidden;
+  transition:
+    border-color 460ms var(--ease),
+    background 460ms var(--ease),
+    transform 460ms var(--ease);
 }
+
+/* The product's colour, held back until the visitor goes near it. */
+.door::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    72% 100% at 12% 0%,
+    color-mix(in srgb, var(--tone) 16%, transparent),
+    transparent 72%
+  );
+  opacity: 0;
+  transition: opacity 520ms var(--ease);
+  pointer-events: none;
+}
+
+.door:hover,
+.door:focus-visible {
+  border-color: color-mix(in srgb, var(--tone) 58%, transparent);
+  background: rgba(8, 14, 26, 0.6);
+  transform: translateY(-2px);
+}
+
+.door:hover::before,
+.door:focus-visible::before {
+  opacity: 1;
+}
+
+.door:focus-visible {
+  outline: 1px solid var(--tone);
+  outline-offset: 3px;
+}
+
+.door-figure {
+  position: relative;
+  display: block;
+  line-height: 0;
+  opacity: 0.62;
+  transition: opacity 460ms var(--ease);
+}
+
+.door:hover .door-figure,
+.door:focus-visible .door-figure {
+  opacity: 1;
+}
+
+.door-words {
+  position: relative;
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.door-index {
+  font-family: var(--mono);
+  font-size: var(--label);
+  letter-spacing: var(--track);
+  color: var(--tone);
+}
+
+.door-name {
+  font-size: clamp(19px, 1.7vw, 26px);
+  font-weight: 200;
+  line-height: 1.1;
+  color: var(--ice);
+  text-wrap: balance;
+}
+
+.door-kind {
+  font-family: var(--mono);
+  font-size: var(--label);
+  letter-spacing: var(--track);
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.door-lede {
+  margin-top: 6px;
+  font-size: clamp(13px, 1vw, 15px);
+  font-weight: 300;
+  line-height: 1.6;
+  color: var(--ice-faint);
+  /* Two lines of setting, not a column of one word. */
+  text-wrap: pretty;
+}
+
+/* What clicking does. It is not the same on all four, and it says so. */
+.door-go {
+  position: relative;
+  grid-column: 2;
+  white-space: nowrap;
+  margin-top: clamp(12px, 1.6vw, 18px);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--mono);
+  font-size: var(--label);
+  letter-spacing: var(--track);
+  text-transform: uppercase;
+  color: var(--tone);
+}
+
+.door-go i {
+  display: block;
+  width: 26px;
+  height: 1px;
+  background: currentColor;
+  position: relative;
+  transition: width 460ms var(--ease);
+}
+
+.door-go i::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: -3px;
+  width: 7px;
+  height: 7px;
+  border-top: 1px solid currentColor;
+  border-right: 1px solid currentColor;
+  transform: rotate(45deg);
+}
+
+.door:hover .door-go i {
+  width: 40px;
+}
+
+/* ---- the figures --------------------------------------------------------- */
+/* ---- the figures --------------------------------------------------------- */
 
 .figure {
   display: block;
@@ -248,9 +391,12 @@
 }
 
 /*
- * Two things move, and only because the movement is the point: the tie between
- * what is held and what is issued, and the shell around what is being kept.
- * Everything else holds still so it can be read.
+ * Each figure moves the way its product moves.
+ *
+ * uBTC keeps two bodies in step and the tie between them travels; a vault turns
+ * and a redemption descends the one path that needs nobody's cooperation; a
+ * node network lights its quorum one operator at a time and only then signs.
+ * All of it is CSS on fixed paths — there is no frame loop on this page.
  */
 .figure-tie {
   opacity: 1;
@@ -269,6 +415,12 @@
   animation: figure-turn 42s linear infinite;
 }
 
+@keyframes figure-turn {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 /*
  * An SVG transform resolves against the view box unless told otherwise, so a
  * shape whose own centre is not the centre of the square wobbles rather than
@@ -279,23 +431,136 @@
   transform-origin: 100px 76px;
 }
 
-@keyframes figure-turn {
-  to {
-    transform: rotate(360deg);
+/* Held and issued, breathing against each other rather than together. */
+.figure-hold {
+  transform-origin: 62px 84px;
+  animation: figure-hold 7s ease-in-out infinite;
+}
+
+.figure-issue {
+  transform-origin: 156px 84px;
+  animation: figure-hold 7s ease-in-out infinite reverse;
+}
+
+@keyframes figure-hold {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.035);
+  }
+}
+
+.figure-beat {
+  animation: figure-beat 3.5s ease-in-out infinite;
+}
+
+.figure-late {
+  animation-delay: 1.75s;
+}
+
+@keyframes figure-beat {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* The route something is actually taking, against the two that are only open. */
+.figure-route {
+  opacity: 1;
+}
+
+.figure-carry {
+  opacity: 0.9;
+}
+
+/* Five operators, one at a time, and then the signature. */
+.figure-agree {
+  animation: figure-agree 5.4s ease-in-out infinite;
+}
+
+@keyframes figure-agree {
+  0%,
+  8% {
+    opacity: 0.22;
+  }
+  22%,
+  74% {
+    opacity: 1;
+  }
+  92%,
+  100% {
+    opacity: 0.22;
+  }
+}
+
+.figure-sign {
+  animation: figure-sign 5.4s ease-in-out infinite;
+}
+
+@keyframes figure-sign {
+  0%,
+  44% {
+    opacity: 0.14;
+    r: 3.2;
+  }
+  56%,
+  76% {
+    opacity: 1;
+    r: 4.6;
+  }
+  92%,
+  100% {
+    opacity: 0.14;
+    r: 3.2;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .figure-tie,
-  .figure-turn {
+  .figure-turn,
+  .figure-hold,
+  .figure-issue,
+  .figure-beat,
+  .figure-agree,
+  .figure-sign {
     animation: none;
+  }
+
+  .figure-carry {
+    display: none;
   }
 }
 
-/* ---- the column beside it ------------------------------------------------ */
+/* ---- what opens underneath ----------------------------------------------- */
 
-.product-eyebrow {
-  margin: 0 0 10px;
+.panel {
+  animation: panel-in 520ms var(--ease) both;
+}
+
+/*
+ * The written product, reached at the end of a walk or straight away. It is a
+ * page rather than a panel now, so it gets a page's furniture: the mark and the
+ * three ways out at the top, and a measure that does not run past reading
+ * width.
+ */
+.read {
+  position: relative;
+  z-index: 1;
+  min-height: 100dvh;
+  max-width: 76ch;
+  margin: 0 auto;
+  padding: calc(var(--top-line) + 60px) var(--gutter) clamp(60px, 12vh, 130px);
+  background: var(--void);
+}
+
+.panel-eyebrow {
+  margin: 0 0 12px;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -306,58 +571,71 @@
   color: var(--hud);
 }
 
-.product-eyebrow b {
+.panel-eyebrow b {
   color: var(--tone, var(--signal));
   font-weight: 400;
 }
 
-/*
- * The one place on this site where type is not uppercase.
- *
- * These are names of things rather than statements about them, and uppercasing
- * a name changes it: uBTC becomes UBTC, which is a different word from the one
- * written on the product.
- */
-.product-name {
-  margin: 0;
-  font-size: clamp(26px, 3.2vw, 42px);
+.panel-name {
+  margin: 0 0 clamp(10px, 1.4vw, 16px);
+  font-size: clamp(32px, 5vw, 60px);
   font-weight: 200;
-  line-height: 1.06;
-  letter-spacing: -0.015em;
+  line-height: 1.02;
+  letter-spacing: -0.02em;
 }
 
-.product-lede {
-  margin: clamp(12px, 1.6vw, 18px) 0 clamp(16px, 2vw, 24px);
-  font-size: clamp(15px, 1.35vw, 19px);
+.panel-back {
+  margin: clamp(30px, 5vh, 52px) 0 0;
+  padding-top: clamp(20px, 3vh, 30px);
+  border-top: 1px solid rgba(150, 190, 255, 0.14);
+}
+
+@keyframes panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .panel {
+    animation: none;
+  }
+}
+
+.panel-lede {
+  margin: 0 0 clamp(16px, 2vw, 24px);
+  font-size: clamp(16px, 1.5vw, 22px);
   font-weight: 300;
-  line-height: 1.5;
+  line-height: 1.44;
   color: var(--ice);
   max-width: 40ch;
 }
 
-.product-body {
+.panel-body {
   margin: 0 0 1.05em;
   font-size: clamp(14px, 1.1vw, 16px);
   font-weight: 300;
   line-height: 1.72;
   color: var(--ice-soft);
+  max-width: 62ch;
 }
 
-.product-parts {
-  margin: clamp(18px, 2.6vh, 28px) 0 0;
+.panel-parts {
+  margin: clamp(20px, 3vh, 30px) 0 0;
   display: grid;
   gap: 0;
 }
 
-.product-parts div {
+.panel-parts div {
   display: grid;
-  grid-template-columns: minmax(0, 13ch) 1fr;
-  gap: 8px 18px;
-  padding: 11px 0;
+  grid-template-columns: minmax(0, 15ch) 1fr;
+  gap: 8px 20px;
+  padding: 12px 0;
   border-top: 1px solid rgba(150, 190, 255, 0.1);
 }
 
-.product-parts dt {
+.panel-parts dt {
   font-family: var(--mono);
   font-size: var(--label);
   letter-spacing: var(--track);
@@ -366,7 +644,7 @@
   padding-top: 2px;
 }
 
-.product-parts dd {
+.panel-parts dd {
   margin: 0;
   font-size: clamp(13px, 1.05vw, 15px);
   font-weight: 300;
@@ -374,15 +652,542 @@
   color: var(--ice-faint);
 }
 
+/* ---- the family name ----------------------------------------------------- */
+
+.panel-alias {
+  margin: 0 0 10px;
+  font-family: var(--mono);
+  font-size: var(--label);
+  letter-spacing: var(--track);
+  text-transform: uppercase;
+  color: var(--tone, var(--signal));
+}
+
+/* ---- where it is going --------------------------------------------------- */
+
 /*
- * What is running and what is not.
+ * One rail with stops on it.
  *
- * The one piece of this page that is not a claim about the product but a claim
- * about its state, so it is set apart: a mono line with a lit point when the
- * thing is deployed and a hollow one when it is not.
+ * What is running is lit and behind you; what is being built is where the rail
+ * stops being solid; what is planned is ahead of that, drawn as intention
+ * rather than as fact. The line is the argument, so the line is what moves — it
+ * draws itself from the start, the light travels the part that is real, and
+ * each stop arrives in turn behind it.
+ *
+ * It runs on arrival rather than on a loop, and the panel it sits in is
+ * replaced whenever another product is chosen, so opening a product draws its
+ * rail again. That is the transition between products.
  */
-.product-status {
-  margin: clamp(18px, 2.6vh, 26px) 0 0;
+.timeline {
+  margin-top: clamp(30px, 5vh, 52px);
+  padding-top: clamp(22px, 3vh, 34px);
+  border-top: 1px solid rgba(150, 190, 255, 0.14);
+}
+
+.timeline-title {
+  margin: 0 0 12px;
+  font-family: var(--mono);
+  font-size: var(--label);
+  font-weight: 500;
+  letter-spacing: var(--track);
+  text-transform: uppercase;
+  color: var(--tone, var(--signal));
+}
+
+.timeline-lead {
+  margin: 0 0 clamp(30px, 4.5vh, 48px);
+  font-size: clamp(14px, 1.15vw, 17px);
+  font-weight: 300;
+  line-height: 1.66;
+  color: var(--ice-soft);
+  max-width: 54ch;
+}
+
+.timeline-rail {
+  position: relative;
+  margin: 0;
+  padding: 26px 0 0;
+  list-style: none;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: clamp(8px, 1.4vw, 20px);
+}
+
+/*
+ * Three layers of one line: the whole run, the part that is real, and the light
+ * travelling it. Insets of half a column put the ends under the first and last
+ * marks rather than at the edges of the box.
+ */
+.rail-drawn,
+.rail-live,
+.rail-pulse {
+  position: absolute;
+  top: 5px;
+  height: 1px;
+  pointer-events: none;
+}
+
+.rail-drawn {
+  left: 0;
+  right: 0;
+  background: linear-gradient(
+    90deg,
+    rgba(150, 190, 255, 0.26),
+    rgba(150, 190, 255, 0.26) var(--solid, 0%),
+    rgba(150, 190, 255, 0.12) var(--solid, 0%)
+  );
+  transform-origin: 0 50%;
+  animation: rail-draw 1400ms var(--ease) both;
+}
+
+/* The part that exists, in the product's own colour. */
+.rail-live {
+  left: 0;
+  width: var(--solid, 0%);
+  background: var(--tone, var(--signal));
+  opacity: 0.55;
+  box-shadow: 0 0 14px color-mix(in srgb, var(--tone) 70%, transparent);
+  transform-origin: 0 50%;
+  animation: rail-draw 1600ms var(--ease) 260ms both;
+}
+
+/* And something moving on it, once it has been drawn. */
+.rail-pulse {
+  left: 0;
+  width: 64px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--tone) 90%, white),
+    transparent
+  );
+  opacity: 0;
+  animation: rail-pulse 4.4s var(--ease) 1500ms infinite;
+}
+
+@keyframes rail-draw {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes rail-pulse {
+  0% {
+    left: 0;
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.9;
+  }
+  58% {
+    opacity: 0.9;
+  }
+  72%,
+  100% {
+    left: var(--solid, 0%);
+    opacity: 0;
+  }
+}
+
+/* The same two moves, for the rail when it is standing up. */
+@keyframes rail-draw-down {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+@keyframes rail-pulse-down {
+  0% {
+    top: 0;
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.9;
+  }
+  58% {
+    opacity: 0.9;
+  }
+  72%,
+  100% {
+    top: var(--solid, 0%);
+    opacity: 0;
+  }
+}
+
+/* ---- the stops ----------------------------------------------------------- */
+
+.stop {
+  position: relative;
+  display: grid;
+  gap: 5px;
+  align-content: start;
+  padding-right: 8px;
+  /* Each one arrives behind the light that has just passed it. */
+  animation: stop-in 700ms var(--ease) both;
+  animation-delay: calc(420ms + var(--at) * 240ms);
+}
+
+@keyframes stop-in {
+  from {
+    opacity: 0;
+    transform: translateY(9px);
+  }
+}
+
+.stop-mark {
+  position: absolute;
+  top: -26px;
+  left: 0;
+  width: 11px;
+  height: 11px;
+  margin: 0 0 0 -5px;
+  border: 1px solid rgba(150, 190, 255, 0.4);
+  transform: rotate(45deg);
+  background: var(--void);
+}
+
+.stop[data-state='live'] .stop-mark {
+  border-color: var(--tone, var(--signal));
+  background: var(--tone, var(--signal));
+  box-shadow: 0 0 14px var(--tone, var(--signal));
+}
+
+/*
+ * The one being built is the only mark that keeps moving, because it is the
+ * only one describing something in progress.
+ */
+.stop[data-state='building'] .stop-mark {
+  border-color: var(--tone, var(--signal));
+  background: color-mix(in srgb, var(--tone) 26%, var(--void));
+  animation: stop-building 2.4s ease-in-out infinite;
+  animation-delay: calc(1200ms + var(--at) * 240ms);
+}
+
+@keyframes stop-building {
+  0%,
+  100% {
+    box-shadow: 0 0 0 color-mix(in srgb, var(--tone) 70%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 16px color-mix(in srgb, var(--tone) 90%, transparent);
+  }
+}
+
+.stop-where {
+  font-size: clamp(14px, 1.25vw, 18px);
+  font-weight: 300;
+  line-height: 1.24;
+  color: var(--ice);
+}
+
+.stop-what {
+  font-size: clamp(12px, 1vw, 14px);
+  font-weight: 300;
+  line-height: 1.5;
+  color: var(--ice-faint);
+}
+
+.stop-when {
+  margin-top: 3px;
+  font-family: var(--mono);
+  font-size: var(--label);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.stop[data-state='live'] .stop-when,
+.stop[data-state='building'] .stop-when {
+  color: var(--tone, var(--signal));
+}
+
+/* What is only planned is drawn as intention, not as fact. */
+.stop[data-state='planned'] .stop-where {
+  color: var(--ice-faint);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rail-drawn,
+  .rail-live,
+  .rail-pulse,
+  .stop,
+  .stop-mark {
+    animation: none;
+  }
+
+  .rail-pulse {
+    display: none;
+  }
+}
+
+/* ---- what it writes to the chain ----------------------------------------- */
+
+/*
+ * The one place on this page with a surface behind it, because it is the one
+ * place describing something that exists outside the page: forty bytes in a
+ * Bitcoin output that anybody can go and read.
+ */
+.anchor {
+  margin-top: clamp(28px, 4.5vh, 46px);
+  padding: clamp(20px, 3vw, 32px);
+  border: 1px solid color-mix(in srgb, var(--tone) 26%, transparent);
+  background: color-mix(in srgb, var(--tone) 5%, rgba(6, 10, 20, 0.4));
+}
+
+.anchor-title {
+  margin: 0 0 12px;
+  font-family: var(--mono);
+  font-size: var(--label);
+  font-weight: 500;
+  letter-spacing: var(--track);
+  text-transform: uppercase;
+  color: var(--tone);
+}
+
+.anchor-lead {
+  margin: 0 0 clamp(18px, 2.4vw, 26px);
+  font-size: clamp(14px, 1.15vw, 17px);
+  font-weight: 300;
+  line-height: 1.66;
+  color: var(--ice-soft);
+  max-width: 54ch;
+}
+
+/*
+ * The payload, drawn to scale rather than described: eight bytes of prefix and
+ * thirty-two of hash, in the proportion they actually occupy.
+ */
+.anchor-payload {
+  display: grid;
+  grid-template-columns: 8fr 32fr;
+  gap: 3px;
+  font-family: var(--mono);
+}
+
+.anchor-field {
+  padding: 12px 14px;
+  border: 1px solid rgba(150, 190, 255, 0.16);
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.anchor-field[data-lit='true'] {
+  border-color: color-mix(in srgb, var(--tone) 55%, transparent);
+  background: color-mix(in srgb, var(--tone) 10%, transparent);
+}
+
+.anchor-value {
+  font-size: clamp(11px, 1vw, 14px);
+  letter-spacing: 0.08em;
+  color: var(--ice-faint);
+  overflow-wrap: anywhere;
+}
+
+.anchor-field[data-lit='true'] .anchor-value {
+  color: var(--tone);
+  letter-spacing: 0.16em;
+}
+
+.anchor-size {
+  font-size: var(--label);
+  letter-spacing: var(--track);
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.38);
+}
+
+.anchor-note {
+  margin: clamp(16px, 2vw, 22px) 0 0;
+  font-size: clamp(13px, 1.05vw, 15px);
+  font-weight: 300;
+  line-height: 1.66;
+  color: var(--ice-faint);
+  max-width: 56ch;
+}
+
+/* The three instructions that write it. */
+.anchor-writes {
+  margin: clamp(16px, 2vw, 22px) 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--mono);
+  font-size: var(--label);
+  letter-spacing: var(--track);
+  text-transform: uppercase;
+  color: var(--ice);
+}
+
+.anchor-writes i {
+  font-style: normal;
+  color: rgba(255, 255, 255, 0.3);
+  margin-right: 10px;
+}
+
+/* ---- the transaction anybody can go and read ----------------------------- */
+
+/*
+ * The only external link on this site.
+ *
+ * Everything else on the page is an argument; this is the part of it the
+ * visitor can check. So it is set as evidence rather than as a call to action:
+ * the claim, the transaction id in full, and where it goes.
+ */
+.anchor-proof {
+  margin-top: clamp(18px, 2.4vw, 26px);
+  display: grid;
+  gap: 7px;
+  padding: clamp(14px, 2vw, 18px);
+  border: 1px solid color-mix(in srgb, var(--tone) 34%, transparent);
+  background: color-mix(in srgb, var(--tone) 7%, transparent);
+  text-decoration: none;
+  transition:
+    border-color 420ms var(--ease),
+    background 420ms var(--ease);
+}
+
+.anchor-proof:hover,
+.anchor-proof:focus-visible {
+  border-color: color-mix(in srgb, var(--tone) 68%, transparent);
+  background: color-mix(in srgb, var(--tone) 12%, transparent);
+}
+
+.anchor-proof:focus-visible {
+  outline: 1px solid var(--tone);
+  outline-offset: 3px;
+}
+
+.anchor-proof-label {
+  font-size: clamp(14px, 1.15vw, 17px);
+  font-weight: 300;
+  line-height: 1.4;
+  color: var(--ice);
+}
+
+/* In full, and it wraps rather than being cut off: a truncated hash is not one. */
+.anchor-proof-txid {
+  font-family: var(--mono);
+  font-size: clamp(10px, 0.85vw, 12px);
+  letter-spacing: 0.04em;
+  line-height: 1.5;
+  color: var(--tone);
+  overflow-wrap: anywhere;
+}
+
+.anchor-proof-go {
+  font-family: var(--mono);
+  font-size: var(--label);
+  letter-spacing: var(--track);
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.42);
+}
+
+/* ---- the way into the lifecycle ------------------------------------------ */
+
+/*
+ * A product that can be watched rather than read gets a way in, and it is the
+ * largest control on the page — the reading is the summary and the walk is the
+ * thing itself.
+ */
+.walk {
+  margin-top: clamp(24px, 3.4vh, 36px);
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 6px clamp(16px, 2.4vw, 28px);
+  padding: clamp(18px, 2.6vw, 26px) clamp(18px, 2.6vw, 26px);
+  border: 1px solid color-mix(in srgb, var(--tone) 40%, transparent);
+  background: color-mix(in srgb, var(--tone) 8%, rgba(6, 10, 20, 0.4));
+  text-decoration: none;
+  transition:
+    border-color 420ms var(--ease),
+    background 420ms var(--ease);
+}
+
+.walk:hover,
+.walk:focus-visible {
+  border-color: var(--tone);
+  background: color-mix(in srgb, var(--tone) 14%, rgba(6, 10, 20, 0.4));
+}
+
+.walk:focus-visible {
+  outline: 1px solid var(--tone);
+  outline-offset: 3px;
+}
+
+.walk-label {
+  grid-column: 1;
+  font-size: clamp(17px, 1.7vw, 24px);
+  font-weight: 200;
+  line-height: 1.1;
+  color: var(--ice);
+}
+
+.walk-note {
+  grid-column: 1;
+  font-size: clamp(13px, 1.05vw, 15px);
+  font-weight: 300;
+  line-height: 1.55;
+  color: var(--ice-faint);
+  max-width: 46ch;
+}
+
+/* An arrow drawn rather than typed, in the same geometry as everything else. */
+.walk-go {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  width: 34px;
+  height: 1px;
+  position: relative;
+  background: var(--tone);
+  transition: width 420ms var(--ease);
+}
+
+.walk-go::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: -3px;
+  width: 7px;
+  height: 7px;
+  border-top: 1px solid var(--tone);
+  border-right: 1px solid var(--tone);
+  transform: rotate(45deg);
+}
+
+.walk:hover .walk-go {
+  width: 46px;
+}
+
+@media (max-width: 860px) {
+  .walk {
+    grid-template-columns: 1fr;
+  }
+
+  .walk-go {
+    grid-column: 1;
+    grid-row: auto;
+    margin-top: 6px;
+  }
+}
+
+/* ---- and what state it is in --------------------------------------------- */
+
+/*
+ * The one line that is not a claim about the product but a claim about its
+ * state, so it is set apart: a lit point when the thing is deployed and a
+ * hollow one when it is not.
+ */
+.panel-status {
+  margin: clamp(22px, 3vh, 32px) 0 0;
   display: flex;
   align-items: center;
   gap: 11px;
@@ -393,7 +1198,7 @@
   color: var(--hud);
 }
 
-.product-status i {
+.panel-status i {
   width: 6px;
   height: 6px;
   flex: none;
@@ -401,49 +1206,120 @@
   border-radius: 50%;
 }
 
-.product-status[data-live='true'] {
+.panel-status[data-live='true'] {
   color: var(--tone, var(--signal));
 }
 
-.product-status[data-live='true'] i {
+.panel-status[data-live='true'] i {
   background: currentColor;
   box-shadow: 0 0 10px currentColor;
 }
 
-/* On a narrow screen the figure goes above the words and stops following. */
+/* ---- small screens ------------------------------------------------------- */
+
 @media (max-width: 860px) {
-  .product {
-    grid-template-columns: 1fr;
-    gap: clamp(18px, 4vw, 28px);
+  /* Four across a phone is four things too small to be figures. Two by two. */
+  .picker {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
   }
 
-  .product-figure {
-    position: static;
-    width: clamp(132px, 40vw, 180px);
+  .pick {
+    padding: 14px 6px 16px;
+    gap: 2px;
   }
 
-  .product-parts div {
+  .pick-figure {
+    width: clamp(70px, 26vw, 110px);
+  }
+
+  /*
+   * And the rail turns through ninety degrees. A five-stop timeline across
+   * three hundred pixels is five columns of one word each; down the side it is
+   * five stops with room to say where and when.
+   */
+  .timeline-rail {
+    grid-auto-flow: row;
+    grid-auto-columns: auto;
+    gap: 26px;
+    padding: 0 0 0 26px;
+  }
+
+  .rail-drawn,
+  .rail-live,
+  .rail-pulse {
+    top: 0;
+    bottom: auto;
+    left: 5px;
+    right: auto;
+    width: 1px;
+    height: auto;
+  }
+
+  .rail-drawn {
+    top: 0;
+    bottom: 0;
+    background: linear-gradient(
+      180deg,
+      rgba(150, 190, 255, 0.26),
+      rgba(150, 190, 255, 0.26) var(--solid, 0%),
+      rgba(150, 190, 255, 0.12) var(--solid, 0%)
+    );
+    transform-origin: 50% 0;
+    animation-name: rail-draw-down;
+  }
+
+  .rail-live {
+    height: var(--solid, 0%);
+    width: 1px;
+    transform-origin: 50% 0;
+    animation-name: rail-draw-down;
+  }
+
+  .rail-pulse {
+    height: 64px;
+    width: 1px;
+    background: linear-gradient(
+      180deg,
+      transparent,
+      color-mix(in srgb, var(--tone) 90%, white),
+      transparent
+    );
+    animation-name: rail-pulse-down;
+  }
+
+  .stop {
+    padding: 0 0 0 22px;
+  }
+
+  .stop-mark {
+    top: 4px;
+    left: -22px;
+    margin: 0;
+  }
+
+  .pick-name {
+    font-size: clamp(12px, 3.2vw, 15px);
+  }
+
+  /* Three of these will not fit across a phone with a category under each. */
+  .pick-kind {
+    display: none;
+  }
+
+  .panel-parts div {
     grid-template-columns: 1fr;
     gap: 4px;
   }
-}
 
-/* ----------------------------------------------------------------- foot -- */
-
-.doc-foot {
-  padding: clamp(20px, 3vh, 34px) var(--gutter)
-    calc(max(var(--gutter), env(safe-area-inset-bottom)) + 12px);
-  border-top: 1px solid rgba(150, 190, 255, 0.12);
-}
-
-.doc-foot p {
-  max-width: 64ch;
-  margin: 0 auto;
-  font-family: var(--mono);
-  font-size: var(--label);
-  line-height: 1.9;
-  letter-spacing: 0.1em;
-  color: rgba(255, 255, 255, 0.4);
+  /*
+   * Eight parts in thirty-two is a proportion that stops being readable when
+   * the whole thing is three hundred pixels wide, so the two fields stack and
+   * the sizes carry the proportion instead.
+   */
+  .anchor-payload {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* --------------------------------------------------------- small screens -- */
@@ -461,5 +1337,105 @@
   .doc-top .link {
     padding: 9px;
     gap: 0;
+  }
+}
+
+
+/* ------------------------------------------------------------- the sigil -- */
+
+/*
+ * The mark, arriving.
+ *
+ * Large, in the bottom-right corner, cropped by both edges so it reads as
+ * something coming into the frame rather than a logo placed in it. The artwork
+ * is used as a mask over a flat fill, so the letterform stays exact while the
+ * colour is whatever the product wears everywhere else.
+ *
+ * Behind everything and unclickable: it is atmosphere, not furniture.
+ */
+.sigil {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  z-index: 0;
+  width: clamp(220px, 34vw, 460px);
+  aspect-ratio: 190 / 186;
+  pointer-events: none;
+  /* Cropped by roughly a quarter on each edge. */
+  transform: translate(26%, 28%);
+  animation: sigil-in 1600ms var(--ease) both;
+}
+
+@keyframes sigil-in {
+  from {
+    opacity: 0;
+    transform: translate(46%, 46%);
+  }
+  to {
+    opacity: 1;
+    transform: translate(26%, 28%);
+  }
+}
+
+.sigil-fill,
+.sigil-edge {
+  position: absolute;
+  inset: 0;
+  mask-image: var(--mark);
+  -webkit-mask-image: var(--mark);
+  mask-size: contain;
+  -webkit-mask-size: contain;
+  mask-repeat: no-repeat;
+  -webkit-mask-repeat: no-repeat;
+  mask-position: center;
+  -webkit-mask-position: center;
+}
+
+/* The body of the letter: the product's colour, well back. */
+.sigil-fill {
+  background: var(--tone);
+  opacity: 0.12;
+}
+
+/*
+ * And a light across it, so the shape has an edge rather than sitting flat.
+ * Slow enough that it is never the thing being looked at.
+ */
+.sigil-edge {
+  background: linear-gradient(
+    118deg,
+    transparent 34%,
+    color-mix(in srgb, var(--tone) 85%, white) 50%,
+    transparent 66%
+  );
+  background-size: 260% 260%;
+  opacity: 0.5;
+  animation: sigil-sweep 9s var(--ease) infinite;
+}
+
+@keyframes sigil-sweep {
+  0% {
+    background-position: 120% 0%;
+  }
+  60%,
+  100% {
+    background-position: -50% 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sigil {
+    animation: none;
+  }
+
+  .sigil-edge {
+    animation: none;
+  }
+}
+
+@media (max-width: 860px) {
+  .sigil {
+    width: clamp(180px, 52vw, 300px);
+    transform: translate(30%, 32%);
   }
 }
