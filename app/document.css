@@ -1515,3 +1515,182 @@
     transform: translate(30%, 32%);
   }
 }
+
+/* ---- the door into the running application -------------------------------- */
+
+/*
+ * The one object on a product page that is not a description.
+ *
+ * Everything around it says what uBTC does; this is the thing itself, so it is
+ * allowed to be the brightest element on the page and the only one that moves
+ * while nobody is touching it. The breath is slow and shallow — enough to catch
+ * the eye of somebody scanning, not enough to compete with a page being read.
+ */
+.applink {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: clamp(14px, 1.6vw, 22px);
+  padding: clamp(14px, 1.5vw, 19px) clamp(16px, 1.8vw, 24px);
+  border: 1px solid color-mix(in srgb, var(--tone) 60%, transparent);
+  background:
+    linear-gradient(
+      100deg,
+      color-mix(in srgb, var(--tone) 16%, rgba(4, 6, 11, 0.9)),
+      rgba(4, 6, 11, 0.9) 62%
+    );
+  text-decoration: none;
+  overflow: hidden;
+  isolation: isolate;
+  animation: applink-breathe 5.4s ease-in-out infinite;
+  transition:
+    border-color 420ms var(--ease),
+    transform 420ms var(--ease);
+}
+
+.applink:hover,
+.applink:focus-visible {
+  border-color: var(--tone);
+  transform: translateY(-2px);
+  animation-play-state: paused;
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--tone) 30%, transparent),
+    0 14px 44px -14px color-mix(in srgb, var(--tone) 90%, transparent),
+    inset 0 0 40px -22px var(--tone);
+}
+
+/* The light that crosses it when it is reached for. */
+.applink::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(
+    100deg,
+    transparent 20%,
+    color-mix(in srgb, var(--tone) 22%, transparent) 46%,
+    transparent 72%
+  );
+  transform: translateX(-100%);
+  opacity: 0;
+  transition: opacity 300ms var(--ease);
+}
+
+.applink:hover::after,
+.applink:focus-visible::after {
+  opacity: 1;
+  animation: applink-sweep 1500ms var(--ease);
+}
+
+.applink-mark {
+  display: block;
+  width: clamp(36px, 3.4vw, 46px);
+  aspect-ratio: 1;
+  filter: drop-shadow(0 0 12px color-mix(in srgb, var(--tone) 70%, transparent));
+  transition: transform 520ms var(--ease);
+}
+
+.applink-mark img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.applink:hover .applink-mark,
+.applink:focus-visible .applink-mark {
+  transform: scale(1.06) rotate(-6deg);
+}
+
+.applink-words {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.applink-label {
+  font-size: clamp(15px, 1.3vw, 19px);
+  font-weight: 300;
+  letter-spacing: 0.005em;
+  line-height: 1.25;
+  color: var(--ice);
+}
+
+.applink-note {
+  font-size: clamp(12px, 1vw, 13.5px);
+  font-weight: 300;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.applink-go {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-family: var(--mono);
+  font-size: var(--label);
+  letter-spacing: var(--track);
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--tone);
+}
+
+.applink-go i {
+  display: block;
+  width: 7px;
+  height: 7px;
+  border-top: 1px solid var(--tone);
+  border-right: 1px solid var(--tone);
+  transform: rotate(45deg);
+  transition: transform 420ms var(--ease);
+}
+
+.applink:hover .applink-go i {
+  transform: rotate(45deg) translate(2px, -2px);
+}
+
+@keyframes applink-breathe {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, var(--tone) 12%, transparent),
+      0 10px 34px -18px color-mix(in srgb, var(--tone) 70%, transparent);
+  }
+  50% {
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, var(--tone) 26%, transparent),
+      0 12px 46px -14px color-mix(in srgb, var(--tone) 90%, transparent);
+  }
+}
+
+@keyframes applink-sweep {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+
+/* On a narrow frame the destination drops under the words rather than beside. */
+@media (max-width: 620px) {
+  .applink {
+    grid-template-columns: auto 1fr;
+  }
+
+  .applink-go {
+    grid-column: 2;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .applink {
+    animation: none;
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--tone) 22%, transparent);
+  }
+
+  .applink:hover::after,
+  .applink:focus-visible::after {
+    animation: none;
+  }
+}

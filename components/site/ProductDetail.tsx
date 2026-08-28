@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { AppLink } from './AppLink';
 import { PRODUCTS } from './catalogue';
 import { Timeline } from './Timeline';
 
@@ -28,6 +29,19 @@ export function ProductDetail({ id }: { id: string }) {
       <h1 className="panel-name">{product.name}</h1>
       {product.alias ? <p className="panel-alias">{product.alias}</p> : null}
       <p className="panel-lede">{product.lede}</p>
+
+      {/*
+        High, not at the bottom. A visitor who came to sign in should not have
+        to read a page about the thing to find the thing.
+      */}
+      {product.app ? (
+        <AppLink
+          href={product.app.href}
+          label={product.app.label}
+          note={product.app.note}
+          tone={product.tone}
+        />
+      ) : null}
 
       {product.body.map((paragraph) => (
         <p key={paragraph.slice(0, 32)} className="panel-body">

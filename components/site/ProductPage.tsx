@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { AppLink } from './AppLink';
 import { PRODUCTS } from './catalogue';
 import { ProductDetail } from './ProductDetail';
 import { ProductSigil } from './ProductSigil';
@@ -66,6 +67,21 @@ function Ending({ id, onRead }: { id: string; onRead: () => void }) {
   return (
     <div className="ending" data-show={String(done)} aria-hidden={!done}>
       <div className="ending-inner" style={{ '--tone': product.tone } as React.CSSProperties}>
+        {/*
+          The application first. Everything else at the end of a walk is another
+          way of describing what was just watched; this is where the visitor
+          goes to do it.
+        */}
+        {product.app ? (
+          <AppLink
+            href={product.app.href}
+            label={product.app.label}
+            note={product.app.note}
+            tone={product.tone}
+            tabIndex={done ? 0 : -1}
+          />
+        ) : null}
+
         {product.anchor?.proof ? (
           <a
             className="ending-proof"

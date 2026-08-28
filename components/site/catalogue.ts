@@ -58,6 +58,14 @@ export interface Product {
   };
   /** A place in the site where this product can be watched rather than read. */
   walk?: { href: string; label: string; note: string };
+  /**
+   * The running application, where there is one to sign in to.
+   *
+   * Only uBTC has this, and that is the point of it: the difference between a
+   * product that exists and a product that is described is a door you can walk
+   * through, and only one of the four has one today.
+   */
+  app?: { href: string; label: string; note: string };
 }
 
 export const PRODUCTS: Product[] = [
@@ -95,6 +103,11 @@ export const PRODUCTS: Product[] = [
         txid: '638640bff205a2242749990cbcc6f03bef66ec2cc974d0eab45433ba0042f7ec',
         href: 'https://mempool.space/testnet4/tx/638640bff205a2242749990cbcc6f03bef66ec2cc974d0eab45433ba0042f7ec',
       },
+    },
+    app: {
+      href: 'https://app.ub.tc',
+      label: 'Open the uBTC app',
+      note: 'Create a vault, mint, transfer and redeem — the lifecycle on this page, running.',
     },
     walk: {
       href: '/product/ubtc',
