@@ -61,8 +61,8 @@ const to = (from: Vec3, at: Vec3): Vec3 => [at[0] - from[0], at[1] - from[1], at
 
 const GOLD: Vec3 = [1.0, 0.69, 0.23];
 const AMBER: Vec3 = [1.0, 0.85, 0.55];
-const SKIN: Vec3 = [0.72, 0.44, 0.24];
-const VEIN: Vec3 = [1.0, 0.78, 0.4];
+const SKIN: Vec3 = [0.88, 0.64, 0.44];
+const VEIN: Vec3 = [1.0, 0.72, 0.34];
 const COOL: Vec3 = [0.5, 0.72, 1.0];
 const STEEL: Vec3 = [0.46, 0.46, 0.58];
 const DARK: Vec3 = [0.34, 0.28, 0.2];
@@ -145,12 +145,12 @@ const figures: Figure[] = [
   {
     id: 'tree',
     at: TREE,
-    shape: tree(26, 5, 13),
+    shape: tree(24, 5, 12),
     // Held rather than assembled, because holding is the behaviour that can
     // strike one of its own parts out, and striking one out is the point.
     behaviour: Behaviour.Hold,
     tone: STEEL,
-    share: 0.1,
+    share: 0.08,
     scatter: 22,
   },
   {
@@ -169,7 +169,7 @@ const figures: Figure[] = [
     shape: boxEdges(10),
     behaviour: Behaviour.Assemble,
     tone: GOLD,
-    share: 0.11,
+    share: 0.09,
     scatter: 20,
     size: 1.05,
   },
@@ -177,10 +177,10 @@ const figures: Figure[] = [
   {
     id: 'wrap',
     at: VAULT,
-    shape: weave(15, 6),
+    shape: weave(13, 4),
     behaviour: Behaviour.Spin,
     tone: AMBER,
-    share: 0.09,
+    share: 0.07,
     scatter: 30,
     spin: 0.12,
   },
@@ -250,8 +250,8 @@ const figures: Figure[] = [
     from: [SCANNER[0] + 74, SCANNER[1] - 5, SCANNER[2] + 4],
     // The largest share in the scene, because a hand is the one figure here
     // that has to read as a photograph rather than as a shape that means one.
-    share: 0.3,
-    size: 0.85,
+    share: 0.32,
+    size: 0.95,
   },
 
   {
@@ -556,7 +556,7 @@ export const VAULT_JOURNEY: Journey = {
   path: PATH,
   bend: BEND,
   markScale: 5,
-  budget: 0.86,
+  budget: 0.66,
   traveller: 'authority',
   travelAt,
   score,

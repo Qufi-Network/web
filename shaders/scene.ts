@@ -268,7 +268,7 @@ export const SCENE_VERTEX = /* glsl */ `
       float read = smoothstep(extra + 0.05, extra - 0.03, u);
       float wanted = sub;
 
-      charge = 0.22 + band * 0.68 + wanted * read * 0.6 + activity * 0.1;
+      charge = 0.44 + band * 0.5 + wanted * read * 0.5 + activity * 0.06;
       /*
        * The skin has to be a surface rather than a rumour.
        *
@@ -276,8 +276,8 @@ export const SCENE_VERTEX = /* glsl */ `
        * something you cannot see the shape of is a light show. So the skin
        * carries enough to draw a hand, and everything else is what changes.
        */
-      alpha = presence * (0.4 + band * 0.45 + wanted * (0.18 + read * 0.6));
-      soft = max(soft, (1.0 - wanted) * (1.0 - band) * 0.4);
+      alpha = presence * (0.56 + band * 0.36 + wanted * (0.14 + read * 0.5));
+      soft = max(soft, (1.0 - wanted) * (1.0 - band) * 0.22);
       colour = mix(colour, vec3(1.0, 0.97, 0.92), band * 0.4);
     }
 
