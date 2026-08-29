@@ -3,6 +3,7 @@
 import { useEffect, useRef } from 'react';
 import { SPACES } from '../../experience/Spaces';
 import { enterSpace, nav, spaceRuntime } from '../../experience/navigation';
+import { stage } from '../../experience/stage';
 import { toneOf } from './tone';
 
 /**
@@ -79,15 +80,60 @@ export function Markers() {
       placed.length = 0;
       const order = slots.map((s) => s.order).sort((a, b) => spaceRuntime[b].screenR - spaceRuntime[a].screenR);
 
+      /*
+       * A phone shows the four nearest and lets the map carry the rest.
+       *
+       * Eight names across a narrow frame is eight names written over the
+       * structures they are not about — the rule below keeps them off each
+       * other but cannot keep them off the network. The four largest are the
+       * ones a visitor is looking at, the row of dots along the bottom reaches
+       * all eight, and a legible frame is worth more than a complete one.
+       */
+      const room = stage.portrait > 0 ? 4 : order.length;
+      let shown = 0;
+
       for (const i of order) {
         const slot = slots[i];
         if (slot.opacity < 0.01) continue;
+        if (shown >= room) {
+          slot.opacity = 0;
+          continue;
+        }
         const width_ = nodes[i].offsetWidth || 150;
         const clash = placed.some(
           (other) => Math.abs(other.y - slot.y) < 26 && Math.abs(other.x - slot.x) < (other.w + width_) / 2,
         );
-        if (clash) slot.opacity = 0;
-        else placed.push({ x: slot.x, y: slot.y, w: width_ });
+
+        /*
+         * And a name is not written across something it is not about.
+         *
+         * The rule above keeps labels off each other; this keeps them off the
+         * network. A label runs to the right of its own dot, so what matters
+         * is whether that run crosses another structure — which the runtime
+         * already knows, because it projects every one of them for picking.
+         */
+        const across = spaceRuntime.some((other, j) => {
+          if (j === i || other.presence < 0.2) return false;
+          /*
+           * Converted to pixels first.
+           *
+           * The runtime projects to normalised device coordinates — minus one
+           * to one across the frame — and the label positions above are in
+           * pixels. Comparing the two directly is a test that can never fire,
+           * which is exactly what it did.
+           */
+          const cx = (other.screenX * 0.5 + 0.5) * width;
+          const cy = (-other.screenY * 0.5 + 0.5) * height;
+          const cr = (other.screenR * height) / 2;
+          if (Math.abs(cy - slot.y) > Math.max(20, cr * 0.7)) return false;
+          return cx > slot.x - cr * 0.6 && cx < slot.x + width_ + cr * 0.6;
+        });
+
+        if (clash || across) slot.opacity = 0;
+        else {
+          placed.push({ x: slot.x, y: slot.y, w: width_ });
+          shown++;
+        }
       }
 
       for (let i = 0; i < nodes.length; i++) {
