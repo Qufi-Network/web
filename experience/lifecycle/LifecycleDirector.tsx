@@ -415,7 +415,15 @@ export function LifecycleDirector({ journey }: { journey: Journey }) {
       }
 
       scratch.project.project(camera);
-      if (scratch.project.z > 1) {
+      /*
+       * Behind the camera, or outside the frame.
+       *
+       * A label pinned to something that has moved off screen is pointing at
+       * nothing, and it was also laying out past the right edge of the page —
+       * which on a phone is a document wider than the screen and a layout that
+       * slides under the thumb. Cheaper to not draw it.
+       */
+      if (scratch.project.z > 1 || Math.abs(scratch.project.x) > 1 || Math.abs(scratch.project.y) > 1) {
         mark.on = 0;
         continue;
       }

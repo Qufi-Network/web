@@ -1,0 +1,248 @@
+/*
+ * What is only true on a small screen.
+ *
+ * Everything here exists because the site was audited on a phone and something
+ * was wrong: content off the side of the screen, controls too small to press,
+ * a panel of buttons taller than the space it was given. Held in one file
+ * rather than scattered through four, because the next person to open a phone
+ * and find something broken should have one place to look.
+ *
+ * Loaded last, so it wins.
+ */
+
+/* ------------------------------------------------- nothing goes sideways -- */
+
+/*
+ * The page is never wider than the screen.
+ *
+ * Several things on this site hang deliberately off the right edge — the mark
+ * cropped into a corner, the labels pinned to things in the scene that have
+ * moved out of frame. Every one of them was widening the document, which on a
+ * phone means the whole page slides under the thumb and the layout looks
+ * broken.
+ *
+ * `clip` rather than `hidden`: hidden would make the root a scroll container
+ * and break `position: sticky` on the headers.
+ */
+html {
+  overflow-x: clip;
+}
+
+/* -------------------------------------------- the written product page --- */
+
+/*
+ * The header belongs to the page rather than sitting above it, so the page's
+ * own top padding comes off and the header provides that space instead. The
+ * negative side margins let it reach the edges of the reading column while the
+ * prose inside stays where it was.
+ */
+.read {
+  padding-top: 0;
+}
+
+.read-top {
+  margin: 0 calc(var(--gutter) * -1) clamp(20px, 4vh, 40px);
+}
+
+/* ---------------------------------------------------------- the doors ---- */
+
+@media (max-width: 720px) {
+  /*
+   * One door at a time.
+   *
+   * Two across a phone is two columns of about a hundred and seventy pixels,
+   * and the figure alone wants seventy-six of them — which left the words a
+   * strip too narrow to hold a product name, so every card was clipped down
+   * its right-hand side. One column, and the figure goes above the words.
+   */
+  .doors {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  /*
+   * The figure stays beside the words rather than above them — a full-width
+   * card has room for both, and stacking pushes the name a hundred pixels down
+   * the card for no gain. What it does not have room for is the desktop
+   * figure, so that comes down to something a thumb-width across.
+   *
+   * Written as `.doors .door` so it wins wherever the stylesheet ends up in
+   * the cascade: this file is imported last, but the order a bundler emits
+   * chunks in is not a thing to rest a layout on.
+   */
+  .doors .door {
+    grid-template-columns: 88px minmax(0, 1fr);
+    gap: 16px;
+    padding: 22px 20px;
+  }
+
+  .doors .door-figure {
+    width: 88px;
+  }
+
+  /* The mark that arrives in the corner, scaled to the smaller card. */
+  .door-sigil {
+    width: clamp(110px, 44%, 170px);
+  }
+
+  .door-lede {
+    max-width: none;
+  }
+}
+
+/* ------------------------------------------------- the end of the walk --- */
+
+@media (max-width: 860px), (max-aspect-ratio: 1/1) {
+  /*
+   * What is offered at the end has to fit in what is left of the screen.
+   *
+   * On a phone with browser chrome the panel could be taller than the space
+   * between the reading column and the rail, and the buttons at the bottom of
+   * it simply were not there. It is bounded now, and scrolls inside itself if
+   * it has to — the walk's own wheel and touch handlers already ignore
+   * anything inside `.ending`, so scrolling it cannot move the route.
+   */
+  .ending {
+    max-height: calc(100dvh - var(--top-line) - 96px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /*
+   * And the two controls stack rather than sitting side by side, so the second
+   * one is never pushed off the edge by a long label.
+   */
+  .ending-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .ending-go {
+    justify-content: space-between;
+  }
+
+  .ending-back {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    border: 1px solid rgba(150, 190, 255, 0.2);
+  }
+}
+
+/* ------------------------------------------ a control you can press ------ */
+
+/*
+ * Forty-four pixels, on anything driven by a thumb.
+ *
+ * The site was drawn for a pointer, and a pointer is one pixel wide: a
+ * thirty-seven pixel button and an eleven pixel text link are both fine with a
+ * mouse and both a nuisance with a hand. The rules are scoped to a coarse
+ * pointer so nothing changes on a desktop.
+ */
+@media (pointer: coarse) {
+  .link,
+  .doc-top .link {
+    min-width: 44px;
+    min-height: 44px;
+    justify-content: center;
+  }
+
+  .doc-mark,
+  .hud-mark {
+    min-height: 44px;
+  }
+
+  .skip-opening {
+    min-width: 44px;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .back,
+  .panel-back .back {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 8px 4px;
+  }
+
+  .anchor-proof,
+  .ending-proof {
+    min-height: 44px;
+  }
+
+  /*
+   * The rail at the bottom of a walk is a progress readout on a phone rather
+   * than a set of destinations — the names are already hidden there — so its
+   * marks do not need to be finger-sized. They are not controls.
+   */
+  .life-rail li {
+    pointer-events: none;
+  }
+}
+
+/* ---------------------------------------- the written product, on a phone -- */
+
+/*
+ * The door into the application needs air under it.
+ *
+ * It sits between the lede and the first paragraph, and with the paragraph
+ * running straight into its bottom edge the two read as one block — which is
+ * exactly wrong, because one of them is a button and the other is prose.
+ */
+.applink {
+  margin: clamp(6px, 1.4vh, 14px) 0 clamp(26px, 4vh, 40px);
+}
+
+@media (max-width: 720px) {
+  /*
+   * A phone is one column of about thirty-four characters, and the panel was
+   * drawn for a page twice that wide: the term-and-definition rows in
+   * particular put a fifteen-character label beside a paragraph, which on a
+   * narrow screen leaves the paragraph four words wide.
+   */
+  .panel-parts div {
+    grid-template-columns: 1fr;
+    gap: 4px;
+    padding: 14px 0;
+  }
+
+  .panel-lede {
+    max-width: none;
+    font-size: clamp(17px, 4.4vw, 20px);
+  }
+
+  .panel-body {
+    max-width: none;
+  }
+
+  .panel-name {
+    overflow-wrap: break-word;
+  }
+
+  /*
+   * The application door stacks: the mark, then what it is, then where it
+   * goes. Side by side at this width leaves the destination on its own line
+   * anyway, and reads as a broken row rather than a deliberate one.
+   */
+  .applink {
+    grid-template-columns: auto 1fr;
+    row-gap: 4px;
+  }
+
+  .applink-go {
+    grid-column: 1 / -1;
+    padding-top: 2px;
+  }
+
+  /* The sigil is decoration; at this size it is decoration in the way. */
+  .sigil {
+    width: clamp(180px, 58vw, 280px);
+    opacity: 0.5;
+  }
+}

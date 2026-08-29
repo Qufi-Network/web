@@ -3,6 +3,9 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { AppLink } from './AppLink';
+import { SiteLinks } from '../overlay/SiteLinks';
+import { QufiMark } from '../overlay/QufiMark';
+import { QUFI_WORD, QUFI_WORD_SIZE } from '../../assets/word';
 import { PRODUCTS } from './catalogue';
 import { ProductDetail } from './ProductDetail';
 import { ProductSigil } from './ProductSigil';
@@ -32,6 +35,30 @@ export function ProductPage({ id }: { id: string }) {
     return (
       <div className="read" data-walked={String(Boolean(journey))}>
         <ProductSigil tone={product.tone} />
+
+        {/*
+          A way out, at the top.
+
+          The written page had none: the only link off it was at the very
+          bottom, past two thousand words. That is a long way to scroll to
+          change your mind, and on a phone it is the difference between a page
+          and a trap.
+        */}
+        <header className="doc-top read-top">
+          <Link className="doc-mark" href="/" aria-label="Back to the QuFi network">
+            <QufiMark variant="corner" shown />
+            <img
+              className="hud-mark-word"
+              src={QUFI_WORD}
+              alt=""
+              width={QUFI_WORD_SIZE.width}
+              height={QUFI_WORD_SIZE.height}
+            />
+          </Link>
+
+          <SiteLinks />
+        </header>
+
         <ProductDetail id={id} />
       </div>
     );

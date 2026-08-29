@@ -65,6 +65,29 @@ body {
   text-rendering: optimizeLegibility;
 }
 
+/*
+ * Except on the pages that are documents.
+ *
+ * The rule above is right for the network and for a walk, where the wheel is
+ * distance travelled and a scrolling page would fight it. It was applied to
+ * every page on the site, including the ones that are ordinary reading — so
+ * the products page and the written products could not be scrolled at all,
+ * and everything below the first screen was simply unreachable. Nobody caught
+ * it on a desktop, because on a desktop it all fitted.
+ *
+ * Keyed off what the page actually contains rather than a class on the body,
+ * because the pages are server components and the body is in the layout.
+ */
+html:has(.doc),
+html:has(.read),
+body:has(.doc),
+body:has(.read) {
+  height: auto;
+  min-height: 100%;
+  overflow-y: visible;
+  overscroll-behavior: auto;
+}
+
 ::selection {
   background: rgba(23, 105, 255, 0.35);
   color: var(--ice);

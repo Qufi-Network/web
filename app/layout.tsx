@@ -5,6 +5,8 @@ import './globals.css';
 import './network.css';
 import './document.css';
 import './lifecycle.css';
+// Last, so what is only true on a phone wins over what is true everywhere.
+import './mobile.css';
 
 /**
  * Fonts are self-hosted rather than fetched from a font CDN: the opening beat is
