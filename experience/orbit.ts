@@ -33,6 +33,15 @@ export interface OrbitInput {
   dragEl: number;
   pointerX: number;
   pointerY: number;
+  /**
+   * Extra height to view it from, in radians.
+   *
+   * The network is a wide flat plan, and a tall narrow frame sees a wide flat
+   * plan as a band across the middle with the screen empty above and below.
+   * Looking down on it turns the depth of the thing into height on the screen,
+   * which is the only way a phone gets to use the space it has.
+   */
+  lift?: number;
 }
 
 export function orbitCamera(input: OrbitInput, position: Vector3, look: Vector3) {
@@ -45,7 +54,12 @@ export function orbitCamera(input: OrbitInput, position: Vector3, look: Vector3)
   // across the whole thing lets the parallax do the work instead.
   const az = input.drift + t * 1.0 + input.dragAz + input.pointerX * 0.09;
   const el =
-    0.3 - eased * 0.26 + Math.sin(input.drift * 1.7) * 0.03 + input.dragEl * 0.6 + input.pointerY * 0.05;
+    0.3 -
+    eased * 0.26 +
+    (input.lift ?? 0) +
+    Math.sin(input.drift * 1.7) * 0.03 +
+    input.dragEl * 0.6 +
+    input.pointerY * 0.05;
 
   const cosEl = Math.cos(el);
   position.set(Math.sin(az) * cosEl * radius, Math.sin(el) * radius, Math.cos(az) * cosEl * radius);

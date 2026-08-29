@@ -646,6 +646,9 @@ export function SpaceDirector() {
         dragEl: drag.current.el,
         pointerX: stage.pointerX,
         pointerY: stage.pointerY,
+        // Seen from higher up on a tall frame, so the depth of the network
+        // becomes height on the screen instead of nothing at all.
+        lift: stage.portrait * 0.34,
       },
       out.pos,
       out.look,
@@ -654,11 +657,23 @@ export function SpaceDirector() {
     // The whole network gets the same treatment on a tall frame: further back
     // so it fits across, and aimed low so it sits above the reading.
     if (stage.portrait > 0) {
-      // The whole network is a hundred and ten units across and the field of
-      // view is vertical, so a portrait frame has to stand a long way back to
-      // see all of it — which is the point of this shot.
-      out.pos.multiplyScalar(1.9);
-      out.look.y -= 30;
+      /*
+       * A tall frame stands back, but only as far as it has to.
+       *
+       * The whole network is about a hundred and ten units across and the
+       * field of view is vertical, so a narrow frame sees less across and has
+       * to retreat to hold all of it. It had been retreating half as far again
+       * as that needed, which left the network a band across the top third of
+       * a phone with the bottom half of the screen empty — technically the
+       * whole thing, and far too small to be worth looking at.
+       *
+       * This is the distance that puts it edge to edge, and it is aimed barely
+       * below centre rather than thirty units low: there is no reading column
+       * on this shot to make room for, only the scroll line and the map, so
+       * the network can have the middle of the screen.
+       */
+      out.pos.multiplyScalar(1.55);
+      out.look.y -= 6;
     }
   }
 
