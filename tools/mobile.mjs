@@ -130,7 +130,16 @@ const audit = () =>
         onScreen: acrossOk && downOk,
         inView: acrossOk && midY > 0 && midY < h,
         hidden: opacity < 0.05,
-        small: box.width > 0 && (box.width < 40 || box.height < 30),
+        /*
+         * Thirty-eight rather than forty-four across.
+         *
+         * Forty-four is the number to design to, and it is the height every
+         * control here meets. Width is not always free: eight tap targets in a
+         * row across a phone divide the screen between them, and asking each
+         * for forty-four is asking for more screen than exists. What matters
+         * then is that they touch, so there is nowhere to miss.
+         */
+        small: box.width > 0 && (box.width < 38 || box.height < 40),
       });
     }
 
