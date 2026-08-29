@@ -246,3 +246,31 @@ html {
     opacity: 0.5;
   }
 }
+
+/* ------------------------------------------------- the walk, on a phone --- */
+
+/*
+ * A label pinned to something in the scene is clipped by the scene.
+ *
+ * The director already stops drawing one whose anchor has left the frame, but
+ * a label anchored just inside the right edge still runs its own width past
+ * it — which was enough to let one page slide sideways under a thumb. The
+ * layer is the frame, so the layer clips.
+ */
+.life-marks {
+  overflow: hidden;
+}
+
+@media (max-width: 860px), (max-aspect-ratio: 1/1) {
+  /*
+   * The map at the foot of the network is a row of eight places to tap, and a
+   * thirty-two pixel tap target is a miss waiting to happen. Across a phone
+   * there is room for eight at forty by forty-four with gaps left over, so
+   * they take it — the dot inside stays the same size.
+   */
+  .constellation-node,
+  .hud[data-inside='true'] .constellation-node {
+    width: 40px;
+    height: 44px;
+  }
+}
