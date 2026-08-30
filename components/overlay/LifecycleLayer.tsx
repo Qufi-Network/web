@@ -27,6 +27,22 @@ export function LifecycleLayer({ journey }: { journey: Journey }) {
   const ending = at > STAGES.length - 0.34;
   const line = stage.says[Math.min(beat, stage.says.length - 1)];
 
+  /*
+   * Whether the statement has been read.
+   *
+   * A stage says one thing and then spends the rest of itself showing it, and
+   * the statement does not need to stay on the screen for all of that — on a
+   * phone the words are underneath the scene, so what they are really doing
+   * for the second half of a stage is taking height away from the thing they
+   * are about. Past a third of the way in, the title and the paragraph go and
+   * the steps carry on alone.
+   *
+   * Derived from the position like everything else here, so scrolling back
+   * brings them back rather than leaving the visitor with a stage they can no
+   * longer read.
+   */
+  const read = local > 0.34;
+
   return (
     <div
       className="life"
@@ -41,15 +57,31 @@ export function LifecycleLayer({ journey }: { journey: Journey }) {
         </span>
       </p>
 
-      <section className="space life-words" data-show="true" key={stage.id}>
+      <section
+        className="space life-words"
+        data-show="true"
+        data-read={String(read)}
+        key={stage.id}
+      >
         <p className="space-eyebrow">
           <b>{stage.index}</b>
           {stage.nav}
           <i className="space-rule" aria-hidden="true" />
         </p>
 
-        <h2 className="space-title">{stage.title}</h2>
-        <p className="space-body">{stage.body}</p>
+        {/*
+          The statement, in a wrapper that can be collapsed to nothing.
+
+          A grid row going from one fraction to zero is the one way to animate
+          a block down to no height without knowing how tall it was, and the
+          height is what this is about.
+        */}
+        <div className="space-said">
+          <div>
+            <h2 className="space-title">{stage.title}</h2>
+            <p className="space-body">{stage.body}</p>
+          </div>
+        </div>
 
         <p className="sequence">
           {stage.beats.map((word, i) => (

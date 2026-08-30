@@ -280,3 +280,49 @@ html {
     height: 44px;
   }
 }
+
+/* ------------------------------------------- the statement, once read ----- */
+
+/*
+ * A stage says one thing and then spends the rest of itself showing it.
+ *
+ * On a phone the words sit under the scene, so a title and a paragraph that
+ * stay for the whole stage are taking height away from the thing they are
+ * about. Once the visitor is a third of the way through, they collapse and the
+ * steps carry on alone — and scrolling back brings them straight back, because
+ * the state is read off the position like everything else here.
+ *
+ * The grid row from one fraction to zero is what makes it a collapse rather
+ * than a fade: it takes the height with it without anybody having to know how
+ * tall the paragraph was.
+ */
+.space-said {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition: grid-template-rows 620ms var(--ease);
+}
+
+.space-said > div {
+  overflow: hidden;
+  min-height: 0;
+  opacity: 1;
+  transition: opacity 420ms var(--ease);
+}
+
+@media (max-width: 860px), (max-aspect-ratio: 1/1) {
+  .space[data-read='true'] .space-said {
+    grid-template-rows: 0fr;
+  }
+
+  .space[data-read='true'] .space-said > div {
+    opacity: 0;
+    transition: opacity 300ms var(--ease);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .space-said,
+  .space-said > div {
+    transition: none;
+  }
+}
