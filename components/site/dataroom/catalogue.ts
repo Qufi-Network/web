@@ -778,7 +778,9 @@ export const DOCUMENTS: DataDoc[] = [
     index: '01',
     title: 'Team Overview',
     kind: 'Overview',
-    status: 'review',
+    // The description says the biographies are being written, so the status
+    // cannot be "ready for review". It is being written, and says so.
+    status: 'development',
     description:
       'The people who lead QuFi: technology, business and growth. Photographs and titles are on the front of this room; biographies and prior experience are being written.',
     discover: [
