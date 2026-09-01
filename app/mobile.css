@@ -184,6 +184,46 @@ html {
   .life-rail li {
     pointer-events: none;
   }
+
+  /*
+   * The room's small print is still made of links.
+   *
+   * A breadcrumb is eleven pixels of mono and a topic tag is a chip: both are
+   * comfortable with a pointer and both are a miss with a thumb. Growing the
+   * type would break the hierarchy they earn their place by, so they keep
+   * their size and are given the height around it instead.
+   */
+  .paper-crumbs a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+
+  .paper-topics a,
+  .room-nav-list a,
+  .room-search-quick a,
+  .room-result a {
+    min-height: 44px;
+  }
+
+  .paper-topics a {
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .room-nav-list a {
+    align-items: center;
+  }
+
+  /*
+   * The topic tags inside a card are labels rather than links — nothing
+   * happens when they are pressed — so they are not measured as controls and
+   * do not need to be finger-sized.
+   */
+  .doc-card-topics i,
+  .result-topics i {
+    pointer-events: none;
+  }
 }
 
 /* ---------------------------------------- the written product, on a phone -- */
@@ -382,5 +422,200 @@ html {
   /* The mark arrives smaller, to match the smaller card. */
   .faces .face-sigil {
     width: clamp(96px, 34%, 150px);
+  }
+}
+
+/* --------------------------------------------------- the data room ------- */
+
+/*
+ * The contents stop being a column and become a disclosure.
+ *
+ * On a wide screen the section list sits down the left of every page in the
+ * room, which is what keeps a reader oriented while they move between nine
+ * sections. On a phone there is no left: a 260px column beside the reading
+ * column leaves neither of them usable, and a sticky sidebar is a sidebar
+ * covering the thing you came to read.
+ *
+ * So it collapses into one control at the top of the page that opens the same
+ * list. The list is identical either way — the reader is not given a reduced
+ * map because they are on a phone, only a folded one.
+ */
+@media (max-width: 900px) {
+  .room-frame {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+
+  .room-nav {
+    position: static;
+    max-height: none;
+    overflow: visible;
+    padding-top: clamp(12px, 2vh, 20px);
+    border-bottom: 1px solid rgba(150, 190, 255, 0.12);
+    padding-bottom: 12px;
+  }
+
+  .room-nav-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+    min-height: 46px;
+    padding: 12px 14px;
+    border: 1px solid rgba(150, 190, 255, 0.2);
+    background: rgba(6, 10, 20, 0.6);
+    color: var(--ice);
+    font-family: var(--mono);
+    font-size: var(--label);
+    letter-spacing: var(--track);
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+
+  /* A chevron that turns over when the list is open. */
+  .room-nav-toggle i {
+    width: 8px;
+    height: 8px;
+    border-right: 1px solid var(--hud);
+    border-bottom: 1px solid var(--hud);
+    transform: rotate(45deg) translate(-2px, -2px);
+    transition: transform 320ms var(--ease);
+  }
+
+  .room-nav[data-open='true'] .room-nav-toggle i {
+    transform: rotate(225deg) translate(-2px, -2px);
+  }
+
+  /*
+   * Collapsed by height rather than by display, so opening it is a movement
+   * rather than a jump — and so the list keeps its box for the transition to
+   * have something to animate.
+   */
+  .room-nav-body {
+    display: grid;
+    grid-template-rows: 0fr;
+    overflow: hidden;
+    transition: grid-template-rows 420ms var(--ease);
+  }
+
+  .room-nav[data-open='true'] .room-nav-body {
+    grid-template-rows: 1fr;
+  }
+
+  .room-nav-inner {
+    min-height: 0;
+  }
+
+  .room-nav-eyebrow {
+    display: none;
+  }
+
+  .room-nav-list {
+    margin: 12px 0 0;
+  }
+
+  .room-nav-list a {
+    padding: 11px 12px;
+    font-size: 15px;
+  }
+
+  .room-nav-tail {
+    margin-bottom: 8px;
+  }
+
+  .room-main {
+    padding-top: clamp(14px, 2.4vh, 24px);
+  }
+
+  /*
+   * One rule, not two. The contents disclosure already draws a line under
+   * itself, and the hero's own rule directly below it read as a gap somebody
+   * had left by accident.
+   */
+  .room-hero {
+    border-top: 0;
+    margin-top: 0;
+  }
+}
+
+/*
+ * The room's own furniture, at phone width.
+ *
+ * The counts go two across rather than five, the journey drops the arrow it
+ * has no room for, and the filters stack — three selects side by side on a
+ * 360px screen are three selects nobody can read the labels of.
+ */
+@media (max-width: 720px) {
+  .room-hero {
+    padding-top: clamp(20px, 3vh, 32px);
+    margin-top: clamp(20px, 3vh, 32px);
+  }
+
+  .room-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  /*
+   * Five counts in two columns leaves a hole, and the hole is drawn — the grid
+   * shows its background through the gap, so the empty cell reads as a sixth
+   * statistic nobody filled in. The odd one out takes the whole row.
+   */
+  .room-stats > div:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+
+  .room-search-field {
+    grid-template-columns: auto minmax(0, 1fr);
+    row-gap: 0;
+  }
+
+  /* The button drops to its own row and fills it, so it is a target. */
+  .room-search-go {
+    grid-column: 1 / -1;
+    margin: 0 0 4px;
+    min-height: 44px;
+  }
+
+  .room-filter {
+    flex: 1 1 100%;
+  }
+
+  .room-filter select,
+  .room-filter-clear {
+    width: 100%;
+    min-height: 44px;
+  }
+
+  .room-journey a {
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 14px;
+  }
+
+  .journey-go {
+    display: none;
+  }
+
+  .paper-meta {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .paper-crumbs {
+    row-gap: 4px;
+  }
+
+  /*
+   * Result rows and cards need a thumb's worth of height, and the topic tags
+   * on a result were seven tiny boxes across two lines. Four is a label; seven
+   * is a wall.
+   */
+  .room-result a,
+  .doc-card {
+    padding: 16px 14px;
+  }
+
+  .result-topics i:nth-child(n + 4),
+  .doc-card-topics i:nth-child(n + 4) {
+    display: none;
   }
 }

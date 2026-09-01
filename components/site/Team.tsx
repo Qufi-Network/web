@@ -31,9 +31,15 @@ interface Person {
  * of, and giving the people the same three says so without a sentence.
  */
 export const TEAM: Person[] = [
-  { id: 'alex', name: 'Alex', role: 'Technology', tone: '#4CC9FF', photo: '/team/alex.webp' },
-  { id: 'sam', name: 'Sam', role: 'Business', tone: '#A97BFF', photo: '/team/sam.webp' },
-  { id: 'eric', name: 'Eric', role: 'Growth', tone: '#3BE08F', photo: '/team/eric.webp' },
+  {
+    id: 'alex',
+    name: 'Dr. Alexander Reay',
+    role: 'Technology',
+    tone: '#4CC9FF',
+    photo: '/team/alex.webp',
+  },
+  { id: 'sam', name: 'Samson Lee', role: 'Business', tone: '#A97BFF', photo: '/team/sam.webp' },
+  { id: 'eric', name: 'Eric Benz', role: 'Growth', tone: '#3BE08F', photo: '/team/eric.webp' },
 ];
 
 export function Team() {

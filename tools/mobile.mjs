@@ -263,10 +263,63 @@ for (const id of ['ubtc', 'vault']) {
 
 /* ---- the data room --------------------------------------------------------- */
 
-await page.goto('http://localhost:4600/data-room', { waitUntil: 'domcontentloaded' });
-await page.waitForTimeout(2200);
-await report('data room');
-await shot('data-room');
+/*
+ * Every kind of page in the room, not just its front.
+ *
+ * The room is nine sections of documents behind one navigation, and the thing
+ * most likely to be wrong on a phone is the navigation rather than the prose:
+ * a contents column that belongs down the left of a desktop has nowhere to go
+ * on a 390px screen. So the disclosure is opened and the list is checked for
+ * reachability, which is the only way to find out that a reader on a phone
+ * cannot get to section 09.
+ */
+const ROOM = [
+  ['room / overview', '/data-room'],
+  ['room / start here', '/data-room/start'],
+  ['room / a section', '/data-room/section/technology'],
+  ['room / a document', '/data-room/document/technical-whitepaper'],
+  ['room / search', '/data-room/search?q=quantum'],
+];
+
+for (const [where, url] of ROOM) {
+  await page.goto(`http://localhost:4600${url}`, { waitUntil: 'domcontentloaded' });
+  await page.waitForTimeout(1800);
+  const a = await report(where);
+  await shot(where.replace(/[^a-z0-9]+/gi, '-'));
+  if (!a.scrollable) note(where, 'the page does not scroll, so anything below the fold is unreachable');
+  else {
+    await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+    await page.waitForTimeout(600);
+    await report(`${where}, bottom`);
+    await shot(`${where.replace(/[^a-z0-9]+/gi, '-')}-bottom`);
+  }
+}
+
+// The contents, folded and then opened.
+await page.goto('http://localhost:4600/data-room/section/technology', { waitUntil: 'domcontentloaded' });
+await page.waitForTimeout(1500);
+const toggle = await page.$('.room-nav-toggle');
+if (!toggle) note('room / contents', 'no way to open the contents on a phone');
+else {
+  const folded = await page.evaluate(
+    () => document.querySelector('.room-nav-body').getBoundingClientRect().height,
+  );
+  if (folded > 8) note('room / contents', `the contents are ${Math.round(folded)}px tall while closed`);
+  await toggle.click();
+  await page.waitForTimeout(700);
+  const open = await page.evaluate(() => {
+    const links = [...document.querySelectorAll('.room-nav-list a')];
+    return {
+      height: document.querySelector('.room-nav-body').getBoundingClientRect().height,
+      links: links.length,
+      short: links.filter((a) => a.getBoundingClientRect().height < 40).length,
+    };
+  });
+  if (open.height < 100) note('room / contents', 'opening the contents showed nothing');
+  if (open.short) note('room / contents', `${open.short} contents links are under a finger tall`);
+  console.log(`${'room / contents open'.padEnd(34)} ${open.links} links, ${Math.round(open.height)}px`);
+  await shot('room-contents-open');
+}
 
 await browser.close();
 console.log(

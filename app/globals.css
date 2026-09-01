@@ -80,8 +80,10 @@ body {
  */
 html:has(.doc),
 html:has(.read),
+html:has(.room),
 body:has(.doc),
-body:has(.read) {
+body:has(.read),
+body:has(.room) {
   height: auto;
   min-height: 100%;
   overflow-y: visible;

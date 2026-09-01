@@ -40,7 +40,15 @@ export function SiteLinks({ tabbable = true }: { tabbable?: boolean }) {
   return (
     <nav className="links" aria-label="QuFi">
       {SITE_LINKS.map(({ href, label, Glyph, tone }) => {
-        const here = path === href;
+        /*
+         * A section of the site, not one page of it.
+         *
+         * Exact matching lit the control only on `/product` and `/data-room`
+         * themselves, so walking into a product or opening a document took the
+         * highlight away — the row said the visitor was nowhere at exactly the
+         * moment they were deepest in.
+         */
+        const here = path === href || path.startsWith(`${href}/`);
         return (
           <Link
             key={href}

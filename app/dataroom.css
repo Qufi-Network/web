@@ -1,0 +1,1053 @@
+/*
+ * The data room.
+ *
+ * A private knowledge environment rather than a marketing page: dense where
+ * density helps, quiet everywhere else, and organised so that somebody opening
+ * it for the first time can find a specific thing without being taught the
+ * structure first.
+ *
+ * It wears the same clothes as the rest of the site — the near-black, the mono
+ * labels, the thin geometric rules — because a reader arriving from the network
+ * should not feel they have left. What it adds is a persistent frame: contents
+ * down the left, the page in the middle, and a status on everything.
+ */
+
+.room {
+  position: relative;
+  z-index: 1;
+  min-height: 100dvh;
+  background:
+    radial-gradient(120% 54% at 50% -8%, rgba(16, 34, 66, 0.5) 0%, transparent 70%),
+    var(--void);
+}
+
+/* ---- the frame ----------------------------------------------------------- */
+
+.room-frame {
+  display: grid;
+  grid-template-columns: minmax(216px, 260px) minmax(0, 1fr);
+  gap: clamp(24px, 4vw, 64px);
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 var(--gutter) clamp(80px, 14vh, 160px);
+}
+
+.room-main {
+  min-width: 0;
+  padding-top: clamp(16px, 3vh, 36px);
+}
+
+/* ---- the contents -------------------------------------------------------- */
+
+.room-nav {
+  position: sticky;
+  top: calc(var(--top-line) + 44px);
+  align-self: start;
+  max-height: calc(100dvh - var(--top-line) - 80px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-top: clamp(16px, 3vh, 36px);
+}
+
+.room-nav-toggle {
+  display: none;
+}
+
+.room-nav-eyebrow {
+  margin: 0 0 16px;
+  font-family: var(--mono);
+  font-size: var(--label);
+  letter-spacing: var(--track);
+  text-transform: uppercase;
+  color: var(--hud);
+}
+
+.room-nav-list {
+  margin: 0 0 22px;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 1px;
+}
+
+.room-nav-list a {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: baseline;
+  gap: 10px;
+  padding: 8px 10px;
+  border-left: 1px solid transparent;
+  font-size: 13.5px;
+  font-weight: 300;
+  line-height: 1.35;
+  color: var(--ice-soft);
+  text-decoration: none;
+  transition:
+    color 320ms var(--ease),
+    border-color 320ms var(--ease),
+    background 320ms var(--ease);
+}
+
+.room-nav-list a:hover {
+  color: var(--ice);
+  background: rgba(150, 190, 255, 0.05);
+}
+
+.room-nav-list a[data-here='true'] {
+  color: var(--ice);
+  border-left-color: var(--signal);
+  background: rgba(150, 190, 255, 0.06);
+}
+
+.room-nav-list b {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: var(--track);
+  font-weight: 400;
+  color: var(--hud);
+}
+
+.room-nav-list a[data-here='true'] b {
+  color: var(--signal);
+}
+
+.room-nav-list i {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  font-style: normal;
+  color: rgba(255, 255, 255, 0.28);
+}
+
+.room-nav-tail {
+  padding-top: 18px;
+  border-top: 1px solid rgba(150, 190, 255, 0.12);
+}
+
+/* ---- the hero ------------------------------------------------------------ */
+
+.room-hero {
+  padding: clamp(30px, 6vh, 60px) 0 clamp(20px, 4vh, 40px);
+  border-top: 1px solid rgba(150, 190, 255, 0.12);
+  margin-top: clamp(30px, 6vh, 60px);
+}
+
+.room-eyebrow {
+  margin: 0 0 clamp(12px, 2vh, 20px);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--mono);
+  font-size: var(--label);
+  letter-spacing: var(--track);
+  text-transform: uppercase;
+  color: var(--hud);
+}
+
+.room-eyebrow b {
+  color: var(--signal);
+  font-weight: 400;
+}
+
+.room-title {
+  margin: 0 0 clamp(14px, 2.4vh, 22px);
+  max-width: 22ch;
+  font-size: clamp(30px, 4.4vw, 54px);
+  font-weight: 200;
+  line-height: 1.08;
+  letter-spacing: -0.015em;
+  color: var(--ice);
+}
+
+.room-lede {
+  margin: 0 0 clamp(24px, 4vh, 40px);
+  max-width: 62ch;
+  font-size: clamp(15px, 1.3vw, 18px);
+  font-weight: 300;
+  line-height: 1.6;
+  color: var(--ice-soft);
+}
+
+/* What the room holds, counted. */
+.room-stats {
+  margin: 0 0 clamp(20px, 3vh, 30px);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 1px;
+  background: rgba(150, 190, 255, 0.12);
+  border: 1px solid rgba(150, 190, 255, 0.12);
+}
+
+.room-stats > div {
+  padding: clamp(14px, 2vw, 20px);
+  background: var(--void);
+}
+
+.room-stats dt {
+  margin: 0 0 6px;
+  font-family: var(--mono);
+  font-size: var(--label);
+  letter-spacing: var(--track);
+  text-transform: uppercase;
+  color: var(--hud);
+}
+
+.room-stats dd {
+  margin: 0;
+  font-size: clamp(24px, 2.6vw, 34px);
+  font-weight: 200;
+  line-height: 1;
+  color: var(--ice);
+}
+
+.room-note {
+  margin: 0;
+  max-width: 62ch;
+  font-size: 13.5px;
+  font-weight: 300;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.46);
+}
+
+/* ---- the search ---------------------------------------------------------- */
+
+.room-search {
+  position: relative;
+  margin: clamp(24px, 4vh, 40px) 0;
+}
+
+/* On the search page the heading has already introduced it. */
+.room-search-page {
+  margin-top: 0;
+}
+
+.room-search-label {
+  margin: 0 0 10px;
+  font-family: var(--mono);
+  font-size: var(--label);
+  letter-spacing: var(--track);
+  text-transform: uppercase;
+  color: var(--hud);
+}
+
+.room-search-field {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 4px 4px 16px;
+  border: 1px solid rgba(150, 190, 255, 0.22);
+  background: rgba(6, 10, 20, 0.6);
+  transition: border-color 320ms var(--ease);
+}
+
+.room-search-field:focus-within {
+  border-color: color-mix(in srgb, var(--signal) 62%, transparent);
+}
+
+.room-search-mark {
+  width: 13px;
+  height: 13px;
+  border: 1px solid var(--hud);
+  border-radius: 50%;
+  position: relative;
+}
+
+.room-search-mark::after {
+  content: '';
+  position: absolute;
+  right: -5px;
+  bottom: -4px;
+  width: 6px;
+  height: 1px;
+  background: var(--hud);
+  transform: rotate(45deg);
+}
+
+.room-search-field input {
+  min-width: 0;
+  padding: 13px 0;
+  border: 0;
+  background: none;
+  color: var(--ice);
+  font-family: var(--sans);
+  font-size: clamp(14px, 1.2vw, 16px);
+  font-weight: 300;
+}
+
+.room-search-field input::placeholder {
+  color: rgba(255, 255, 255, 0.32);
+}
+
+.room-search-field input:focus {
+  outline: none;
+}
+
+.room-search-go {
+  padding: 10px 16px;
+  border: 1px solid rgba(150, 190, 255, 0.22);
+  background: rgba(150, 190, 255, 0.06);
+  color: var(--ice);
+  font-family: var(--mono);
+  font-size: var(--label);
+  letter-spacing: var(--track);
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 320ms var(--ease);
+}
+
+.room-search-go:hover {
+  background: rgba(150, 190, 255, 0.14);
+}
+
+/* The answers, while the question is still being typed. */
+.room-search-quick {
+  margin: 1px 0 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid rgba(150, 190, 255, 0.16);
+  background: rgba(4, 7, 14, 0.96);
+}
+
+.room-search-quick a {
+  display: grid;
+  gap: 4px;
+  padding: 13px 16px;
+  border-bottom: 1px solid rgba(150, 190, 255, 0.08);
+  text-decoration: none;
+  transition: background 300ms var(--ease);
+}
+
+.room-search-quick li:last-child a {
+  border-bottom: 0;
+}
+
+.room-search-quick a:hover {
+  background: rgba(150, 190, 255, 0.06);
+}
+
+.quick-title {
+  font-size: 15px;
+  font-weight: 300;
+  color: var(--ice);
+}
+
+.quick-where {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: var(--track);
+  text-transform: uppercase;
+  color: var(--hud);
+}
+
+.quick-snippet {
+  font-size: 13px;
+  font-weight: 300;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.quick-snippet b,
+.result-snippet b {
+  color: var(--signal);
+  font-weight: 400;
+}
+
+.room-search-none {
+  margin: 12px 0 0;
+  max-width: 62ch;
+  font-size: 13.5px;
+  font-weight: 300;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.46);
+}
+
+/* ---- filters and results -------------------------------------------------- */
+
+.room-filters {
+  margin: 20px 0 24px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 12px;
+}
+
+.room-filter {
+  display: grid;
+  gap: 6px;
+}
+
+.room-filter span {
+  font-family: var(--mono);
+  font-size: var(--label);
+  letter-spacing: var(--track);
+  text-transform: uppercase;
+  color: var(--hud);
+}
+
+.room-filter select {
+  min-height: 40px;
+  padding: 8px 12px;
+  border: 1px solid rgba(150, 190, 255, 0.2);
+  background: rgba(6, 10, 20, 0.7);
+  color: var(--ice);
+  font-family: var(--sans);
+  font-size: 13.5px;
+  font-weight: 300;
+}
+
+.room-filter-clear {
+  min-height: 40px;
+  padding: 8px 16px;
+  border: 1px solid rgba(150, 190, 255, 0.2);
+  background: none;
+  color: var(--ice-soft);
+  font-family: var(--mono);
+  font-size: var(--label);
+  letter-spacing: var(--track);
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.room-find-count {
+  margin: 0 0 16px;
+  font-family: var(--mono);
+  font-size: var(--label);
+  letter-spacing: var(--track);
+  text-transform: uppercase;
+  color: var(--hud);
+}
+
+.room-results {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 1px;
+  background: rgba(150, 190, 255, 0.1);
+  border: 1px solid rgba(150, 190, 255, 0.1);
+}
+
+.room-result a {
+  display: grid;
+  gap: 8px;
+  padding: clamp(16px, 2vw, 22px);
+  background: var(--void);
+  text-decoration: none;
+  transition: background 320ms var(--ease);
+}
+
+.room-result a:hover {
+  background: rgba(150, 190, 255, 0.05);
+}
+
+.result-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.result-where {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: var(--track);
+  text-transform: uppercase;
+  color: var(--hud);
+}
+
+.result-title {
+  font-size: clamp(16px, 1.4vw, 19px);
+  font-weight: 300;
+  line-height: 1.3;
+  color: var(--ice);
+}
+
+.result-snippet {
+  font-size: 13.5px;
+  font-weight: 300;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.52);
+}
+
+.result-field {
+  display: inline-block;
+  margin-right: 10px;
+  font-family: var(--mono);
+  font-size: 9.5px;
+  font-style: normal;
+  letter-spacing: var(--track);
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.result-topics,
+.doc-card-topics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.result-topics i,
+.doc-card-topics i {
+  padding: 3px 8px;
+  border: 1px solid rgba(150, 190, 255, 0.16);
+  font-family: var(--mono);
+  font-size: 9.5px;
+  font-style: normal;
+  letter-spacing: var(--track);
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.44);
+}
+
+/* ---- status --------------------------------------------------------------- */
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 3px 9px;
+  border: 1px solid currentColor;
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: var(--track);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.status i {
+  width: 5px;
+  height: 5px;
+  background: currentColor;
+  border-radius: 50%;
+}
+
+.status-complete {
+  color: #3be08f;
+}
+.status-review {
+  color: #4cc9ff;
+}
+.status-development {
+  color: #ffb03a;
+}
+.status-planned {
+  color: rgba(255, 255, 255, 0.36);
+}
+.status-confidential {
+  color: #ff6b6b;
+}
+
+/* ---- section and document cards -------------------------------------------- */
+
+.room-section {
+  padding: clamp(30px, 5vh, 54px) 0 0;
+}
+
+.room-section-eyebrow {
+  margin: 0 0 10px;
+  font-family: var(--mono);
+  font-size: var(--label);
+  letter-spacing: var(--track);
+  text-transform: uppercase;
+  color: var(--hud);
+}
+
+.room-section-title {
+  margin: 0 0 12px;
+  font-size: clamp(22px, 2.4vw, 30px);
+  font-weight: 200;
+  line-height: 1.15;
+  color: var(--ice);
+}
+
+.room-section-lede {
+  margin: 0 0 clamp(20px, 3vh, 30px);
+  max-width: 62ch;
+  font-size: 14.5px;
+  font-weight: 300;
+  line-height: 1.62;
+  color: var(--ice-soft);
+}
+
+.room-sections {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1px;
+  background: rgba(150, 190, 255, 0.1);
+  border: 1px solid rgba(150, 190, 255, 0.1);
+}
+
+.room-section-card {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  padding: clamp(18px, 2.2vw, 26px);
+  background: var(--void);
+  text-decoration: none;
+  transition: background 320ms var(--ease);
+}
+
+.room-section-card:hover {
+  background: rgba(150, 190, 255, 0.05);
+}
+
+.section-card-index {
+  font-family: var(--mono);
+  font-size: var(--label);
+  letter-spacing: var(--track);
+  color: var(--signal);
+}
+
+.section-card-title {
+  font-size: clamp(16px, 1.4vw, 19px);
+  font-weight: 300;
+  line-height: 1.25;
+  color: var(--ice);
+}
+
+.section-card-lede {
+  font-size: 13px;
+  font-weight: 300;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.section-card-count {
+  margin-top: 4px;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: var(--track);
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.32);
+}
+
+.room-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+  gap: clamp(12px, 1.6vw, 18px);
+}
+
+/*
+ * Two cards, held at two.
+ *
+ * `auto-fill` on the shared rule made a three-column grid and put two cards in
+ * it, which reads as a row somebody forgot to finish. This pair is deliberate,
+ * so it is laid out as a pair.
+ */
+.room-recent {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+  gap: clamp(12px, 1.6vw, 18px);
+}
+
+.doc-card {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  padding: clamp(18px, 2.2vw, 24px);
+  border: 1px solid rgba(150, 190, 255, 0.14);
+  background: rgba(6, 10, 20, 0.4);
+  text-decoration: none;
+  transition:
+    border-color 380ms var(--ease),
+    background 380ms var(--ease),
+    transform 380ms var(--ease);
+}
+
+.doc-card:hover {
+  border-color: rgba(150, 190, 255, 0.36);
+  background: rgba(8, 14, 26, 0.6);
+  transform: translateY(-2px);
+}
+
+.doc-card-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.doc-card-index {
+  font-family: var(--mono);
+  font-size: var(--label);
+  letter-spacing: var(--track);
+  color: var(--signal);
+}
+
+.doc-card-kind {
+  flex: 1;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: var(--track);
+  text-transform: uppercase;
+  color: var(--hud);
+}
+
+.doc-card-title {
+  font-size: clamp(16px, 1.4vw, 19px);
+  font-weight: 300;
+  line-height: 1.28;
+  color: var(--ice);
+}
+
+.doc-card-section {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: var(--track);
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.doc-card-desc {
+  font-size: 13px;
+  font-weight: 300;
+  line-height: 1.58;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* ---- the reading order ----------------------------------------------------- */
+
+.room-journey {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 1px;
+  background: rgba(150, 190, 255, 0.1);
+  border: 1px solid rgba(150, 190, 255, 0.1);
+}
+
+.room-journey a {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: clamp(14px, 2vw, 26px);
+  padding: clamp(16px, 2vw, 24px);
+  background: var(--void);
+  text-decoration: none;
+  transition: background 320ms var(--ease);
+}
+
+.room-journey a:hover {
+  background: rgba(150, 190, 255, 0.05);
+}
+
+.journey-step {
+  font-family: var(--mono);
+  font-size: clamp(18px, 2vw, 26px);
+  font-weight: 300;
+  color: var(--signal);
+  opacity: 0.7;
+}
+
+.journey-body {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+/* The name and how far along it is, on one line. */
+.journey-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.journey-where {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: var(--track);
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.32);
+}
+
+/* On its own page the rows carry more, so they are given more room. */
+.room-journey-full a {
+  padding: clamp(20px, 2.6vw, 30px);
+}
+
+.journey-title {
+  font-size: clamp(16px, 1.5vw, 20px);
+  font-weight: 300;
+  line-height: 1.25;
+  color: var(--ice);
+}
+
+.journey-why {
+  font-size: 13px;
+  font-weight: 300;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.journey-go {
+  width: 22px;
+  height: 1px;
+  background: rgba(150, 190, 255, 0.4);
+  position: relative;
+  transition: width 380ms var(--ease);
+}
+
+.journey-go::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: -3px;
+  width: 7px;
+  height: 7px;
+  border-top: 1px solid rgba(150, 190, 255, 0.6);
+  border-right: 1px solid rgba(150, 190, 255, 0.6);
+  transform: rotate(45deg);
+}
+
+.room-journey a:hover .journey-go {
+  width: 32px;
+}
+
+/* ---- a section or search heading -------------------------------------------- */
+
+.room-head {
+  padding: clamp(20px, 4vh, 44px) 0 clamp(20px, 3vh, 32px);
+}
+
+.room-head-title {
+  margin: 0 0 12px;
+  font-size: clamp(26px, 3.4vw, 42px);
+  font-weight: 200;
+  line-height: 1.1;
+  letter-spacing: -0.012em;
+  color: var(--ice);
+}
+
+.room-head-lede {
+  margin: 0 0 14px;
+  max-width: 64ch;
+  font-size: 15px;
+  font-weight: 300;
+  line-height: 1.62;
+  color: var(--ice-soft);
+}
+
+.room-head-count {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: var(--label);
+  letter-spacing: var(--track);
+  text-transform: uppercase;
+  color: var(--hud);
+}
+
+/* ---- a document ------------------------------------------------------------- */
+
+.paper {
+  max-width: 74ch;
+  padding: clamp(20px, 4vh, 44px) 0 0;
+}
+
+.paper-crumbs {
+  margin: 0 0 clamp(14px, 2vh, 20px);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--mono);
+  font-size: var(--label);
+  letter-spacing: var(--track);
+  text-transform: uppercase;
+}
+
+.paper-crumbs a {
+  color: var(--hud);
+  text-decoration: none;
+  transition: color 320ms var(--ease);
+}
+
+.paper-crumbs a:hover {
+  color: var(--ice);
+}
+
+.paper-crumbs i {
+  font-style: normal;
+  color: rgba(255, 255, 255, 0.22);
+}
+
+.paper-title {
+  margin: 0 0 clamp(18px, 3vh, 28px);
+  font-size: clamp(26px, 3.6vw, 44px);
+  font-weight: 200;
+  line-height: 1.08;
+  letter-spacing: -0.014em;
+  color: var(--ice);
+}
+
+.paper-meta {
+  margin: 0 0 12px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 1px;
+  background: rgba(150, 190, 255, 0.1);
+  border: 1px solid rgba(150, 190, 255, 0.1);
+}
+
+.paper-meta > div {
+  padding: 12px 14px;
+  background: var(--void);
+}
+
+.paper-meta dt {
+  margin: 0 0 6px;
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: var(--track);
+  text-transform: uppercase;
+  color: var(--hud);
+}
+
+.paper-meta dd {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 300;
+  color: var(--ice);
+}
+
+.paper-status-note {
+  margin: 0 0 clamp(26px, 4vh, 40px);
+  font-size: 13px;
+  font-weight: 300;
+  color: rgba(255, 255, 255, 0.46);
+}
+
+.paper-block {
+  padding: clamp(22px, 3.4vh, 34px) 0 0;
+  border-top: 1px solid rgba(150, 190, 255, 0.1);
+  margin-top: clamp(22px, 3.4vh, 34px);
+}
+
+.paper-block:first-of-type {
+  border-top: 0;
+  margin-top: 0;
+}
+
+.paper-block h2 {
+  margin: 0 0 14px;
+  font-family: var(--mono);
+  font-size: var(--label);
+  letter-spacing: var(--track);
+  text-transform: uppercase;
+  font-weight: 400;
+  color: var(--hud);
+}
+
+.paper-desc,
+.paper-purpose,
+.paper-get p {
+  margin: 0 0 12px;
+  font-size: clamp(15px, 1.3vw, 17px);
+  font-weight: 300;
+  line-height: 1.66;
+  color: var(--ice-soft);
+}
+
+.paper-purpose {
+  color: var(--ice);
+}
+
+.paper-discover {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 9px;
+}
+
+.paper-discover li {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: start;
+  gap: 12px;
+  font-size: 14.5px;
+  font-weight: 300;
+  line-height: 1.5;
+  color: var(--ice);
+}
+
+.paper-discover i {
+  width: 12px;
+  height: 7px;
+  margin-top: 5px;
+  border-left: 1.5px solid var(--signal);
+  border-bottom: 1.5px solid var(--signal);
+  transform: rotate(-45deg);
+}
+
+.paper-contents {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 1px;
+  background: rgba(150, 190, 255, 0.1);
+  border: 1px solid rgba(150, 190, 255, 0.1);
+}
+
+.paper-contents li {
+  padding: 11px 14px;
+  background: var(--void);
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  color: var(--ice-soft);
+}
+
+.paper-topics {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.paper-topics a {
+  padding: 6px 12px;
+  border: 1px solid rgba(150, 190, 255, 0.2);
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: var(--track);
+  text-transform: uppercase;
+  color: var(--ice-soft);
+  text-decoration: none;
+  transition:
+    border-color 320ms var(--ease),
+    color 320ms var(--ease);
+}
+
+.paper-topics a:hover {
+  border-color: var(--signal);
+  color: var(--ice);
+}
+
+/* ---- the team, inside the room ---------------------------------------------
+ *
+ * On a document page the portraits break out of the reading measure, because a
+ * sixty-four-character column makes each of them a thumbnail. That rule sizes
+ * itself against the viewport and centres on its own column — which is right
+ * there and wrong here, where the column is offset to the right of a persistent
+ * nav. Left alone the faces hang off both edges of the page.
+ *
+ * In the room the column is already wide enough, so the break-out is simply
+ * withdrawn.
+ */
+.room .faces {
+  width: 100%;
+  margin-left: 0;
+  transform: none;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr));
+}
+
+.room .doc-section {
+  margin-top: 0;
+  border-top: 0;
+  padding-top: clamp(20px, 4vh, 40px);
+}
