@@ -28,7 +28,7 @@ const TO = 'C:/ubtc/qufi-network/public/team';
 const PEOPLE = [
   { id: 'alex', file: 'AlexCEO.jpeg' },
   { id: 'sam', file: 'mr-Samson.jpeg' },
-  { id: 'eric', file: 'eric.jpeg', crop: { left: 200, top: 120, width: 720, height: 720 } },
+  { id: 'eric', file: 'eric.jpeg', crop: { left: 213, top: 112, width: 690, height: 690 } },
 ];
 
 const SIZE = 480;
