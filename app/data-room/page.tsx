@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { DocPage } from '../../components/site/DocPage';
+import { Team } from '../../components/site/Team';
 
 export const metadata: Metadata = {
   title: 'Data room',
@@ -28,6 +29,8 @@ export default function Page() {
           nothing behind this page.
         </p>
       </section>
+
+      <Team />
 
       <section className="doc-section">
         <h2>Access</h2>

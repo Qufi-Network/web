@@ -1694,3 +1694,237 @@
     animation: none;
   }
 }
+
+/* ------------------------------------------------------------- the team --- */
+
+/*
+ * Three faces, drawn the way everything else on this site is drawn.
+ *
+ * A photograph in a square would be the one place the site stopped speaking
+ * its own language, so each portrait is cut to a hexagon with a ring standing
+ * off it and a mark at three of its corners — the same construction the
+ * product figures use, holding a face instead of a diagram.
+ */
+.faces {
+  margin-top: clamp(24px, 4vh, 40px);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: clamp(16px, 2.4vw, 34px);
+}
+
+.face {
+  position: relative;
+  padding: clamp(18px, 2vw, 26px) clamp(14px, 1.6vw, 20px) clamp(20px, 2.2vw, 28px);
+  border: 1px solid rgba(150, 190, 255, 0.14);
+  background: rgba(6, 10, 20, 0.36);
+  overflow: hidden;
+  isolation: isolate;
+  transition:
+    border-color 460ms var(--ease),
+    background 460ms var(--ease),
+    transform 460ms var(--ease);
+}
+
+.face:hover {
+  border-color: color-mix(in srgb, var(--tone) 52%, transparent);
+  background: rgba(8, 14, 26, 0.56);
+  transform: translateY(-2px);
+}
+
+/* The person's colour, held back until the visitor goes near them. */
+.face::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: radial-gradient(
+    78% 96% at 50% 0%,
+    color-mix(in srgb, var(--tone) 15%, transparent),
+    transparent 70%
+  );
+  opacity: 0;
+  transition: opacity 520ms var(--ease);
+}
+
+.face:hover::before {
+  opacity: 1;
+}
+
+/* ---- the portrait and the geometry around it ----------------------------- */
+
+.face-frame {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+}
+
+.face-ring {
+  position: absolute;
+  inset: -2%;
+  width: 104%;
+  height: 104%;
+  overflow: visible;
+}
+
+.face-line {
+  fill: none;
+  stroke: color-mix(in srgb, var(--tone) 44%, transparent);
+  stroke-width: 1.1;
+  transition: stroke 460ms var(--ease);
+}
+
+.face-line-soft {
+  stroke: rgba(150, 190, 255, 0.14);
+}
+
+.face:hover .face-line {
+  stroke: color-mix(in srgb, var(--tone) 88%, transparent);
+}
+
+.face-tick {
+  fill: none;
+  stroke: color-mix(in srgb, var(--tone) 50%, transparent);
+  stroke-width: 1;
+}
+
+.face-lit {
+  fill: var(--tone);
+  opacity: 0.7;
+  transition: opacity 460ms var(--ease);
+}
+
+.face:hover .face-lit {
+  opacity: 1;
+}
+
+/*
+ * The photograph, cut to the same hexagon the ring describes.
+ *
+ * Slightly desaturated until the visitor goes near: three colour photographs
+ * at full strength in a scene made of thin light are three holes in it.
+ */
+.face-photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /*
+   * The same hexagon the ring draws, one step inside it.
+   *
+   * The ring is a path on a two-hundred-unit box with its corners at sixteen
+   * and eighty-four percent across; a plain corners-of-the-square hexagon is
+   * wider than that, and the photograph was poking out of its own frame on
+   * both sides. These are the ring's proportions, brought in far enough to sit
+   * within the line rather than under it.
+   */
+  clip-path: polygon(50% 5%, 81% 23%, 81% 77%, 50% 95%, 19% 77%, 19% 23%);
+  filter: saturate(0.72) contrast(1.04) brightness(0.92);
+  transition: filter 520ms var(--ease);
+}
+
+.face:hover .face-photo {
+  filter: saturate(1) contrast(1.02) brightness(1);
+}
+
+/* ---- who they are -------------------------------------------------------- */
+
+.face-name {
+  margin: clamp(14px, 2vh, 20px) 0 4px;
+  font-size: clamp(17px, 1.5vw, 21px);
+  font-weight: 300;
+  line-height: 1.2;
+  color: var(--ice);
+  text-align: center;
+}
+
+.face-role {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: var(--label);
+  letter-spacing: var(--track);
+  text-transform: uppercase;
+  color: var(--tone);
+  text-align: center;
+}
+
+/* ---- and the mark arriving into the corner ------------------------------- */
+
+.face-sigil {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  z-index: -1;
+  width: clamp(120px, 54%, 200px);
+  aspect-ratio: 190 / 186;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(44%, 46%);
+  transition:
+    opacity 380ms var(--ease),
+    transform 560ms var(--ease);
+}
+
+.face:hover .face-sigil {
+  opacity: 1;
+  transform: translate(24%, 26%);
+}
+
+.face-sigil i {
+  position: absolute;
+  inset: 0;
+  mask-image: var(--mark);
+  -webkit-mask-image: var(--mark);
+  mask-size: contain;
+  -webkit-mask-size: contain;
+  mask-repeat: no-repeat;
+  -webkit-mask-repeat: no-repeat;
+  mask-position: center;
+  -webkit-mask-position: center;
+}
+
+.face-sigil-fill {
+  background: var(--tone);
+  opacity: 0.16;
+}
+
+.face-sigil-edge {
+  background: linear-gradient(
+    118deg,
+    transparent 36%,
+    color-mix(in srgb, var(--tone) 90%, white) 50%,
+    transparent 64%
+  );
+  background-size: 260% 260%;
+  opacity: 0.55;
+  background-position: 120% 0%;
+}
+
+.face:hover .face-sigil-edge {
+  animation: sigil-sweep 6s var(--ease) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .face-sigil {
+    transition-duration: 1ms;
+  }
+
+  .face:hover .face-sigil-edge {
+    animation: none;
+  }
+}
+
+/*
+ * The faces break out of the reading measure.
+ *
+ * The prose on this page wants sixty-four characters and three portraits do
+ * not: inside that measure each card is a hundred and eighty pixels, which is
+ * a thumbnail rather than a portrait. So the grid steps outside the column it
+ * sits in, symmetrically, and the words either side of it stay where they are.
+ */
+.faces {
+  width: min(92ch, calc(100vw - var(--gutter) * 2));
+  margin-left: 50%;
+  transform: translateX(-50%);
+}

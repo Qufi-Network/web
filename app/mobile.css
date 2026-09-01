@@ -326,3 +326,61 @@ html {
     transition: none;
   }
 }
+
+/* --------------------------------------------------------- the team ------ */
+
+@media (max-width: 720px) {
+  /*
+   * One person to a row, portrait beside the words.
+   *
+   * Three across a phone is three cards a hundred and ten pixels wide, which
+   * is too narrow for the word TECHNOLOGY — it was being cut off mid-word —
+   * and far too small for a face. Beside rather than above for the same reason
+   * the product doors are: a full-width card has room for both, and stacking
+   * only pushes the name down the card.
+   */
+  .faces {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .faces .face {
+    display: grid;
+    grid-template-columns: 108px minmax(0, 1fr);
+    align-items: center;
+    gap: 18px;
+    padding: 16px 18px;
+    text-align: left;
+  }
+
+  /*
+   * The name and the role both belong in the second column.
+   *
+   * Left to flow, the role dropped to the start of the next row and ended up
+   * under the portrait rather than under the name — a grid with four children
+   * and two columns puts them wherever they land unless it is told.
+   */
+  .faces .face-frame {
+    grid-row: span 2;
+  }
+
+  .faces .face-name,
+  .faces .face-role {
+    grid-column: 2;
+    text-align: left;
+  }
+
+  .faces .face-name {
+    align-self: end;
+    margin: 0 0 4px;
+  }
+
+  .faces .face-role {
+    align-self: start;
+  }
+
+  /* The mark arrives smaller, to match the smaller card. */
+  .faces .face-sigil {
+    width: clamp(96px, 34%, 150px);
+  }
+}
