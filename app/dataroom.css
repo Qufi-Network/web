@@ -1051,3 +1051,631 @@
   border-top: 0;
   padding-top: clamp(20px, 4vh, 40px);
 }
+
+
+/* ---- the mark, arriving on a card ------------------------------------------
+ *
+ * The same gesture the product doors and the team cards make: the QuFi letter
+ * comes into the bottom-right corner, cropped by both edges so it reads as
+ * something entering the frame rather than a logo placed in it. It takes the
+ * section's colour, which is what stops a wall of thirty-six cards being one
+ * flat blue rectangle.
+ *
+ * Drawn as a mask over a flat fill rather than as a picture, so the letterform
+ * stays exact at any size and the colour is a variable rather than an asset.
+ */
+.doc-card {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.doc-sigil {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  z-index: -1;
+  width: clamp(110px, 46%, 190px);
+  aspect-ratio: 190 / 186;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(42%, 44%);
+  transition:
+    opacity 380ms var(--ease),
+    transform 560ms var(--ease);
+}
+
+.doc-card:hover .doc-sigil,
+.doc-card:focus-visible .doc-sigil {
+  opacity: 1;
+  transform: translate(22%, 24%);
+}
+
+.doc-sigil i {
+  position: absolute;
+  inset: 0;
+  mask-image: var(--mark);
+  -webkit-mask-image: var(--mark);
+  mask-size: contain;
+  -webkit-mask-size: contain;
+  mask-repeat: no-repeat;
+  -webkit-mask-repeat: no-repeat;
+  mask-position: center;
+  -webkit-mask-position: center;
+}
+
+.doc-sigil-fill {
+  background: var(--tone);
+  opacity: 0.16;
+}
+
+.doc-sigil-edge {
+  background: linear-gradient(
+    118deg,
+    transparent 36%,
+    color-mix(in srgb, var(--tone) 90%, white) 50%,
+    transparent 64%
+  );
+  background-size: 260% 260%;
+  background-position: 120% 0%;
+  opacity: 0.5;
+}
+
+.doc-card:hover .doc-sigil-edge,
+.doc-card:focus-visible .doc-sigil-edge {
+  animation: sigil-sweep 6s var(--ease) infinite;
+}
+
+.doc-card:hover,
+.doc-card:focus-visible {
+  border-color: color-mix(in srgb, var(--tone) 46%, transparent);
+}
+
+/* A card with a document behind it is worth finding in a list of specifications. */
+.doc-card[data-paper="true"] {
+  border-color: color-mix(in srgb, var(--tone) 34%, transparent);
+}
+
+.doc-card-has {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 2px;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: var(--track);
+  text-transform: uppercase;
+  color: var(--tone);
+}
+
+.doc-card-has i {
+  width: 9px;
+  height: 11px;
+  border: 1px solid currentColor;
+  border-top-right-radius: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .doc-sigil {
+    transition-duration: 1ms;
+  }
+
+  .doc-card:hover .doc-sigil-edge,
+  .doc-card:focus-visible .doc-sigil-edge {
+    animation: none;
+  }
+}
+
+/* ---- the way into a document ----------------------------------------------
+ *
+ * Built like the door into the uBTC application, because it is the same kind
+ * of thing: everything around it describes something, and this opens it. On a
+ * page of quiet grey rules it is allowed to be the one object that glows.
+ */
+.viewbtn {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: clamp(14px, 1.6vw, 22px);
+  margin-top: 18px;
+  padding: clamp(14px, 1.5vw, 19px) clamp(16px, 1.8vw, 24px);
+  border: 1px solid color-mix(in srgb, var(--tone) 60%, transparent);
+  background: linear-gradient(
+    100deg,
+    color-mix(in srgb, var(--tone) 16%, rgba(4, 6, 11, 0.9)),
+    rgba(4, 6, 11, 0.9) 62%
+  );
+  text-decoration: none;
+  overflow: hidden;
+  isolation: isolate;
+  animation: applink-breathe 5.4s ease-in-out infinite;
+  transition:
+    border-color 420ms var(--ease),
+    transform 420ms var(--ease);
+}
+
+.viewbtn:hover,
+.viewbtn:focus-visible {
+  border-color: var(--tone);
+  transform: translateY(-2px);
+  animation-play-state: paused;
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--tone) 30%, transparent),
+    0 14px 44px -14px color-mix(in srgb, var(--tone) 90%, transparent),
+    inset 0 0 40px -22px var(--tone);
+}
+
+/* The light that crosses it when it is reached for. */
+.viewbtn::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(
+    100deg,
+    transparent 20%,
+    color-mix(in srgb, var(--tone) 22%, transparent) 46%,
+    transparent 72%
+  );
+  transform: translateX(-100%);
+  opacity: 0;
+  transition: opacity 300ms var(--ease);
+}
+
+.viewbtn:hover::after,
+.viewbtn:focus-visible::after {
+  opacity: 1;
+  animation: applink-sweep 1500ms var(--ease);
+}
+
+.viewbtn-icon {
+  display: block;
+  width: clamp(26px, 2.4vw, 32px);
+  filter: drop-shadow(0 0 12px color-mix(in srgb, var(--tone) 60%, transparent));
+  transition: transform 520ms var(--ease);
+}
+
+.viewbtn-icon svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.viewbtn-sheet {
+  fill: color-mix(in srgb, var(--tone) 12%, transparent);
+  stroke: var(--tone);
+  stroke-width: 1.6;
+  stroke-linejoin: round;
+}
+
+.viewbtn-fold {
+  fill: none;
+  stroke: var(--tone);
+  stroke-width: 1.6;
+  stroke-linejoin: round;
+  opacity: 0.7;
+}
+
+.viewbtn-mark {
+  fill: none;
+  stroke: var(--tone);
+  stroke-width: 1.9;
+  stroke-linecap: round;
+}
+
+.viewbtn:hover .viewbtn-icon,
+.viewbtn:focus-visible .viewbtn-icon {
+  transform: scale(1.06) rotate(-5deg);
+}
+
+.viewbtn-words {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.viewbtn-label {
+  font-size: clamp(15px, 1.3vw, 19px);
+  font-weight: 300;
+  line-height: 1.25;
+  color: var(--ice);
+}
+
+.viewbtn-note {
+  font-size: clamp(12px, 1vw, 13.5px);
+  font-weight: 300;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.viewbtn-go {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-family: var(--mono);
+  font-size: var(--label);
+  letter-spacing: var(--track);
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--tone);
+}
+
+.viewbtn-go i {
+  display: block;
+  width: 7px;
+  height: 7px;
+  border-top: 1px solid var(--tone);
+  border-right: 1px solid var(--tone);
+  transform: rotate(45deg);
+  transition: transform 420ms var(--ease);
+}
+
+.viewbtn:hover .viewbtn-go i {
+  transform: rotate(45deg) translate(2px, -2px);
+}
+
+/* ---- reading a paper ------------------------------------------------------- */
+
+/*
+ * The viewer takes the whole frame.
+ *
+ * Every other page in the room wants the contents down the left, because the
+ * reader is moving around a structure. On this one they are reading a document
+ * — a landscape deck, at that — and a 260px column of section names beside it
+ * is 260px the deck could have used. The nav is not removed from the markup,
+ * only from the layout, so it is still there on the way back out.
+ *
+ * Keyed off what the page contains rather than a class on the frame, because
+ * the frame is in the layout and the page is a page.
+ */
+.room-frame:has(.read-paper) {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0;
+}
+
+/*
+ * Only where the nav is a column.
+ *
+ * Below 900px it has already become a single line at the top of the page that
+ * opens on demand, which costs the deck nothing and is the only way back out
+ * other than the crumb. Hiding it there took something away and gave nothing
+ * back.
+ */
+@media (min-width: 901px) {
+  .room-frame:has(.read-paper) .room-nav {
+    display: none;
+  }
+}
+
+.read-paper {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: clamp(16px, 3vh, 32px) 0 clamp(60px, 10vh, 120px);
+}
+
+.read-paper-top {
+  padding-bottom: clamp(16px, 2.4vh, 26px);
+}
+
+.read-paper-title {
+  margin: 0;
+  font-size: clamp(24px, 3vw, 38px);
+  font-weight: 200;
+  line-height: 1.1;
+  letter-spacing: -0.012em;
+  color: var(--ice);
+}
+
+.reader {
+  border-top: 1px solid rgba(150, 190, 255, 0.14);
+}
+
+/*
+ * The bar, which carries where you are and nothing that hands over the file.
+ *
+ * Sticky, because a twelve-page deck is a long scroll and losing the page
+ * count at page four is losing the only orientation there is.
+ */
+.reader-bar {
+  position: sticky;
+  top: calc(var(--top-line) + 30px);
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 12px 0;
+  background: linear-gradient(180deg, rgba(4, 6, 11, 0.96) 70%, transparent);
+}
+
+.reader-where {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: var(--label);
+  letter-spacing: var(--track);
+  text-transform: uppercase;
+  color: var(--hud);
+}
+
+.reader-where b {
+  color: var(--signal);
+  font-weight: 400;
+}
+
+.reader-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.reader-step {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid rgba(150, 190, 255, 0.22);
+  background: rgba(6, 10, 20, 0.7);
+  cursor: pointer;
+  transition:
+    border-color 320ms var(--ease),
+    opacity 320ms var(--ease);
+}
+
+.reader-step:hover:not(:disabled) {
+  border-color: var(--signal);
+}
+
+.reader-step:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.reader-arrow {
+  width: 8px;
+  height: 8px;
+  border-right: 1px solid var(--ice-soft);
+  border-bottom: 1px solid var(--ice-soft);
+  transform: rotate(45deg) translate(-2px, -2px);
+}
+
+.reader-arrow-up {
+  transform: rotate(225deg) translate(-2px, -2px);
+}
+
+.reader-wide {
+  min-height: 40px;
+  padding: 8px 16px;
+  border: 1px solid rgba(150, 190, 255, 0.22);
+  background: rgba(6, 10, 20, 0.7);
+  color: var(--ice-soft);
+  font-family: var(--mono);
+  font-size: var(--label);
+  letter-spacing: var(--track);
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: border-color 320ms var(--ease);
+}
+
+.reader-wide:hover,
+.reader-wide[aria-pressed="true"] {
+  border-color: var(--signal);
+  color: var(--ice);
+}
+
+/*
+ * The pages.
+ *
+ * Selection and dragging are off: a canvas can be dragged out of a page and
+ * dropped into a folder, which is a download wearing a different coat.
+ */
+.reader-pages {
+  display: grid;
+  gap: clamp(14px, 2vh, 26px);
+  justify-items: center;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+.paper-page {
+  display: block;
+  width: 100%;
+  max-width: 900px;
+  height: auto;
+  border: 1px solid rgba(150, 190, 255, 0.14);
+  background: #04060b;
+  pointer-events: none;
+}
+
+.reader[data-wide="true"] .paper-page {
+  max-width: none;
+}
+
+.reader-say {
+  margin: clamp(30px, 6vh, 60px) 0;
+  text-align: center;
+  font-family: var(--mono);
+  font-size: var(--label);
+  letter-spacing: var(--track);
+  text-transform: uppercase;
+  color: var(--hud);
+}
+
+.reader-note {
+  margin: clamp(20px, 3vh, 30px) 0 0;
+  padding-top: 16px;
+  border-top: 1px solid rgba(150, 190, 255, 0.12);
+  text-align: center;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: var(--track);
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.34);
+}
+
+
+/* ---- the end of a paper ---------------------------------------------------
+ *
+ * Three ways onward: back to what the room says about this document, back to
+ * the section it lives in, and back to the room. A reader who reaches the last
+ * page has finished something, and the page should acknowledge that rather
+ * than simply running out.
+ */
+.read-paper-end {
+  margin-top: clamp(26px, 4vh, 40px);
+  padding: clamp(22px, 3.4vh, 34px) var(--gutter) 0;
+  border-top: 1px solid rgba(150, 190, 255, 0.12);
+  text-align: center;
+}
+
+.read-paper-end-say {
+  margin: 0 0 clamp(16px, 2.4vh, 24px);
+  font-family: var(--mono);
+  font-size: var(--label);
+  letter-spacing: var(--track);
+  text-transform: uppercase;
+  color: var(--hud);
+}
+
+.read-paper-end-go {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
+.read-paper-end-go a {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 10px 18px;
+  border: 1px solid rgba(150, 190, 255, 0.2);
+  background: rgba(6, 10, 20, 0.6);
+  color: var(--ice-soft);
+  font-family: var(--mono);
+  font-size: var(--label);
+  letter-spacing: var(--track);
+  text-transform: uppercase;
+  text-decoration: none;
+  transition:
+    border-color 320ms var(--ease),
+    color 320ms var(--ease);
+}
+
+.read-paper-end-go a:hover {
+  border-color: var(--signal);
+  color: var(--ice);
+}
+
+/* A chevron pointing back the way the reader came. */
+.read-paper-end-go i {
+  width: 7px;
+  height: 7px;
+  border-left: 1px solid currentColor;
+  border-bottom: 1px solid currentColor;
+  transform: rotate(45deg);
+  opacity: 0.7;
+}
+
+@media (max-width: 720px) {
+  .read-paper-end-go {
+    display: grid;
+  }
+}
+
+
+/* ---- our mark, over the one baked into the page ---------------------------------
+ *
+ * The three papers carry a QuFi lockup in the top-left of every page, drawn
+ * white for a dark deck. Shown light it inverts with everything else and comes
+ * out a grey smudge, and even shown dark it is a fixed number of pixels that
+ * softens the moment the page is enlarged.
+ *
+ * So the box is covered and the real mark is drawn over it: a mask over a
+ * fill, sharp at any size, in the right colour whichever way the pages are
+ * being shown. It sits outside the canvas, so the inversion filter does not
+ * touch it.
+ */
+
+.paper-sheet {
+  position: relative;
+  display: block;
+  width: 100%;
+  max-width: 900px;
+}
+
+.reader[data-wide="true"] .paper-sheet {
+  max-width: none;
+}
+
+.paper-sheet .paper-page {
+  max-width: none;
+}
+
+.paper-badge {
+  position: absolute;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 4%;
+  padding: 0 1%;
+  pointer-events: none;
+  /* The ground the deck's own logo was sitting on, so the old one is gone. */
+  background: #04060b;
+}
+
+.paper-badge i {
+  display: block;
+  background: #ffffff;
+  mask-size: contain;
+  -webkit-mask-size: contain;
+  mask-repeat: no-repeat;
+  -webkit-mask-repeat: no-repeat;
+  mask-position: center;
+  -webkit-mask-position: center;
+}
+
+.paper-badge-mark {
+  height: 74%;
+  aspect-ratio: 190 / 186;
+  mask-image: var(--badge-mark);
+  -webkit-mask-image: var(--badge-mark);
+}
+
+.paper-badge-word {
+  height: 40%;
+  aspect-ratio: var(--badge-ratio);
+  mask-image: var(--badge-word);
+  -webkit-mask-image: var(--badge-word);
+}
+
+/*
+ * Shown light, the badge goes the other way.
+ *
+ * The canvas under it is inverted by a filter; the badge is not, so it has to
+ * be told. Near-black mark on white, which is what the mark looks like on
+ * paper anywhere else.
+ */
+.reader[data-light="true"] .paper-badge {
+  background: #ffffff;
+}
+
+.reader[data-light="true"] .paper-badge i {
+  background: #0a0f1a;
+}
+
+/*
+ * The Q stays blue, the word goes black.
+ *
+ * This is the header's lockup exactly. The selector carries a type on the
+ * class because the rule above it sets every `i` in the badge to near-black
+ * and, matching on one more component, was winning: the mark came out flat
+ * black on a page where the site's own mark is blue two inches above it.
+ */
+.reader[data-light="true"] i.paper-badge-mark {
+  background: #1769ff;
+}

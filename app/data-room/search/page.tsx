@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
-import { SearchPage } from '../../../components/site/dataroom/Search';
+import { RoomSearch } from '../../../components/site/dataroom/views';
 
 export const metadata: Metadata = {
   title: 'Search',
@@ -20,22 +20,9 @@ export default async function Page({
   searchParams: Promise<{ q?: string }>;
 }) {
   const { q } = await searchParams;
-
   return (
-    <>
-      <header className="room-head">
-        <p className="room-eyebrow">Search</p>
-        <h1 className="room-head-title">Find anything in the room</h1>
-        <p className="room-head-lede">
-          The index covers document titles, descriptions, topics, planned contents and what each
-          document says a reader will discover. The documents themselves are still being
-          written, so their text is not searchable yet.
-        </p>
-      </header>
-
-      <Suspense fallback={null}>
-        <SearchPage initialQuery={q ?? ''} />
-      </Suspense>
-    </>
+    <Suspense fallback={null}>
+      <RoomSearch q={q} />
+    </Suspense>
   );
 }

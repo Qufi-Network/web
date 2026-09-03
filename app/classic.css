@@ -1,0 +1,3800 @@
+/*
+ * The standard site.
+ *
+ * The other four stylesheets in this project describe an environment: a
+ * near-black field, type as small technical labels, and almost no furniture,
+ * because the network is the interface. This one describes a website. White,
+ * still, generous with space, and conventional on purpose — somebody who
+ * chose this at the door chose it because they wanted a page they could skim,
+ * and rewarding that with more atmosphere would be answering a different
+ * question.
+ *
+ * Everything is scoped under `.classic` and every class is prefixed `cx`, so
+ * the two can share a document without either reaching into the other. In
+ * particular this file has to undo a good deal of `globals.css`, which sets
+ * the body to near-black and stops it scrolling.
+ */
+
+.classic {
+  /*
+   * Four greys, every one of which clears AA on white.
+   *
+   * The ghost started three shades lighter, which looked right at full size on
+   * a good screen and measured 3.1:1 — under the line for the twelve-pixel
+   * labels it was being used for. A grey that only works when the reader has
+   * perfect conditions is a grey that does not work.
+   */
+  --ink: #0a0f1a;
+  --ink-soft: #384357;
+  --ink-faint: #545e70;
+  /*
+   * Dark enough for the grey ground as well as the white one.
+   *
+   * At #67707f this cleared 4.5:1 on white and measured 4.45:1 on the tinted
+   * panels, which is the sort of miss that only shows up when the same grey is
+   * used on two backgrounds. One step down covers both.
+   */
+  --ink-ghost: #5e6776;
+
+  --paper: #ffffff;
+  --paper-tint: #f6f8fb;
+  --paper-sink: #eef2f7;
+
+  --edge: #dce3ec;
+  --edge-soft: #e9eef4;
+
+  --brand: #1769ff;
+  --brand-deep: #0b48c4;
+  --brand-wash: #eef4ff;
+  /*
+   * The brand blue is 4.39:1 on white — a hair under the line, and the eyebrow
+   * sets it at eleven and a half pixels. This is the same blue taken deep
+   * enough to be read at that size.
+   */
+  --brand-ink: #0d4fd6;
+
+  /*
+   * Two scales rather than one.
+   *
+   * The environment sets type in `clamp()` against the viewport because it is
+   * a composition that has to hold at any size. A website wants a type scale
+   * that steps, so headings here are fixed at each breakpoint and only the
+   * three display sizes flex.
+   */
+  --cx-gutter: clamp(20px, 5vw, 64px);
+  --cx-wrap: 1180px;
+
+  position: relative;
+  z-index: 1;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+}
+
+/*
+ * The body is near-black and does not scroll, for the environment's sake.
+ * Neither is true on this site.
+ *
+ * `overflow` rather than `overflow-y`, and this matters more than it looks.
+ * `globals.css` sets `body { overflow: hidden }`; setting only the vertical
+ * axis back to `visible` leaves the horizontal one hidden, and a box with one
+ * axis hidden computes the other to `auto` rather than `visible`. That makes
+ * the body a scroll container, and a scroll container between a sticky element
+ * and the viewport is a sticky element that does not stick: the whole pinned
+ * model section simply scrolled past.
+ *
+ * The sideways guard is not lost. `html` keeps `overflow-x: clip`, which
+ * clips without creating a scrolling box, which is exactly why `clip` was
+ * chosen over `hidden` in the first place.
+ */
+html:has(.classic),
+body:has(.classic) {
+  height: auto;
+  min-height: 100%;
+  overflow: visible;
+  overscroll-behavior: auto;
+}
+
+html:has(.classic) {
+  overflow-x: clip;
+}
+
+body:has(.classic) {
+  background: #ffffff;
+  color: var(--ink);
+}
+
+.classic ::selection {
+  background: rgba(23, 105, 255, 0.16);
+  color: var(--ink);
+}
+
+.cx-wrap {
+  width: 100%;
+  max-width: var(--cx-wrap);
+  margin: 0 auto;
+  padding: 0 var(--cx-gutter);
+}
+
+.cx-main {
+  flex: 1;
+}
+
+.cx-skip {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 20;
+  padding: 12px 18px;
+  background: var(--ink);
+  color: #fff;
+  text-decoration: none;
+}
+
+.cx-skip:focus {
+  left: 0;
+}
+
+.classic :focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 3px;
+}
+
+/* ---- the header ----------------------------------------------------------- */
+
+.cx-top {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: rgba(255, 255, 255, 0.86);
+  backdrop-filter: saturate(180%) blur(12px);
+  border-bottom: 1px solid transparent;
+  transition:
+    border-color 300ms var(--ease),
+    box-shadow 300ms var(--ease);
+}
+
+.cx-top[data-away='true'] {
+  border-bottom-color: var(--edge);
+  box-shadow: 0 1px 24px -12px rgba(10, 15, 26, 0.24);
+}
+
+.cx-top-in {
+  display: flex;
+  align-items: center;
+  gap: clamp(16px, 3vw, 40px);
+  width: 100%;
+  max-width: var(--cx-wrap);
+  margin: 0 auto;
+  padding: 12px var(--cx-gutter);
+}
+
+/*
+ * The artwork is white-on-transparent, drawn for a black field. Used as a mask
+ * over a fill, the letterform stays exact and the ink becomes a colour — which
+ * is what lets the same two files be blue in the header and grey in the foot.
+ */
+.cx-brand {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  /* It has no text, so it has no height of its own to speak of. */
+  min-height: 44px;
+  padding-right: 6px;
+  text-decoration: none;
+}
+
+.cx-brand-mark,
+.cx-brand-word {
+  display: block;
+  background: var(--brand);
+  mask-image: var(--art);
+  -webkit-mask-image: var(--art);
+  mask-size: contain;
+  -webkit-mask-size: contain;
+  mask-repeat: no-repeat;
+  -webkit-mask-repeat: no-repeat;
+  mask-position: center;
+  -webkit-mask-position: center;
+}
+
+.cx-brand-mark {
+  width: 30px;
+  aspect-ratio: 190 / 186;
+}
+
+.cx-brand-word {
+  height: 19px;
+  aspect-ratio: var(--ratio);
+  background: var(--ink);
+}
+
+.cx-nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+}
+
+.cx-nav a {
+  padding: 9px 14px;
+  border-radius: 8px;
+  color: var(--ink-soft);
+  font-size: 14.5px;
+  font-weight: 500;
+  text-decoration: none;
+  transition:
+    color 220ms var(--ease),
+    background 220ms var(--ease);
+}
+
+.cx-nav a:hover {
+  color: var(--ink);
+  background: var(--paper-tint);
+}
+
+/* Brand blue on the brand wash is 4.23:1. The deeper blue clears the line. */
+.cx-nav a[data-here='true'] {
+  color: var(--brand-ink);
+  background: var(--brand-wash);
+}
+
+.cx-top-go {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* The way back into the environment, marked with a node rather than a word. */
+.cx-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 14px;
+  border: 1px solid var(--edge);
+  border-radius: 8px;
+  color: var(--ink-soft);
+  font-size: 13.5px;
+  font-weight: 500;
+  text-decoration: none;
+  white-space: nowrap;
+  transition:
+    border-color 220ms var(--ease),
+    color 220ms var(--ease);
+}
+
+.cx-switch i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--brand);
+  box-shadow: 0 0 0 3px rgba(23, 105, 255, 0.16);
+  transition: box-shadow 320ms var(--ease);
+}
+
+.cx-switch:hover {
+  border-color: var(--ink-ghost);
+  color: var(--ink);
+}
+
+.cx-switch:hover i {
+  box-shadow: 0 0 0 5px rgba(23, 105, 255, 0.2);
+}
+
+.cx-app {
+  padding: 10px 16px;
+  border-radius: 8px;
+  background: var(--ink);
+  color: #fff;
+  font-size: 13.5px;
+  font-weight: 500;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 220ms var(--ease);
+}
+
+.cx-app:hover {
+  background: var(--brand);
+}
+
+/* ---- buttons -------------------------------------------------------------- */
+
+.cx-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 46px;
+  padding: 12px 22px;
+  border: 1px solid var(--edge);
+  border-radius: 9px;
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 500;
+  text-decoration: none;
+  transition:
+    border-color 240ms var(--ease),
+    background 240ms var(--ease),
+    transform 240ms var(--ease);
+}
+
+.cx-btn:hover {
+  border-color: var(--ink-ghost);
+  transform: translateY(-1px);
+}
+
+.cx-btn-solid {
+  border-color: var(--brand);
+  background: var(--brand);
+  color: #fff;
+}
+
+.cx-btn-solid:hover {
+  border-color: var(--brand-deep);
+  background: var(--brand-deep);
+}
+
+.cx-btn i {
+  width: 7px;
+  height: 7px;
+  border-top: 1.5px solid currentColor;
+  border-right: 1.5px solid currentColor;
+  transform: rotate(45deg);
+  transition: transform 240ms var(--ease);
+}
+
+.cx-btn:hover i {
+  transform: rotate(45deg) translate(2px, -2px);
+}
+
+/* ---- the hero ------------------------------------------------------------- */
+
+.cx-hero {
+  padding: clamp(56px, 11vh, 128px) 0 clamp(44px, 8vh, 96px);
+}
+
+.cx-eyebrow {
+  margin: 0 0 clamp(14px, 2vh, 22px);
+  font-family: var(--mono);
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--brand-ink);
+}
+
+.cx-hero-title {
+  margin: 0 0 clamp(18px, 3vh, 28px);
+  max-width: 17ch;
+  font-size: clamp(36px, 6vw, 68px);
+  font-weight: 500;
+  line-height: 1.04;
+  letter-spacing: -0.032em;
+  color: var(--ink);
+}
+
+.cx-hero-lede {
+  margin: 0 0 14px;
+  max-width: 56ch;
+  font-size: clamp(18px, 1.7vw, 22px);
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+
+.cx-hero-body {
+  margin: 0 0 clamp(28px, 4vh, 40px);
+  max-width: 56ch;
+  font-size: clamp(15px, 1.3vw, 17px);
+  line-height: 1.6;
+  color: var(--ink-faint);
+}
+
+.cx-hero-go {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+/* ---- the model band -------------------------------------------------------- */
+
+.cx-band {
+  padding: clamp(40px, 7vh, 76px) 0;
+}
+
+.cx-band-say {
+  margin: 0 0 clamp(18px, 3vh, 28px);
+  font-family: var(--mono);
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-ghost);
+}
+
+/*
+ * Three steps with a line drawn between them.
+ *
+ * The connector is a pseudo-element on the list rather than three separate
+ * arrows, so it stays one continuous rule at any width and simply disappears
+ * when the steps stack.
+ */
+.cx-model {
+  position: relative;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: clamp(20px, 3vw, 44px);
+}
+
+.cx-model::before {
+  content: '';
+  position: absolute;
+  left: 12%;
+  right: 12%;
+  top: 19px;
+  height: 1px;
+  background: linear-gradient(90deg, var(--edge), var(--brand), var(--edge));
+  opacity: 0.7;
+}
+
+.cx-model li {
+  position: relative;
+}
+
+.cx-model-step {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  margin-bottom: 16px;
+  border: 1px solid var(--edge);
+  border-radius: 50%;
+  background: var(--paper);
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--brand-ink);
+}
+
+.cx-model h2 {
+  margin: 0 0 8px;
+  font-size: clamp(19px, 1.8vw, 24px);
+  font-weight: 500;
+  letter-spacing: -0.015em;
+  color: var(--ink);
+}
+
+.cx-model p {
+  margin: 0;
+  max-width: 40ch;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--ink-faint);
+}
+
+/* ---- sections -------------------------------------------------------------- */
+
+.cx-sec {
+  padding: clamp(52px, 9vh, 108px) 0;
+}
+
+/*
+ * Nothing. Kept as a hook rather than deleted, because the page still uses it
+ * to mark which sections were the alternating ones, and one day something may
+ * want to know.
+ */
+.cx-sec-tint {
+  background: none;
+}
+
+.cx-sec-head {
+  margin-bottom: clamp(28px, 4vh, 48px);
+}
+
+.cx-sec-title {
+  margin: 0 0 14px;
+  max-width: 24ch;
+  font-size: clamp(26px, 3.4vw, 42px);
+  font-weight: 500;
+  line-height: 1.12;
+  letter-spacing: -0.026em;
+  color: var(--ink);
+}
+
+.cx-sec-lede {
+  margin: 0;
+  max-width: 62ch;
+  font-size: clamp(15px, 1.35vw, 17.5px);
+  line-height: 1.62;
+  color: var(--ink-faint);
+}
+
+.cx-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: clamp(28px, 5vw, 80px);
+  align-items: start;
+}
+
+.cx-split .cx-sec-head {
+  margin-bottom: 0;
+}
+
+.cx-grid {
+  display: grid;
+  gap: clamp(14px, 1.8vw, 22px);
+}
+
+/*
+ * Two across, and two across only.
+ *
+ * At 320px minimum this fitted three columns in the wrap and left the fourth
+ * product sitting alone on a second row, which reads as a product somebody
+ * forgot rather than a set of four. Four things want a square.
+ */
+.cx-grid-2 {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr));
+}
+
+.cx-grid-3 {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 270px), 1fr));
+}
+
+/* ---- a capability ---------------------------------------------------------- */
+
+.cx-card {
+  padding: clamp(20px, 2.4vw, 28px);
+  border: 1px solid var(--edge);
+  border-radius: 12px;
+  background: var(--paper);
+  transition:
+    border-color 260ms var(--ease),
+    box-shadow 260ms var(--ease),
+    transform 260ms var(--ease);
+}
+
+.cx-card:hover {
+  border-color: var(--ink-ghost);
+  box-shadow: 0 14px 40px -26px rgba(10, 15, 26, 0.5);
+  transform: translateY(-2px);
+}
+
+.cx-card-index {
+  margin: 0 0 12px;
+  font-family: var(--mono);
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  color: var(--brand-ink);
+}
+
+.cx-card h3 {
+  margin: 0 0 8px;
+  font-size: 19px;
+  font-weight: 500;
+  letter-spacing: -0.014em;
+  color: var(--ink);
+}
+
+.cx-card-lede {
+  margin: 0 0 10px;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+
+.cx-card-body {
+  margin: 0;
+  font-size: 14.5px;
+  line-height: 1.62;
+  color: var(--ink-faint);
+}
+
+/*
+ * A tone used as ink is mostly ink.
+ *
+ * The four product colours are bright by design — a green, a cyan, an amber
+ * and a violet, chosen to hold up against near-black. Carried onto white at
+ * anything like their own strength they sit between 2.5:1 and 4.3:1, which is
+ * a label nobody can read wearing a colour that looks decisive in a mockup.
+ * Thirty percent is enough for the hue to register and not enough to lift the
+ * value: every one of them clears AA at eleven and a half pixels.
+ */
+
+/* ---- a product ------------------------------------------------------------- */
+
+.cx-product {
+  position: relative;
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  padding: clamp(22px, 2.6vw, 32px);
+  border: 1px solid var(--edge);
+  border-radius: 14px;
+  background: var(--paper);
+  text-decoration: none;
+  overflow: hidden;
+  transition:
+    border-color 260ms var(--ease),
+    box-shadow 260ms var(--ease),
+    transform 260ms var(--ease);
+}
+
+/* The product's own colour, as a rule along the top rather than a wash. */
+.cx-product::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 3px;
+  background: var(--tone);
+  opacity: 0;
+  transition: opacity 260ms var(--ease);
+}
+
+.cx-product:hover {
+  border-color: color-mix(in srgb, var(--tone) 52%, var(--edge));
+  box-shadow: 0 18px 50px -30px rgba(10, 15, 26, 0.55);
+  transform: translateY(-3px);
+}
+
+.cx-product:hover::before {
+  opacity: 1;
+}
+
+.cx-product-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.cx-product-index {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  color: color-mix(in srgb, var(--tone) 30%, var(--ink));
+}
+
+.cx-product-kind {
+  flex: 1;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--ink-ghost);
+}
+
+.cx-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--paper-sink);
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--ink-soft);
+}
+
+.cx-chip i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ink-ghost);
+}
+
+.cx-chip[data-live='true'] {
+  background: #e8f8ef;
+  color: #0f7a44;
+}
+
+.cx-chip[data-live='true'] i {
+  background: #17a45c;
+}
+
+.cx-product-name {
+  font-size: clamp(21px, 2vw, 27px);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  color: var(--ink);
+}
+
+.cx-product-alias {
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: var(--ink-ghost);
+}
+
+.cx-product-lede {
+  margin-top: 4px;
+  font-size: 15.5px;
+  line-height: 1.55;
+  color: var(--ink-soft);
+}
+
+.cx-product-status {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ink-ghost);
+}
+
+.cx-product-go {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  margin-top: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  color: color-mix(in srgb, var(--tone) 30%, var(--ink));
+}
+
+.cx-product-go i {
+  width: 6px;
+  height: 6px;
+  border-top: 1.5px solid currentColor;
+  border-right: 1.5px solid currentColor;
+  transform: rotate(45deg);
+  transition: transform 260ms var(--ease);
+}
+
+.cx-product:hover .cx-product-go i {
+  transform: rotate(45deg) translate(3px, -3px);
+}
+
+/* ---- definitions ----------------------------------------------------------- */
+
+.cx-defs {
+  margin: 0;
+  display: grid;
+  gap: 1px;
+  border: 1px solid var(--edge);
+  border-radius: 12px;
+  background: var(--edge);
+  overflow: hidden;
+}
+
+.cx-defs > div {
+  display: grid;
+  grid-template-columns: 12ch minmax(0, 1fr);
+  gap: 18px;
+  align-items: baseline;
+  padding: 16px 20px;
+  background: var(--paper);
+}
+
+.cx-defs dt {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-ghost);
+}
+
+.cx-defs dd {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--ink);
+}
+
+/* ---- a person -------------------------------------------------------------- */
+
+.cx-person {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding: clamp(20px, 2.4vw, 28px);
+  border: 1px solid var(--edge);
+  border-radius: 14px;
+  background: var(--paper);
+  text-align: center;
+  transition:
+    border-color 260ms var(--ease),
+    box-shadow 260ms var(--ease);
+}
+
+/* The card's own contents sit above the mark that arrives behind them. */
+.cx-person > *:not(.cx-sigil) {
+  position: relative;
+  z-index: 1;
+}
+
+.cx-person:hover .cx-sigil {
+  opacity: 1;
+  transform: translate(20%, 22%);
+}
+
+.cx-person:hover .cx-sigil-edge {
+  animation: cx-sweep 6s var(--ease) infinite;
+}
+
+.cx-person:hover {
+  border-color: color-mix(in srgb, var(--tone) 46%, var(--edge));
+  box-shadow: 0 16px 44px -30px rgba(10, 15, 26, 0.5);
+}
+
+.cx-person img {
+  display: block;
+  width: clamp(120px, 60%, 190px);
+  height: auto;
+  margin: 0 auto 18px;
+  border-radius: 50%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  /* The one place the product colours appear on a photograph, held to a ring. */
+  box-shadow: 0 0 0 3px var(--paper), 0 0 0 4px color-mix(in srgb, var(--tone) 60%, transparent);
+}
+
+.cx-person h3 {
+  margin: 0 0 6px;
+  font-size: 18px;
+  font-weight: 500;
+  letter-spacing: -0.012em;
+  color: var(--ink);
+}
+
+.cx-person p {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--tone) 30%, var(--ink));
+}
+
+/* ---- the data room call ----------------------------------------------------- */
+
+/*
+ * The data room call, as a band across the whole page.
+ *
+ * This was a near-black panel floating inside the wrap, which on a white site
+ * reads as a hole punched in it rather than a change of gear. It is the brand
+ * blue now and it runs edge to edge, so the page changes colour rather than
+ * acquiring a block.
+ */
+.cx-sec-band {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding: clamp(52px, 9vh, 104px) 0;
+  /*
+   * The light end of this gradient used to run to #2a7bff, where white type
+   * measures 3.91:1. #1769ff is the lightest blue in the palette that white
+   * still clears the line against, so the band stops there and the cyan lift
+   * is kept faint and pushed into a corner the text does not reach.
+   */
+  background:
+    radial-gradient(70% 110% at 92% 0%, rgba(76, 201, 255, 0.18) 0%, transparent 56%),
+    linear-gradient(120deg, #0a3fae 0%, #1257d8 58%, #1769ff 100%);
+}
+
+.cx-sec-band > .cx-wrap {
+  position: relative;
+  z-index: 1;
+}
+
+.cx-sec-band .cx-helix {
+  opacity: 0.65;
+}
+
+.cx-cta {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: clamp(24px, 4vw, 56px);
+  align-items: center;
+  padding: 0;
+  border-radius: 0;
+  background: none;
+  color: #fff;
+}
+
+/* #cfe2ff on the deep end of the banner is 2.97:1. White is white. */
+.cx-cta .cx-eyebrow {
+  color: #ffffff;
+}
+
+.cx-cta .cx-sec-title {
+  color: #fff;
+}
+
+.cx-cta .cx-sec-lede {
+  margin-bottom: 24px;
+  color: #ffffff;
+}
+
+.cx-cta .cx-btn-solid {
+  border-color: #fff;
+  background: #fff;
+  color: var(--ink);
+}
+
+.cx-cta .cx-btn-solid:hover {
+  border-color: #fff;
+  background: rgba(255, 255, 255, 0.88);
+}
+
+.cx-cta-stats {
+  margin: 0;
+  display: grid;
+  gap: 1px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.22);
+  overflow: hidden;
+}
+
+.cx-cta-stats > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 20px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.cx-cta-stats dt {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.cx-cta-stats dd {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 400;
+  line-height: 1;
+  color: #fff;
+}
+
+/* ---- the closing line ------------------------------------------------------- */
+
+.cx-close {
+  padding: clamp(52px, 9vh, 104px) 0 clamp(72px, 12vh, 140px);
+  text-align: center;
+}
+
+.cx-close h2 {
+  margin: 0 0 16px;
+  font-size: clamp(28px, 4vw, 48px);
+  font-weight: 500;
+  line-height: 1.1;
+  letter-spacing: -0.028em;
+  color: var(--ink);
+}
+
+.cx-close p {
+  max-width: 60ch;
+  margin: 0 auto;
+  font-size: clamp(15px, 1.35vw, 17.5px);
+  line-height: 1.62;
+  color: var(--ink-faint);
+}
+
+/* ---- the footer ------------------------------------------------------------- */
+
+.cx-foot {
+  position: relative;
+  z-index: 1;
+  background: var(--paper-tint);
+}
+
+.cx-foot-in {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr);
+  gap: clamp(28px, 5vw, 72px);
+  width: 100%;
+  max-width: var(--cx-wrap);
+  margin: 0 auto;
+  padding: clamp(36px, 6vh, 64px) var(--cx-gutter) clamp(24px, 4vh, 40px);
+}
+
+.cx-foot-brand .cx-brand-mark {
+  width: 34px;
+  margin-bottom: 16px;
+  background: var(--ink-ghost);
+}
+
+.cx-foot-brand p {
+  margin: 0;
+  max-width: 34ch;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--ink-faint);
+}
+
+.cx-foot-nav {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: clamp(20px, 3vw, 40px);
+}
+
+.cx-foot-nav h2 {
+  margin: 0 0 14px;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-ghost);
+}
+
+/*
+ * A footer link is a control, so it gets a control's height.
+ *
+ * Set as plain stacked text these were eighteen pixels tall with nine between
+ * them — fine for a pointer and a coin-toss for a thumb. The padding does the
+ * work rather than the type size, so the footer still reads as small print.
+ */
+.cx-foot-nav a {
+  display: block;
+  padding: 7px 0;
+  font-size: 14.5px;
+  color: var(--ink-soft);
+  text-decoration: none;
+  transition: color 220ms var(--ease);
+}
+
+.cx-foot-nav a:hover {
+  color: var(--brand);
+}
+
+.cx-foot-fine {
+  max-width: var(--cx-wrap);
+  margin: 0 auto;
+  padding: 20px var(--cx-gutter) clamp(28px, 4vh, 44px);
+  border-top: 1px solid var(--edge);
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--ink-ghost);
+}
+
+/* ---- narrow ----------------------------------------------------------------- */
+
+@media (max-width: 900px) {
+  .cx-split,
+  .cx-cta,
+  .cx-foot-in {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .cx-model {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
+  }
+
+  /* The connector only reads across a row. Stacked, it is a line to nowhere. */
+  .cx-model::before {
+    display: none;
+  }
+}
+
+@media (max-width: 720px) {
+  /*
+   * The header keeps the brand and the two links and drops the rest.
+   *
+   * A row of six controls on a 390px screen is a row nobody can hit. The
+   * switch and the application both live in the footer, which on a phone is
+   * one scroll away rather than hidden.
+   */
+  .cx-top-in {
+    gap: 10px;
+  }
+
+  .cx-switch span {
+    display: none;
+  }
+
+  .cx-switch {
+    padding: 11px 12px;
+  }
+
+  .cx-nav a {
+    padding: 9px 10px;
+    font-size: 14px;
+  }
+
+  .cx-app {
+    display: none;
+  }
+
+  .cx-hero-go .cx-btn {
+    flex: 1 1 100%;
+    justify-content: center;
+  }
+
+  .cx-defs > div {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 6px;
+  }
+
+  .cx-cta-stats > div {
+    padding: 14px 16px;
+  }
+}
+
+
+/* ---- a page that is not the front ------------------------------------------ */
+
+.cx-page-head {
+  padding: clamp(40px, 8vh, 88px) 0 clamp(28px, 5vh, 52px);
+}
+
+/*
+ * A product's own colour, as a hairline under the head.
+ *
+ * The environment gives each product a whole scene in its colour. Here it gets
+ * one rule and its eyebrow, which is as much colour as a white page can carry
+ * before it stops being a white page.
+ */
+/*
+ * A product's own colour, as a wash rather than a rule.
+ *
+ * This carried a hairline underneath it as well, which on a page with no other
+ * borders was the only line on the screen and read as a mistake.
+ */
+.cx-page-head-tone {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--tone) 8%, transparent),
+    transparent 76%
+  );
+}
+
+.cx-eyebrow-tone {
+  color: color-mix(in srgb, var(--tone) 30%, var(--ink));
+}
+
+.cx-crumbs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 9px;
+  margin: 0 0 clamp(16px, 3vh, 26px);
+  font-size: 13.5px;
+  color: var(--ink-ghost);
+}
+
+.cx-crumbs a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 6px 0;
+  color: var(--ink-soft);
+  text-decoration: none;
+  text-underline-offset: 3px;
+}
+
+.cx-crumbs a:hover {
+  color: var(--brand-ink);
+  text-decoration: underline;
+}
+
+.cx-crumbs i {
+  font-style: normal;
+  color: var(--edge);
+}
+
+.cx-page-title {
+  margin: 0 0 12px;
+  max-width: 20ch;
+  font-size: clamp(32px, 5vw, 56px);
+  font-weight: 500;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+}
+
+.cx-page-alias {
+  margin: 0 0 14px;
+  font-family: var(--mono);
+  font-size: 13.5px;
+  letter-spacing: 0.04em;
+  color: var(--ink-ghost);
+}
+
+.cx-page-lede {
+  margin: 0 0 22px;
+  max-width: 56ch;
+  font-size: clamp(17px, 1.6vw, 21px);
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+
+.cx-status-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  font-size: 14.5px;
+  color: var(--ink-faint);
+}
+
+/* ---- the door into a running application ----------------------------------- */
+
+.cx-appdoor {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-top: clamp(22px, 3.5vh, 34px);
+  padding: 18px 22px;
+  border: 1px solid color-mix(in srgb, var(--tone) 44%, var(--edge));
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--tone) 8%, var(--paper));
+  text-decoration: none;
+  transition:
+    border-color 240ms var(--ease),
+    box-shadow 240ms var(--ease),
+    transform 240ms var(--ease);
+}
+
+.cx-appdoor:hover {
+  border-color: color-mix(in srgb, var(--tone) 80%, var(--edge));
+  box-shadow: 0 16px 44px -28px color-mix(in srgb, var(--tone) 90%, transparent);
+  transform: translateY(-2px);
+}
+
+.cx-appdoor-words {
+  display: grid;
+  gap: 5px;
+}
+
+.cx-appdoor-label {
+  font-size: clamp(16px, 1.5vw, 19px);
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.cx-appdoor-note {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--ink-faint);
+}
+
+.cx-appdoor-go {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-family: var(--mono);
+  font-size: 12.5px;
+  font-weight: 500;
+  color: color-mix(in srgb, var(--tone) 30%, var(--ink));
+}
+
+.cx-appdoor-go i {
+  width: 7px;
+  height: 7px;
+  border-top: 1.5px solid currentColor;
+  border-right: 1.5px solid currentColor;
+  transform: rotate(45deg);
+  transition: transform 240ms var(--ease);
+}
+
+.cx-appdoor:hover .cx-appdoor-go i {
+  transform: rotate(45deg) translate(2px, -2px);
+}
+
+/* ---- prose ------------------------------------------------------------------ */
+
+.cx-prose p {
+  max-width: 68ch;
+  margin: 0 0 1.15em;
+  font-size: clamp(16px, 1.4vw, 18.5px);
+  line-height: 1.68;
+  color: var(--ink-soft);
+}
+
+.cx-prose p:last-child {
+  margin-bottom: 0;
+}
+
+.cx-sec-lede a,
+.cx-prose a {
+  color: var(--brand-ink);
+  text-underline-offset: 3px;
+}
+
+/* ---- the steps of a product -------------------------------------------------- */
+
+.cx-steps {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 1px;
+  border: 1px solid var(--edge);
+  border-radius: 12px;
+  background: var(--edge);
+  overflow: hidden;
+}
+
+.cx-steps > li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: clamp(16px, 2.4vw, 32px);
+  padding: clamp(18px, 2.4vw, 28px);
+  background: var(--paper);
+}
+
+.cx-step-n {
+  font-family: var(--mono);
+  font-size: clamp(15px, 1.6vw, 20px);
+  font-weight: 500;
+  color: color-mix(in srgb, var(--tone) 30%, var(--ink));
+}
+
+.cx-steps h3 {
+  margin: 0 0 8px;
+  font-size: clamp(17px, 1.6vw, 21px);
+  font-weight: 500;
+  letter-spacing: -0.016em;
+  color: var(--ink);
+}
+
+.cx-steps > li > div > p {
+  margin: 0;
+  max-width: 62ch;
+  font-size: 15px;
+  line-height: 1.62;
+  color: var(--ink-faint);
+}
+
+/* The beats: what the stage actually does, one line each. */
+.cx-beats {
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 7px;
+}
+
+.cx-beats li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 11px;
+  align-items: baseline;
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+
+.cx-beats li::before {
+  content: "";
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--tone) 70%, transparent);
+  transform: translateY(-2px);
+}
+
+/* ---- what goes on the chain --------------------------------------------------- */
+
+.cx-payload {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1px;
+  margin-bottom: 18px;
+  border: 1px solid var(--edge);
+  border-radius: 10px;
+  background: var(--edge);
+  overflow: hidden;
+}
+
+.cx-payload > div {
+  flex: 1 1 auto;
+  display: grid;
+  gap: 5px;
+  padding: 14px 18px;
+  background: var(--paper);
+}
+
+.cx-payload > div[data-lit="true"] {
+  background: color-mix(in srgb, var(--tone) 12%, var(--paper));
+}
+
+.cx-payload-value {
+  font-family: var(--mono);
+  font-size: 14px;
+  color: var(--ink);
+}
+
+.cx-payload-size {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-ghost);
+}
+
+.cx-payload-note {
+  max-width: 66ch;
+  margin: 0 0 20px;
+  font-size: 15px;
+  line-height: 1.62;
+  color: var(--ink-faint);
+}
+
+/* ---- the rollout ------------------------------------------------------------- */
+
+.cx-stops {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 1px;
+  border: 1px solid var(--edge);
+  border-radius: 12px;
+  background: var(--edge);
+  overflow: hidden;
+}
+
+.cx-stops > li {
+  display: grid;
+  grid-template-columns: 10ch minmax(0, 1fr) auto;
+  gap: clamp(14px, 2.4vw, 28px);
+  align-items: center;
+  padding: clamp(16px, 2.2vw, 24px);
+  background: var(--paper);
+}
+
+.cx-stop-when {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-ghost);
+}
+
+.cx-stops h3 {
+  margin: 0 0 5px;
+  font-size: 17px;
+  font-weight: 500;
+  letter-spacing: -0.014em;
+  color: var(--ink);
+}
+
+.cx-stops p {
+  margin: 0;
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: var(--ink-faint);
+}
+
+/* ---- narrow ------------------------------------------------------------------ */
+
+@media (max-width: 720px) {
+  .cx-steps > li {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+  }
+
+  .cx-stops > li {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+    justify-items: start;
+  }
+
+  .cx-payload > div {
+    flex: 1 1 100%;
+  }
+
+  .cx-appdoor {
+    padding: 16px 18px;
+  }
+}
+
+
+/* ---- the moving parts -------------------------------------------------------
+ *
+ * Everything below is atmosphere. It is all one colour, the blue the mark is
+ * drawn in, and all of it stops when a visitor asks for less motion. None of
+ * it carries information: a reader who never sees any of it has missed
+ * nothing, which is the test a decoration has to pass before it is allowed on
+ * a page somebody chose because they wanted to read.
+ */
+
+/* The helix behind the headline. */
+.cx-helix {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: auto;
+}
+
+.cx-helix canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.cx-hero-helix {
+  position: relative;
+  isolation: isolate;
+  min-height: min(84vh, 780px);
+  display: grid;
+  align-items: center;
+  overflow: hidden;
+  background:
+    radial-gradient(120% 90% at 50% 40%, rgba(23, 105, 255, 0.07) 0%, transparent 62%),
+    var(--paper);
+}
+
+/*
+ * The words sit over the drawing and take the pointer back.
+ *
+ * The helix reacts to the cursor, which means it has to receive it; the copy
+ * has to be selectable, which means it has to receive it too. The words win
+ * where there are words and the drawing wins everywhere else.
+ */
+.cx-hero-words {
+  position: relative;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.cx-hero-words > * {
+  pointer-events: auto;
+}
+
+/*
+ * A wash behind the type, not a panel.
+ *
+ * The helix runs brightest through the middle of the frame, which is exactly
+ * where the headline is. Rather than boxing the text, the paper is faded up
+ * behind it so the drawing thins out under the words and returns at the edges.
+ */
+.cx-hero-words::before {
+  content: "";
+  position: absolute;
+  inset: -8% -10%;
+  z-index: -1;
+  background: radial-gradient(
+    58% 54% at 50% 50%,
+    rgba(255, 255, 255, 0.82) 0%,
+    rgba(255, 255, 255, 0.5) 52%,
+    transparent 76%
+  );
+  pointer-events: none;
+}
+
+/*
+ * The hero is centred on the helix.
+ *
+ * Set left, the words pushed the drawing into the right-hand third and it read
+ * as something spilling out of frame. Centred, the type sits inside the form
+ * and the form reads as depth behind it, which is what it is for.
+ */
+.cx-hero-helix .cx-hero-words {
+  text-align: center;
+}
+
+.cx-hero-helix .cx-hero-title,
+.cx-hero-helix .cx-hero-lede,
+.cx-hero-helix .cx-hero-body {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.cx-hero-helix .cx-hero-title {
+  max-width: 15ch;
+}
+
+.cx-hero-helix .cx-hero-go {
+  justify-content: center;
+}
+
+/* The node field, used behind the data room call and the closing line. */
+.classic .cx-quantum {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.cx-close {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.cx-close .cx-wrap {
+  position: relative;
+  z-index: 1;
+}
+
+.cx-cta {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+/*
+ * Lifting the panel's contents above whatever is behind them.
+ *
+ * This was `> *`, which also caught the canvas and turned it from absolute
+ * into a relative box with `height: 100%` of an auto-height parent. It then
+ * joined the layout, grew the panel it was measuring, measured the taller
+ * panel, and grew again: the data room call reached six thousand pixels.
+ */
+.cx-cta > *:not(canvas) {
+  position: relative;
+  z-index: 1;
+}
+
+/* ---- icons that draw themselves ---------------------------------------------- */
+
+.cx-icon {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.cx-card-art,
+.cx-model-art {
+  display: block;
+  width: 44px;
+  height: 44px;
+  margin-bottom: 16px;
+  color: var(--brand);
+  transition: transform 420ms var(--ease);
+}
+
+.cx-model-art {
+  width: 50px;
+  height: 50px;
+}
+
+.cx-card:hover .cx-card-art {
+  transform: translateY(-2px) scale(1.04);
+}
+
+/* ---- the model steps as cards -------------------------------------------------- */
+
+.cx-model-step-card {
+  position: relative;
+}
+
+.cx-model .cx-model-step {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: auto;
+  height: auto;
+  margin: 0;
+  border: 0;
+  background: none;
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  color: var(--ink-ghost);
+}
+
+/* The connector was drawn against a row of circles that are now numbers. */
+.cx-model::before {
+  top: 24px;
+  opacity: 0.5;
+}
+
+/* ---- the mark arriving on a card ------------------------------------------------
+ *
+ * The same gesture the environment makes on its product doors and its team
+ * cards: the QuFi letter comes into the bottom-right corner, cropped by both
+ * edges, in the product's own colour. It is the one place on this site where a
+ * tone is allowed to be itself rather than mixed down toward ink, because it is
+ * behind everything and reading nothing.
+ */
+.cx-sigil {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  z-index: 0;
+  width: clamp(120px, 42%, 210px);
+  aspect-ratio: 190 / 186;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(42%, 44%);
+  transition:
+    opacity 420ms var(--ease),
+    transform 620ms var(--ease);
+}
+
+.cx-product:hover .cx-sigil,
+.cx-product:focus-visible .cx-sigil {
+  opacity: 1;
+  transform: translate(20%, 22%);
+}
+
+.cx-sigil i {
+  position: absolute;
+  inset: 0;
+  mask-image: var(--mark);
+  -webkit-mask-image: var(--mark);
+  mask-size: contain;
+  -webkit-mask-size: contain;
+  mask-repeat: no-repeat;
+  -webkit-mask-repeat: no-repeat;
+  mask-position: center;
+  -webkit-mask-position: center;
+}
+
+.cx-sigil-fill {
+  background: var(--tone);
+  opacity: 0.13;
+}
+
+.cx-sigil-edge {
+  background: linear-gradient(
+    118deg,
+    transparent 34%,
+    color-mix(in srgb, var(--tone) 92%, white) 50%,
+    transparent 66%
+  );
+  background-size: 260% 260%;
+  background-position: 120% 0%;
+  opacity: 0.4;
+}
+
+.cx-product:hover .cx-sigil-edge,
+.cx-product:focus-visible .cx-sigil-edge {
+  animation: cx-sweep 6s var(--ease) infinite;
+}
+
+@keyframes cx-sweep {
+  0% {
+    background-position: 120% 0%;
+  }
+  55%,
+  100% {
+    background-position: -60% 0%;
+  }
+}
+
+/* The card's own contents have to sit above the mark. */
+.cx-product > *:not(.cx-sigil) {
+  position: relative;
+  z-index: 1;
+}
+
+/* ---- the portraits ------------------------------------------------------------- */
+
+.cx-person-photo {
+  position: relative;
+  display: block;
+  width: clamp(120px, 60%, 190px);
+  margin: 0 auto 18px;
+  aspect-ratio: 1;
+}
+
+.cx-person-photo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: none;
+}
+
+/* A ring in the person's colour, turning slowly. */
+.cx-person-photo i {
+  position: absolute;
+  inset: -7px;
+  border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--tone) 55%, transparent);
+  border-top-color: transparent;
+  border-left-color: transparent;
+  animation: cx-turn 9s linear infinite;
+}
+
+.cx-person:hover .cx-person-photo i {
+  animation-duration: 3.4s;
+}
+
+@keyframes cx-turn {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ---- less motion ---------------------------------------------------------------
+ *
+ * Everything above goes. The helix and the node field stop themselves in
+ * script, because a canvas cannot be paused by a stylesheet; the rest is CSS
+ * and stops here.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .cx-person-photo i,
+  .cx-product:hover .cx-sigil-edge,
+  .cx-product:focus-visible .cx-sigil-edge {
+    animation: none;
+  }
+
+  .cx-sigil,
+  .cx-card-art,
+  .cx-model-art {
+    transition-duration: 1ms;
+  }
+}
+
+@media (max-width: 900px) {
+  .cx-hero-helix {
+    min-height: auto;
+  }
+
+  /*
+   * The helix goes quiet behind a narrow hero.
+   *
+   * At this width the words fill the frame, so the drawing is entirely behind
+   * type and reads as noise rather than depth. It is still there, just faint
+   * enough to be a texture.
+   */
+  .cx-helix {
+    opacity: 0.42;
+  }
+
+  .cx-hero-words::before {
+    inset: -10% -12%;
+  }
+
+  .cx-model .cx-model-step {
+    position: static;
+    display: block;
+    margin-bottom: 6px;
+  }
+}
+
+
+/* ---- the model, taken sideways -----------------------------------------------
+ *
+ * Three viewports of scroll distance, one screen of it visible at a time, and
+ * a track that slides left as the page goes down. The outer element exists
+ * only to be tall; everything a reader sees is inside the sticky one.
+ */
+
+/*
+ * Light grey, with the blue in the cards.
+ *
+ * This was near-black and then deep blue, and both had the same problem: a
+ * dark band across a white site is a hole in it, and the reader arrives at the
+ * hole rather than at the model. Grey lets the three blues be the only strong
+ * colour on the screen, which is where the attention should be.
+ */
+.cx-model-scroll {
+  position: relative;
+  height: 340vh;
+  background:
+    radial-gradient(90% 70% at 50% 0%, rgba(23, 105, 255, 0.07) 0%, transparent 62%),
+    var(--paper-sink);
+}
+
+.cx-model-pin {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.cx-model-head {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: clamp(20px, 4vh, 40px) var(--cx-gutter);
+}
+
+.cx-model-head .cx-band-say {
+  margin: 0;
+  color: var(--ink-ghost);
+}
+
+/* A small arrow that keeps moving, because a pinned page needs to say why. */
+.cx-model-hint {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-ghost);
+}
+
+.cx-model-hint i {
+  position: relative;
+  display: block;
+  width: 44px;
+  height: 1px;
+  background: rgba(10, 15, 26, 0.14);
+  overflow: hidden;
+}
+
+.cx-model-hint i::after {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 16px;
+  background: var(--brand);
+  animation: cx-hint 2.4s var(--ease) infinite;
+}
+
+@keyframes cx-hint {
+  0% {
+    transform: translateX(-16px);
+  }
+  100% {
+    transform: translateX(44px);
+  }
+}
+
+.cx-model-track {
+  display: flex;
+  gap: clamp(14px, 2vw, 28px);
+  padding: 0 var(--cx-gutter);
+  will-change: transform;
+}
+
+/*
+ * The track is measured, so it has to be able to overflow its own box.
+ *
+ * `scrollWidth` minus `clientWidth` is only the travel if the box is the width
+ * of the window rather than the width of its contents, which is what this
+ * pins it to.
+ */
+.cx-model-pin > .cx-model-track {
+  width: 100%;
+  overflow: visible;
+}
+
+/* ---- one panel ---------------------------------------------------------------- */
+
+.cx-slab {
+  position: relative;
+  isolation: isolate;
+  flex: 0 0 auto;
+  width: min(76vw, 880px);
+  height: min(76vh, 660px);
+  display: flex;
+  align-items: flex-end;
+  padding: clamp(26px, 4vw, 56px);
+  border-radius: 22px;
+  overflow: hidden;
+  background:
+    radial-gradient(120% 120% at 82% 12%, rgba(255, 255, 255, 0.16) 0%, transparent 58%),
+    var(--tone);
+  color: #fff;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.12),
+    0 34px 80px -44px rgba(9, 30, 78, 0.6);
+}
+
+.cx-slab .cx-helix {
+  opacity: 0.85;
+}
+
+.cx-slab-words {
+  position: relative;
+  z-index: 1;
+  max-width: 46ch;
+  pointer-events: none;
+}
+
+.cx-slab-art {
+  display: block;
+  width: 52px;
+  height: 52px;
+  margin-bottom: 20px;
+  color: #fff;
+}
+
+.cx-slab-step {
+  margin: 0 0 10px;
+  font-family: var(--mono);
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  color: rgba(255, 255, 255, 0.62);
+}
+
+.cx-slab h2 {
+  margin: 0 0 12px;
+  font-size: clamp(30px, 4.4vw, 54px);
+  font-weight: 500;
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+  color: #fff;
+}
+
+.cx-slab-lede {
+  margin: 0 0 12px;
+  font-size: clamp(16px, 1.5vw, 20px);
+  font-weight: 500;
+  line-height: 1.45;
+  color: #fff;
+}
+
+.cx-slab-body {
+  margin: 0;
+  font-size: clamp(14px, 1.15vw, 16px);
+  line-height: 1.62;
+  color: rgba(255, 255, 255, 0.76);
+}
+
+/* A hairline down the inside edge, so the panels read as a sequence. */
+.cx-slab-rule {
+  position: absolute;
+  top: clamp(26px, 4vw, 56px);
+  bottom: clamp(26px, 4vw, 56px);
+  left: 0;
+  width: 1px;
+  background: linear-gradient(180deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+}
+
+/* ---- when it should not be sideways --------------------------------------------
+ *
+ * On a phone the horizontal track fights the gesture the reader is already
+ * making, and a visitor who asked for reduced motion has asked not to be moved
+ * by the page. Both get the same three panels, stacked.
+ */
+@media (max-width: 900px) {
+  .cx-model-scroll {
+    height: auto;
+  }
+
+  .cx-model-pin {
+    position: static;
+    height: auto;
+    padding: clamp(40px, 8vh, 80px) 0;
+  }
+
+  .cx-model-head {
+    position: static;
+    padding: 0 var(--cx-gutter) clamp(20px, 3vh, 30px);
+  }
+
+  .cx-model-hint {
+    display: none;
+  }
+
+  .cx-model-track {
+    flex-direction: column;
+    transform: none !important;
+  }
+
+  .cx-slab {
+    width: auto;
+    height: auto;
+    min-height: 400px;
+  }
+}
+
+.cx-model-scroll[data-still="true"] {
+  height: auto;
+}
+
+.cx-model-scroll[data-still="true"] .cx-model-pin {
+  position: static;
+  height: auto;
+  padding: clamp(40px, 8vh, 80px) 0;
+}
+
+.cx-model-scroll[data-still="true"] .cx-model-head {
+  position: static;
+  padding: 0 var(--cx-gutter) clamp(20px, 3vh, 30px);
+}
+
+.cx-model-scroll[data-still="true"] .cx-model-track {
+  flex-direction: column;
+}
+
+.cx-model-scroll[data-still="true"] .cx-slab {
+  width: auto;
+  height: auto;
+  min-height: 380px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cx-model-hint i::after {
+    animation: none;
+  }
+}
+
+
+/* ---- the field --------------------------------------------------------------
+ *
+ * Fixed rather than scrolled, so it reads as something the page is in front of
+ * rather than a texture printed on it. Faint enough that on most screens it is
+ * felt rather than seen, and out of the way of everything: no pointer, no
+ * selection, and beneath every scrap of content.
+ */
+.cx-field {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.55;
+}
+
+.cx-field canvas {
+  display: block;
+}
+
+/* Everything on the page sits in front of it. */
+.cx-main,
+.cx-top,
+.cx-foot {
+  position: relative;
+  z-index: 1;
+}
+
+/*
+ * Except the two places that have a field of their own.
+ *
+ * The hero has the helix and the model panels have three more, and stacking a
+ * fourth behind them muddies all of it. Both paint their own opaque ground.
+ */
+.cx-hero-helix,
+.cx-model-scroll {
+  position: relative;
+  z-index: 1;
+}
+
+@media (max-width: 720px) {
+  /* Fainter still on a phone, where the type is doing more of the work. */
+  .cx-field {
+    opacity: 0.4;
+  }
+}
+
+
+/* ---- the capabilities, as cards that turn over ------------------------------- */
+
+.cx-grid-4 {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
+}
+
+.cx-flip {
+  perspective: 1400px;
+}
+
+.cx-flip-in {
+  position: relative;
+  height: 100%;
+  min-height: 268px;
+  transform-style: preserve-3d;
+  will-change: transform;
+  transition: transform 720ms var(--ease);
+  cursor: pointer;
+  outline-offset: 6px;
+}
+
+.cx-flip-in:hover,
+.cx-flip-in:focus-visible,
+.cx-flip-in:focus-within {
+  transform: rotateY(180deg);
+}
+
+.cx-flip-front,
+.cx-flip-back {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  padding: clamp(20px, 2.4vw, 28px);
+  border-radius: 14px;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  overflow: hidden;
+}
+
+.cx-flip-front {
+  border: 1px solid var(--edge);
+  background: var(--paper);
+  transition: border-color 400ms var(--ease), box-shadow 400ms var(--ease);
+}
+
+.cx-flip-in:hover .cx-flip-front {
+  border-color: color-mix(in srgb, var(--tone) 52%, var(--edge));
+  box-shadow: 0 18px 46px -30px rgba(10, 15, 26, 0.5);
+}
+
+/*
+ * The back is the card's colour, taken deep enough to carry white text.
+ *
+ * The four product tones are bright, which is right for a mark on near-black
+ * and wrong for a panel of prose. Mixed two-thirds into the ink they keep
+ * their hue and lose their value, which is what makes eight of them sit
+ * together without shouting.
+ */
+.cx-flip-back {
+  transform: rotateY(180deg);
+  background:
+    radial-gradient(120% 120% at 84% 8%, rgba(255, 255, 255, 0.14) 0%, transparent 56%),
+    color-mix(in srgb, var(--tone) 34%, #0a0f1a);
+  color: #fff;
+  isolation: isolate;
+}
+
+.cx-flip-art {
+  display: block;
+  width: 46px;
+  height: 46px;
+  margin-bottom: auto;
+  color: color-mix(in srgb, var(--tone) 34%, var(--ink));
+}
+
+.cx-flip-index {
+  margin: 18px 0 8px;
+  font-family: var(--mono);
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  color: color-mix(in srgb, var(--tone) 34%, var(--ink));
+}
+
+.cx-flip-back .cx-flip-index {
+  margin-top: 0;
+  color: rgba(255, 255, 255, 0.62);
+}
+
+.cx-flip h3 {
+  margin: 0 0 8px;
+  font-size: 19px;
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: -0.016em;
+  color: var(--ink);
+}
+
+.cx-flip-back h3 {
+  color: #fff;
+}
+
+.cx-flip-lede {
+  margin: 0;
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: var(--ink-faint);
+}
+
+.cx-flip-body {
+  margin: 0;
+  position: relative;
+  z-index: 1;
+  font-size: 14px;
+  line-height: 1.62;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+/* A small mark saying there is another side, which turns as the card does. */
+.cx-flip-more {
+  position: absolute;
+  right: 18px;
+  bottom: 18px;
+  width: 26px;
+  height: 26px;
+  border: 1px solid var(--edge);
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  transition: border-color 400ms var(--ease), transform 500ms var(--ease);
+}
+
+.cx-flip-more i {
+  width: 6px;
+  height: 6px;
+  border-top: 1.4px solid var(--ink-ghost);
+  border-right: 1.4px solid var(--ink-ghost);
+  transform: rotate(45deg) translate(-1px, 1px);
+}
+
+.cx-flip-in:hover .cx-flip-more {
+  border-color: color-mix(in srgb, var(--tone) 60%, var(--edge));
+  transform: rotate(180deg);
+}
+
+/* The mark, cropped into the corner of the back, as everywhere else. */
+.cx-flip-back .cx-sigil {
+  opacity: 1;
+  transform: translate(22%, 24%);
+  z-index: 0;
+}
+
+.cx-flip-back .cx-sigil-fill {
+  background: #fff;
+  opacity: 0.1;
+}
+
+.cx-flip-back .cx-sigil-edge {
+  background: linear-gradient(118deg, transparent 34%, rgba(255, 255, 255, 0.75) 50%, transparent 66%);
+  background-size: 260% 260%;
+  opacity: 0.3;
+  animation: cx-sweep 7s var(--ease) infinite;
+}
+
+/*
+ * Where there is no pointer, there is no flip.
+ *
+ * A card that only shows half of itself to a hover is a card a phone can never
+ * finish reading. On touch the two faces become one: the front's contents,
+ * then the paragraph underneath, in a card that does not turn.
+ */
+@media (hover: none) {
+  .cx-flip-in {
+    min-height: 0;
+    transform: none !important;
+    cursor: default;
+  }
+
+  .cx-flip-front {
+    position: relative;
+    inset: auto;
+  }
+
+  .cx-flip-back {
+    position: relative;
+    inset: auto;
+    transform: none;
+    margin-top: -1px;
+    border-radius: 0 0 14px 14px;
+  }
+
+  .cx-flip-front {
+    border-radius: 14px 14px 0 0;
+    border-bottom: 0;
+  }
+
+  .cx-flip-more {
+    display: none;
+  }
+
+  .cx-flip-back .cx-flip-index,
+  .cx-flip-back h3 {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cx-flip-in {
+    transition-duration: 1ms;
+  }
+
+  .cx-flip-back .cx-sigil-edge {
+    animation: none;
+  }
+}
+
+/* ---- the cryptography, one primitive at a time --------------------------------- */
+
+.cx-crypto {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: clamp(16px, 2vw, 24px);
+}
+
+.cx-crypto-list {
+  display: grid;
+  gap: 6px;
+}
+
+.cx-crypto-term {
+  position: relative;
+  display: grid;
+  gap: 4px;
+  padding: 14px 18px;
+  border: 0;
+  border-radius: 10px;
+  background: none;
+  text-align: left;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 260ms var(--ease);
+}
+
+.cx-crypto-term:hover {
+  background: var(--paper-tint);
+}
+
+/* The selected one, as a shape that slides between them. */
+.cx-crypto-mark {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: 10px;
+  background: var(--brand-wash);
+  box-shadow: inset 3px 0 0 var(--brand);
+}
+
+.cx-crypto-term-name {
+  position: relative;
+  font-family: var(--mono);
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-ghost);
+  transition: color 260ms var(--ease);
+}
+
+.cx-crypto-term[aria-selected="true"] .cx-crypto-term-name {
+  color: var(--brand-ink);
+}
+
+.cx-crypto-term-said {
+  position: relative;
+  font-size: 15px;
+  line-height: 1.45;
+  color: var(--ink-soft);
+}
+
+.cx-crypto-term[aria-selected="true"] .cx-crypto-term-said {
+  color: var(--ink);
+  font-weight: 500;
+}
+
+.cx-crypto-panel {
+  padding: clamp(22px, 3vw, 32px);
+  border: 1px solid var(--edge);
+  border-radius: 14px;
+  background: var(--paper);
+}
+
+.cx-crypto-art {
+  display: block;
+  margin-bottom: 20px;
+  color: var(--brand);
+}
+
+.cx-crypto-art svg {
+  display: block;
+  width: 100%;
+  max-width: 300px;
+  height: auto;
+}
+
+.cx-crypto-panel h3 {
+  margin: 0 0 12px;
+  font-size: clamp(19px, 1.9vw, 25px);
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+
+.cx-crypto-body {
+  margin: 0 0 18px;
+  font-size: 15.5px;
+  line-height: 1.65;
+  color: var(--ink-faint);
+}
+
+.cx-crypto-against {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 12px;
+  margin: 0;
+  padding-top: 16px;
+  border-top: 1px solid var(--edge-soft);
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+
+.cx-crypto-against span {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--brand-ink);
+}
+
+@media (min-width: 860px) {
+  .cx-crypto {
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+    align-items: start;
+  }
+}
+
+/* The split section holds the head and the whole interactive block. */
+.cx-split:has(.cx-crypto) {
+  grid-template-columns: minmax(0, 1fr);
+  gap: clamp(24px, 3vh, 36px);
+}
+
+
+/* ---- the data room, in daylight ----------------------------------------------
+ *
+ * The room is one set of components and one set of class names, rendered on
+ * both sites. `dataroom.css` paints it for the environment: near-black ground,
+ * pale blue hairlines, white type. This repaints the same markup for a white
+ * page.
+ *
+ * Most of it is done by redefining the four tokens the room is drawn with, so
+ * a rule written once over there is right here too. What has to be restated is
+ * everything the room hard-codes: the `rgba(150, 190, 255, …)` hairlines and
+ * the `rgba(255, 255, 255, …)` greys, neither of which can be reasoned about
+ * from a variable.
+ */
+
+.cx-room {
+  --void: #ffffff;
+  --ice: var(--ink);
+  --ice-soft: var(--ink-soft);
+  --ice-faint: var(--ink-faint);
+  --ice-ghost: var(--ink-ghost);
+  --hud: var(--ink-ghost);
+  --signal: var(--brand-ink);
+
+  min-height: 0;
+  background: none;
+}
+
+/*
+ * The room takes the site's measure, not its own.
+ *
+ * `dataroom.css` gives the frame the environment's gutter and its own maximum
+ * width, because over there it is the whole page. Here it sits inside a site
+ * that already has a wrap, and left alone the contents column ran flush into
+ * the left edge of the window.
+ */
+.cx-room .room-frame {
+  max-width: var(--cx-wrap);
+  margin: 0 auto;
+  padding: 0 var(--cx-gutter) clamp(60px, 10vh, 120px);
+}
+
+/* ---- the hairlines ------------------------------------------------------------ */
+
+.cx-room .room-stats,
+.cx-room .room-stats > div,
+.cx-room .room-sections,
+.cx-room .room-journey,
+.cx-room .room-results,
+.cx-room .paper-meta,
+.cx-room .paper-contents,
+.cx-room .room-search-quick {
+  background: var(--edge);
+  border-color: var(--edge);
+}
+
+.cx-room .room-stats > div,
+.cx-room .room-section-card,
+.cx-room .room-journey a,
+.cx-room .room-result a,
+.cx-room .paper-meta > div,
+.cx-room .paper-contents li {
+  background: var(--paper);
+}
+
+.cx-room .room-nav-tail,
+.cx-room .room-hero,
+.cx-room .paper-block,
+.cx-room .reader,
+.cx-room .reader-note,
+.cx-room .read-paper-end {
+  border-color: var(--edge);
+}
+
+.cx-room .doc-card,
+.cx-room .room-search-field,
+.cx-room .room-filter select,
+.cx-room .room-filter-clear,
+.cx-room .room-search-go,
+.cx-room .paper-topics a,
+.cx-room .reader-step,
+.cx-room .reader-wide,
+.cx-room .read-paper-end-go a,
+.cx-room .result-topics i,
+.cx-room .doc-card-topics i {
+  border-color: var(--edge);
+  background: var(--paper);
+}
+
+.cx-room .room-search-go {
+  background: var(--brand-wash);
+  color: var(--brand-ink);
+}
+
+/* ---- the greys ---------------------------------------------------------------- */
+
+.cx-room .room-note,
+.cx-room .section-card-lede,
+.cx-room .doc-card-desc,
+.cx-room .journey-why,
+.cx-room .result-snippet,
+.cx-room .quick-snippet,
+.cx-room .room-search-none,
+.cx-room .paper-status-note,
+.cx-room .reader-note {
+  color: var(--ink-faint);
+}
+
+.cx-room .doc-card-section,
+.cx-room .section-card-count,
+.cx-room .result-field,
+.cx-room .journey-where,
+.cx-room .room-nav-list i,
+.cx-room .result-topics i,
+.cx-room .doc-card-topics i {
+  color: var(--ink-ghost);
+}
+
+.cx-room .room-search-field input {
+  color: var(--ink);
+}
+
+.cx-room .room-search-field input::placeholder {
+  color: var(--ink-ghost);
+}
+
+/* ---- the things that were lit on black ----------------------------------------- */
+
+.cx-room .room-nav-list a:hover,
+.cx-room .room-section-card:hover,
+.cx-room .room-journey a:hover,
+.cx-room .room-result a:hover,
+.cx-room .room-search-quick a:hover {
+  background: var(--paper-tint);
+}
+
+.cx-room .room-nav-list a[data-here="true"] {
+  background: var(--brand-wash);
+  border-left-color: var(--brand);
+  color: var(--ink);
+}
+
+.cx-room .room-nav-list a[data-here="true"] b {
+  color: var(--brand-ink);
+}
+
+.cx-room .doc-card:hover {
+  background: var(--paper);
+  box-shadow: 0 16px 44px -30px rgba(10, 15, 26, 0.5);
+}
+
+.cx-room .journey-go {
+  background: var(--edge);
+}
+
+.cx-room .journey-go::after {
+  border-color: var(--ink-ghost);
+}
+
+.cx-room .paper-discover i {
+  border-color: var(--brand);
+}
+
+.cx-room .room-search-mark,
+.cx-room .room-search-mark::after {
+  border-color: var(--ink-ghost);
+  background-color: transparent;
+}
+
+.cx-room .room-search-mark::after {
+  background: var(--ink-ghost);
+}
+
+/* ---- statuses, restated for a light ground --------------------------------------
+ *
+ * The five status colours were chosen against near-black and every one of them
+ * is too pale on white. These are the same five hues taken down to where they
+ * can be read, with a wash behind them so the chip still reads as a chip.
+ */
+.cx-room .status {
+  border-radius: 999px;
+  border-width: 1px;
+}
+
+.cx-room .status-complete {
+  color: #0f7a44;
+  background: #e8f8ef;
+  border-color: #b9e6cd;
+}
+
+.cx-room .status-review {
+  color: #0d5ea8;
+  background: #e8f3fd;
+  border-color: #bcdcf5;
+}
+
+.cx-room .status-development {
+  color: #8a5300;
+  background: #fdf3e2;
+  border-color: #f0dcb6;
+}
+
+.cx-room .status-planned {
+  color: var(--ink-ghost);
+  background: var(--paper-sink);
+  border-color: var(--edge);
+}
+
+.cx-room .status-confidential {
+  color: #a52020;
+  background: #fdeded;
+  border-color: #f4c9c9;
+}
+
+/* ---- the paper viewer ------------------------------------------------------------ */
+
+.cx-room .paper-page {
+  border-color: var(--edge);
+  background: var(--paper);
+  box-shadow: 0 18px 50px -34px rgba(10, 15, 26, 0.5);
+}
+
+.cx-room .reader-bar {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.96) 70%, transparent);
+}
+
+.cx-room .reader-arrow {
+  border-color: var(--ink-soft);
+}
+
+/* ---- the mark on a card, on white ------------------------------------------------ */
+
+.cx-room .doc-sigil-fill {
+  opacity: 0.1;
+}
+
+.cx-room .doc-sigil-edge {
+  opacity: 0.22;
+}
+
+/* ---- the people, inside the room --------------------------------------------------- */
+
+.cx-room-team {
+  padding: clamp(30px, 5vh, 54px) 0 0;
+}
+
+.cx-room-faces {
+  margin-top: clamp(20px, 3vh, 30px);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+  gap: clamp(12px, 1.6vw, 18px);
+}
+
+/* ---- and the view button, which is bright either way -------------------------------- */
+
+.cx-room .viewbtn {
+  background: linear-gradient(
+    100deg,
+    color-mix(in srgb, var(--tone) 10%, var(--paper)),
+    var(--paper) 62%
+  );
+  border-color: color-mix(in srgb, var(--tone) 44%, var(--edge));
+  animation: none;
+}
+
+.cx-room .viewbtn-label {
+  color: var(--ink);
+}
+
+.cx-room .viewbtn-note {
+  color: var(--ink-faint);
+}
+
+.cx-room .viewbtn-go,
+.cx-room .viewbtn-sheet,
+.cx-room .viewbtn-fold,
+.cx-room .viewbtn-mark {
+  color: var(--brand-ink);
+  stroke: var(--brand-ink);
+}
+
+.cx-room .viewbtn-go i {
+  border-color: var(--brand-ink);
+}
+
+.cx-room .viewbtn:hover {
+  border-color: var(--brand);
+  box-shadow: 0 18px 46px -30px rgba(23, 105, 255, 0.7);
+}
+
+.cx-room .doc-card-has {
+  color: color-mix(in srgb, var(--tone) 30%, var(--ink));
+}
+
+.cx-room .doc-card[data-paper="true"] {
+  border-color: color-mix(in srgb, var(--tone) 30%, var(--edge));
+}
+
+/* The room's own nav is a column here too, and the site header is above it. */
+@media (min-width: 901px) {
+  .cx-room .room-nav {
+    top: 84px;
+    max-height: calc(100dvh - 120px);
+  }
+}
+
+@media (max-width: 900px) {
+  .cx-room .room-nav-toggle {
+    border-color: var(--edge);
+    background: var(--paper);
+    color: var(--ink);
+  }
+
+  .cx-room .room-nav-toggle i {
+    border-color: var(--ink-ghost);
+  }
+
+  .cx-room .room-nav {
+    border-bottom-color: var(--edge);
+  }
+}
+
+
+/* ---- the parts of a product, as a stack ----------------------------------------
+ *
+ * Five slabs seen from slightly above, one per part. The chosen one steps
+ * forward and takes the product's colour; the rest stay as outlines. It is the
+ * one drawing on a product page and it earns its place by saying something the
+ * words do not: these are layers of one thing, not a list of five things.
+ */
+
+.cx-parts {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: clamp(24px, 3vw, 44px);
+  align-items: center;
+}
+
+.cx-parts-stack {
+  position: relative;
+  height: clamp(220px, 26vw, 300px);
+  perspective: 900px;
+  transform-style: preserve-3d;
+}
+
+.cx-parts-slab {
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  /* Each layer sits below the last, and the whole stack is tipped away. */
+  top: calc(var(--i) * (100% / var(--of)));
+  height: calc(100% / var(--of) - 6px);
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  transform: rotateX(52deg) rotateZ(-42deg) translateZ(0);
+  transform-style: preserve-3d;
+  transition: transform 520ms var(--ease);
+}
+
+.cx-parts-slab span {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 1px solid color-mix(in srgb, var(--tone) 40%, var(--edge));
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--tone) 4%, var(--paper));
+  transition:
+    background 420ms var(--ease),
+    border-color 420ms var(--ease),
+    box-shadow 420ms var(--ease);
+}
+
+.cx-parts-slab:hover {
+  transform: rotateX(52deg) rotateZ(-42deg) translateZ(18px);
+}
+
+.cx-parts-slab[data-on="true"] {
+  transform: rotateX(52deg) rotateZ(-42deg) translateZ(38px);
+}
+
+.cx-parts-slab[data-on="true"] span {
+  border-color: color-mix(in srgb, var(--tone) 80%, transparent);
+  background: color-mix(in srgb, var(--tone) 26%, var(--paper));
+  box-shadow: 0 18px 40px -24px color-mix(in srgb, var(--tone) 90%, transparent);
+}
+
+/* ---- the words beside it -------------------------------------------------------- */
+
+.cx-parts-body {
+  display: grid;
+  gap: clamp(16px, 2vh, 24px);
+}
+
+.cx-parts-list {
+  display: grid;
+  gap: 2px;
+}
+
+.cx-parts-term {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: baseline;
+  gap: 14px;
+  padding: 12px 16px;
+  border: 0;
+  border-radius: 9px;
+  background: none;
+  text-align: left;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 240ms var(--ease);
+}
+
+.cx-parts-term:hover {
+  background: var(--paper-tint);
+}
+
+.cx-parts-mark {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--tone) 10%, var(--paper));
+  box-shadow: inset 3px 0 0 color-mix(in srgb, var(--tone) 62%, var(--ink));
+}
+
+.cx-parts-n {
+  position: relative;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  color: var(--ink-ghost);
+}
+
+.cx-parts-term[aria-selected="true"] .cx-parts-n {
+  color: color-mix(in srgb, var(--tone) 30%, var(--ink));
+}
+
+.cx-parts-name {
+  position: relative;
+  font-size: 16px;
+  line-height: 1.35;
+  color: var(--ink-soft);
+}
+
+.cx-parts-term[aria-selected="true"] .cx-parts-name {
+  color: var(--ink);
+  font-weight: 500;
+}
+
+.cx-parts-panel {
+  padding: clamp(18px, 2.4vw, 26px);
+  border: 1px solid var(--edge);
+  border-radius: 12px;
+  background: var(--paper);
+  min-height: 140px;
+}
+
+.cx-parts-panel-term {
+  margin: 0 0 8px;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--tone) 30%, var(--ink));
+}
+
+.cx-parts-panel-said {
+  margin: 0;
+  font-size: clamp(15px, 1.35vw, 17.5px);
+  line-height: 1.6;
+  color: var(--ink-soft);
+}
+
+@media (min-width: 860px) {
+  .cx-parts {
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  }
+}
+
+@media (max-width: 720px) {
+  /*
+   * The stack is a drawing, and a drawing that has to be tapped to be used is
+   * a drawing in the way. On a phone the list alone does the work.
+   */
+  .cx-parts-stack {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cx-parts-slab {
+    transition-duration: 1ms;
+  }
+}
+
+/* The parts section is one block under its heading rather than two columns. */
+.cx-split:has(.cx-parts) {
+  grid-template-columns: minmax(0, 1fr);
+  gap: clamp(24px, 3vh, 36px);
+}
+
+
+/* ---- a lifecycle, walked --------------------------------------------------------
+ *
+ * One screen per stage of scroll, pinned, with the chain across the top
+ * building as the reader goes. Same construction as the model panels on the
+ * front page: a tall outer element that exists only to be scrolled through,
+ * and a sticky inner one that does not move while it is.
+ */
+
+.cx-flow {
+  position: relative;
+  /* One viewport per stage, plus one so the last is read before it lets go. */
+  height: calc((var(--stages) + 1) * 92vh);
+}
+
+.cx-flow-pin {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: grid;
+  align-content: center;
+  overflow: hidden;
+  isolation: isolate;
+  background:
+    radial-gradient(90% 70% at 50% 0%, color-mix(in srgb, var(--tone) 8%, transparent) 0%, transparent 62%),
+    var(--paper);
+}
+
+/* The helix runs behind it, faint, in the site's blue. */
+.cx-flow-pin > .cx-helix {
+  opacity: 0.4;
+}
+
+.cx-flow-in {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: var(--cx-wrap);
+  margin: 0 auto;
+  padding: 0 var(--cx-gutter);
+  display: grid;
+  gap: clamp(28px, 5vh, 56px);
+}
+
+/* ---- the chain ------------------------------------------------------------------ */
+
+.cx-flow-chain {
+  position: relative;
+}
+
+.cx-flow-rail {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 7px;
+  height: 1px;
+  background: var(--edge);
+}
+
+.cx-flow-rail-on {
+  display: block;
+  height: 100%;
+  transform-origin: left center;
+  background: color-mix(in srgb, var(--tone) 70%, var(--ink));
+}
+
+.cx-flow-chain ol {
+  position: relative;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.cx-flow-chain li {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  min-width: 0;
+  flex: 1 1 0;
+}
+
+.cx-flow-node {
+  width: 15px;
+  height: 15px;
+  border: 1px solid var(--edge);
+  border-radius: 50%;
+  background: var(--paper);
+  transition:
+    background 420ms var(--ease),
+    border-color 420ms var(--ease),
+    transform 420ms var(--ease),
+    box-shadow 420ms var(--ease);
+}
+
+.cx-flow-chain li[data-on="true"] .cx-flow-node {
+  border-color: color-mix(in srgb, var(--tone) 70%, var(--ink));
+  background: color-mix(in srgb, var(--tone) 70%, var(--ink));
+}
+
+.cx-flow-chain li[data-here="true"] .cx-flow-node {
+  transform: scale(1.5);
+  box-shadow: 0 0 0 5px color-mix(in srgb, var(--tone) 18%, transparent);
+}
+
+.cx-flow-node-name {
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-align: center;
+  line-height: 1.4;
+  color: var(--ink-ghost);
+  transition: color 420ms var(--ease);
+  overflow-wrap: anywhere;
+}
+
+.cx-flow-chain li[data-here="true"] .cx-flow-node-name {
+  color: color-mix(in srgb, var(--tone) 30%, var(--ink));
+  font-weight: 500;
+}
+
+/* ---- the stage in front of the reader --------------------------------------------- */
+
+.cx-flow-words {
+  min-height: clamp(280px, 40vh, 380px);
+  max-width: 62ch;
+}
+
+.cx-flow-step {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 0 0 14px;
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  color: var(--ink-ghost);
+}
+
+.cx-flow-step b {
+  font-size: clamp(28px, 4vw, 44px);
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  color: color-mix(in srgb, var(--tone) 30%, var(--ink));
+}
+
+.cx-flow-words h3 {
+  margin: 0 0 14px;
+  font-size: clamp(26px, 3.6vw, 44px);
+  font-weight: 500;
+  line-height: 1.06;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+}
+
+.cx-flow-body {
+  margin: 0 0 18px;
+  font-size: clamp(15px, 1.4vw, 18px);
+  line-height: 1.62;
+  color: var(--ink-faint);
+}
+
+.cx-flow-beats {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 8px;
+}
+
+.cx-flow-beats li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 12px;
+  align-items: baseline;
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+
+.cx-flow-beats li::before {
+  content: "";
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--tone) 60%, var(--ink));
+  transform: translateY(-2px);
+}
+
+.cx-flow-watch {
+  margin: clamp(18px, 3vh, 26px) 0 0;
+  font-size: 14px;
+}
+
+.cx-flow-watch a {
+  color: var(--brand-ink);
+  text-underline-offset: 3px;
+}
+
+/* The section around it carries only the heading; the flow does the rest. */
+.cx-sec-flat {
+  padding-bottom: 0;
+}
+
+/* ---- when it should not pin --------------------------------------------------------
+ *
+ * A pinned section on a phone takes the scroll away from somebody using it to
+ * get somewhere. Below the breakpoint, and for anybody who asked for less
+ * motion, the same stages become a numbered list.
+ */
+@media (max-width: 900px) {
+  .cx-flow {
+    height: auto;
+  }
+
+  .cx-flow-pin {
+    position: static;
+    height: auto;
+    padding: clamp(28px, 5vh, 48px) 0;
+  }
+
+  .cx-flow-chain {
+    display: none;
+  }
+
+  .cx-flow-words {
+    min-height: 0;
+  }
+}
+
+.cx-flow[data-still="true"] {
+  height: auto;
+}
+
+.cx-flow[data-still="true"] .cx-flow-pin {
+  position: static;
+  height: auto;
+  padding: clamp(28px, 5vh, 48px) 0;
+}
+
+.cx-flow[data-still="true"] .cx-flow-words {
+  min-height: 0;
+}
+
+
+/* ---- targets in the light room ------------------------------------------------
+ *
+ * A breadcrumb is fourteen pixels of type and a topic tag is a chip. Both are
+ * comfortable with a pointer and both are a miss with anything else, and the
+ * dark room only grew them under a coarse pointer. Here they get the height
+ * always: it costs a few pixels of leading and it is one fewer thing that is
+ * only right on a laptop.
+ */
+.cx-room .paper-crumbs a,
+.cx-room .paper-topics a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+}
+
+.cx-room .paper-topics a {
+  padding: 8px 14px;
+}
+
+.cx-room .room-nav-list a {
+  min-height: 36px;
+  align-items: center;
+}
+
+
+/* ---- a control you can press ---------------------------------------------------
+ *
+ * Forty-four pixels, on anything driven by a thumb.
+ *
+ * The site was drawn for a pointer, and a pointer is one pixel wide: a
+ * thirty-two pixel link is fine with a mouse and a coin-toss with a hand. The
+ * rules are scoped to a coarse pointer, so a laptop keeps the tighter rhythm
+ * these controls were spaced for.
+ */
+@media (pointer: coarse) {
+  .cx-nav a,
+  .cx-switch,
+  .cx-app,
+  .cx-foot-nav a,
+  .cx-crumbs a,
+  .cx-room .paper-crumbs a,
+  .cx-room .paper-topics a,
+  .cx-room .room-nav-list a,
+  .cx-room .read-paper-end-go a,
+  .cx-room .room-search-quick a,
+  .cx-room .room-result a {
+    min-height: 44px;
+  }
+
+  .cx-nav a,
+  .cx-switch,
+  .cx-app,
+  .cx-crumbs a,
+  .cx-room .paper-crumbs a,
+  .cx-room .paper-topics a {
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .cx-foot-nav a {
+    display: flex;
+    align-items: center;
+  }
+
+  /*
+   * The topic tags on a card are labels rather than links: nothing happens
+   * when they are pressed, so they are not measured as controls and do not
+   * need to be finger-sized.
+   */
+  .cx-room .doc-card-topics i,
+  .cx-room .result-topics i {
+    pointer-events: none;
+  }
+}
+
+
+/* ---- the header on a phone ------------------------------------------------------
+ *
+ * Four controls across a 390px screen produced a header where the application
+ * link ran off the right edge and "Data room" wrapped onto two lines. Below
+ * this width the brand keeps its place and everything else folds into one
+ * button.
+ */
+
+.cx-burger {
+  display: none;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+  min-height: 44px;
+  padding: 10px 14px;
+  border: 1px solid var(--edge);
+  border-radius: 9px;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+/* Two lines that cross into an X, which is the whole state in one shape. */
+.cx-burger-lines {
+  position: relative;
+  display: block;
+  width: 15px;
+  height: 10px;
+}
+
+.cx-burger-lines i {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1.5px;
+  background: var(--ink);
+  border-radius: 2px;
+  transition: transform 320ms var(--ease);
+}
+
+.cx-burger-lines i:first-child {
+  top: 1px;
+}
+
+.cx-burger-lines i:last-child {
+  bottom: 1px;
+}
+
+.cx-burger[aria-expanded="true"] .cx-burger-lines i:first-child {
+  transform: translateY(3.5px) rotate(45deg);
+}
+
+.cx-burger[aria-expanded="true"] .cx-burger-lines i:last-child {
+  transform: translateY(-3.5px) rotate(-45deg);
+}
+
+/*
+ * The panel, collapsed by height rather than by display, so opening it is a
+ * movement and the links keep their box for the transition to animate.
+ */
+.cx-menu {
+  display: none;
+  grid-template-rows: 0fr;
+  overflow: hidden;
+  border-top: 1px solid transparent;
+  background: var(--paper);
+  transition:
+    grid-template-rows 380ms var(--ease),
+    border-color 380ms var(--ease);
+}
+
+.cx-menu[data-open="true"] {
+  border-top-color: var(--edge);
+}
+
+.cx-menu-in {
+  min-height: 0;
+  display: grid;
+  gap: 2px;
+  padding: 0 var(--cx-gutter);
+}
+
+.cx-menu-in > * {
+  display: flex;
+  align-items: center;
+  min-height: 52px;
+  padding: 0 4px;
+  border-bottom: 1px solid var(--edge-soft);
+  color: var(--ink);
+  font-size: 17px;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.cx-menu-in > *[data-here="true"] {
+  color: var(--brand-ink);
+}
+
+.cx-menu-switch {
+  gap: 12px;
+}
+
+.cx-menu-switch i {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--brand);
+  box-shadow: 0 0 0 3px rgba(23, 105, 255, 0.16);
+}
+
+.cx-menu-app {
+  border-bottom: 0 !important;
+  margin: 12px 0 20px;
+  justify-content: center;
+  border-radius: 9px;
+  background: var(--ink);
+  color: #fff !important;
+}
+
+@media (max-width: 760px) {
+  .cx-nav,
+  .cx-top-go {
+    display: none;
+  }
+
+  .cx-burger {
+    display: inline-flex;
+  }
+
+  .cx-menu {
+    display: grid;
+  }
+
+  .cx-menu[data-open="true"] {
+    grid-template-rows: 1fr;
+  }
+
+  /* The header is the whole width now, so it can afford to be a bar. */
+  .cx-top-in {
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+}
+
+/*
+ * The coarse-pointer block below grows every control to forty-four pixels,
+ * including two the narrow layout has already hidden. `display` there would
+ * bring them back, so they are put out again here.
+ */
+@media (pointer: coarse) and (max-width: 760px) {
+  .cx-nav,
+  .cx-top-go,
+  .cx-app {
+    display: none;
+  }
+}
+
+/* ---- and the rest of the site on a phone ----------------------------------------- */
+
+@media (max-width: 720px) {
+  /*
+   * The helix is a texture at this width rather than a picture: the words fill
+   * the frame, so most of the drawing is behind type. Faint enough to be depth
+   * and not noise.
+   */
+  .cx-hero-helix {
+    padding-top: clamp(36px, 8vh, 64px);
+  }
+
+  .cx-flow-pin > .cx-helix {
+    opacity: 0.22;
+  }
+
+  /* One card to a row, at a height that fits a phone screen. */
+  .cx-slab {
+    min-height: 0;
+    padding: 22px 20px;
+  }
+
+  .cx-slab h2 {
+    font-size: 30px;
+  }
+
+  .cx-slab-art {
+    width: 42px;
+    height: 42px;
+    margin-bottom: 14px;
+  }
+
+  /* The crypto and parts panels stack; their lists want the full width. */
+  .cx-crypto-term,
+  .cx-parts-term {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+
+  .cx-cta {
+    padding: 24px 20px;
+  }
+
+  .cx-cta-stats > div {
+    padding: 13px 16px;
+  }
+
+  .cx-defs > div {
+    padding: 14px 16px;
+  }
+}
+
+
+/* ---- a paper, light or dark ------------------------------------------------------
+ *
+ * The three papers are dark decks. Beside the environment that is right; on a
+ * white site three near-black rectangles are three holes. `invert` flips the
+ * lightness and `hue-rotate` puts the hue back, so the ground goes white and
+ * the type black while the diagrams keep the colours they were drawn in. A
+ * touch of contrast on top, because inverted type sits a little soft.
+ *
+ * It is a filter rather than a second render because it is free: the same
+ * thing done pixel by pixel would be fifty million pixels across twelve pages,
+ * and this runs on the GPU.
+ */
+.reader[data-light="true"] .paper-page {
+  filter: invert(1) hue-rotate(180deg) contrast(1.06) brightness(1.02);
+}
+
+.reader-flip {
+  min-height: 40px;
+  padding: 8px 16px;
+  border: 1px solid rgba(150, 190, 255, 0.22);
+  background: rgba(6, 10, 20, 0.7);
+  color: var(--ice-soft);
+  font-family: var(--mono);
+  font-size: var(--label);
+  letter-spacing: var(--track);
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: border-color 320ms var(--ease);
+}
+
+.reader-flip:hover,
+.reader-flip[aria-pressed="true"] {
+  border-color: var(--signal);
+  color: var(--ice);
+}
+
+.cx-room .reader-flip {
+  border-color: var(--edge);
+  background: var(--paper);
+  color: var(--ink-soft);
+}
+
+.cx-room .reader-flip:hover,
+.cx-room .reader-flip[aria-pressed="true"] {
+  border-color: var(--brand);
+  color: var(--ink);
+}
+
+@media (max-width: 720px) {
+  .cx-sec-band {
+    padding: clamp(36px, 7vh, 64px) 0;
+  }
+}
+
+
+/* ---- colour in the paper ---------------------------------------------------------
+ *
+ * A white site with a blue accent is a white site. What gives it depth is a
+ * hue in the ground itself: a wash of colour behind each section, large, soft
+ * and low enough that it never reads as a shape.
+ *
+ * The four colours are the ones already in use, so this adds atmosphere rather
+ * than a fifth palette. Each section takes a different one and puts it in a
+ * different corner, which is what stops a page of them looking striped.
+ *
+ * Four percent is the ceiling. Above that it becomes a panel, and a panel is
+ * the thing this replaced.
+ */
+
+.cx-sec,
+.cx-band,
+.cx-close,
+.cx-page-head {
+  position: relative;
+  isolation: isolate;
+}
+
+/*
+ * Inset rather than outset.
+ *
+ * These started at `-10% -5%`, which put the wash outside its section on both
+ * sides; with the drift on top, that was enough to widen the document and let
+ * the whole page be dragged sideways under a thumb. The wash is soft enough
+ * that keeping it inside the box costs nothing visible.
+ */
+.cx-sec::before,
+.cx-band::before,
+.cx-close::before,
+.cx-page-head::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(
+    46% 58% at var(--hue-x, 18%) var(--hue-y, 12%),
+    color-mix(in srgb, var(--hue, #1769ff) 100%, transparent) 0%,
+    transparent 68%
+  );
+  opacity: 0.055;
+}
+
+/*
+ * A different colour and a different corner for each, cycling in fours.
+ *
+ * Written against the section's position in the page rather than a class, so
+ * a section added or moved keeps the rhythm without anybody remembering to
+ * label it.
+ */
+.cx-main .cx-sec:nth-of-type(4n + 1) {
+  --hue: #1769ff;
+  --hue-x: 14%;
+  --hue-y: 8%;
+}
+
+.cx-main .cx-sec:nth-of-type(4n + 2) {
+  --hue: #4cc9ff;
+  --hue-x: 86%;
+  --hue-y: 22%;
+}
+
+.cx-main .cx-sec:nth-of-type(4n + 3) {
+  --hue: #a97bff;
+  --hue-x: 22%;
+  --hue-y: 84%;
+}
+
+.cx-main .cx-sec:nth-of-type(4n + 4) {
+  --hue: #3be08f;
+  --hue-x: 78%;
+  --hue-y: 78%;
+}
+
+.cx-close {
+  --hue: #1769ff;
+  --hue-x: 50%;
+  --hue-y: 40%;
+}
+
+.cx-band {
+  --hue: #4cc9ff;
+  --hue-x: 70%;
+  --hue-y: 20%;
+}
+
+/*
+ * A product page takes its own colour instead of the cycle.
+ *
+ * The head already carries a wash of the product's tone; this continues it
+ * down the page so a vault page feels amber the whole way through rather than
+ * for one screen.
+ */
+.cx-page-head-tone {
+  --hue: var(--tone);
+  --hue-x: 76%;
+  --hue-y: 10%;
+}
+
+.cx-page-head-tone ~ * .cx-sec::before,
+[style*="--tone"] > .cx-sec::before {
+  background: radial-gradient(
+    46% 58% at var(--hue-x, 18%) var(--hue-y, 12%),
+    color-mix(in srgb, var(--tone, #1769ff) 100%, transparent) 0%,
+    transparent 68%
+  );
+}
+
+/* The banner paints its own ground, so it does not want a wash on top of it. */
+.cx-sec-band::before {
+  display: none;
+}
+
+/* Nor do the two sections that are already a full field of colour. */
+.cx-model-scroll::before,
+.cx-flow::before {
+  display: none;
+}
+
+/* ---- and in the data room ---------------------------------------------------------
+ *
+ * The room is dense with hairlines and cards, so its wash is gentler still and
+ * sits once behind the whole thing rather than per section.
+ */
+.cx-room {
+  position: relative;
+  isolation: isolate;
+}
+
+.cx-room::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(40% 30% at 8% 4%, rgba(23, 105, 255, 0.05) 0%, transparent 70%),
+    radial-gradient(36% 26% at 94% 32%, rgba(76, 201, 255, 0.05) 0%, transparent 70%),
+    radial-gradient(38% 28% at 20% 82%, rgba(169, 123, 255, 0.04) 0%, transparent 70%);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /*
+   * The wash drifts, very slowly.
+   *
+   * Twenty seconds for a few percent of travel: not something a reader will
+   * ever catch moving, and enough that the page is never quite the same twice.
+   */
+  .cx-sec::before,
+  .cx-band::before,
+  .cx-close::before {
+    animation: cx-drift 24s ease-in-out infinite alternate;
+  }
+}
+
+@keyframes cx-drift {
+  to {
+    /* Scale only. A translate here is what pushed it out of the box. */
+    transform: scale(1.1);
+  }
+}

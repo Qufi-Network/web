@@ -6,6 +6,9 @@ import './network.css';
 import './document.css';
 import './lifecycle.css';
 import './dataroom.css';
+import './gate.css';
+// The standard site, which has to undo a good deal of globals.css.
+import './classic.css';
 // Last, so what is only true on a phone wins over what is true everywhere.
 import './mobile.css';
 
@@ -18,8 +21,8 @@ import './mobile.css';
 export const metadata: Metadata = {
   metadataBase: new URL('https://qufi.network'),
   title: {
-    default: 'QuFi — the verification layer for the post-quantum economy',
-    template: '%s — QuFi Network',
+    default: 'QuFi: the verification layer for the post-quantum economy',
+    template: '%s · QuFi Network',
   },
   description:
     'QuFi is an independent verification layer beneath high-value digital settlement. Post-quantum signing, proof generation off the settlement path, collateral confirmation, proof-gated movement and recovery pathways, across multiple settlement environments.',
@@ -27,7 +30,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     siteName: 'QuFi Network',
-    title: 'QuFi — the verification layer for the post-quantum economy',
+    title: 'QuFi: the verification layer for the post-quantum economy',
     description:
       'An independent verification layer between action and settlement. Verify before value moves.',
   },

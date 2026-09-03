@@ -21,14 +21,14 @@ import { Status } from './Status';
  * press return to find out that there is not is a worse answer than showing
  * them immediately. Six results and a way through to the rest.
  */
-export function SearchBar() {
+export function SearchBar({ base = '' }: { base?: string }) {
   const router = useRouter();
   const [query, setQuery] = useState('');
   const hits = useMemo(() => (query.trim() ? search(query).slice(0, 6) : []), [query]);
   const total = useMemo(() => (query.trim() ? search(query).length : 0), [query]);
 
   const go = () => {
-    if (query.trim()) router.push(`/data-room/search?q=${encodeURIComponent(query.trim())}`);
+    if (query.trim()) router.push(`${base}/data-room/search?q=${encodeURIComponent(query.trim())}`);
   };
 
   return (
@@ -58,10 +58,10 @@ export function SearchBar() {
         <ul className="room-search-quick">
           {hits.map((hit) => (
             <li key={hit.doc.id}>
-              <Link href={`/data-room/document/${hit.doc.id}`}>
+              <Link href={`${base}/data-room/document/${hit.doc.id}`}>
                 <span className="quick-title">{hit.doc.title}</span>
                 <span className="quick-where">
-                  {findSection(hit.doc.section)?.index} — {findSection(hit.doc.section)?.title}
+                  {findSection(hit.doc.section)?.index} · {findSection(hit.doc.section)?.title}
                 </span>
                 <span className="quick-snippet">
                   {highlight(hit.snippet, query).map((part, i) =>
@@ -77,7 +77,7 @@ export function SearchBar() {
       {query.trim() && hits.length === 0 ? (
         <p className="room-search-none">
           Nothing matches “{query.trim()}”. The index covers document titles, descriptions,
-          topics and planned contents — the documents themselves are still being written.
+          topics and planned contents. The documents themselves are still being written.
         </p>
       ) : null}
     </div>
@@ -90,7 +90,7 @@ export function SearchBar() {
  * The same matcher with the filters exposed. Everything is in the URL, so a
  * result set can be sent to somebody.
  */
-export function SearchPage({ initialQuery = '' }: { initialQuery?: string }) {
+export function SearchPage({ initialQuery = '', base = '' }: { initialQuery?: string; base?: string }) {
   const [query, setQuery] = useState(initialQuery);
   const [filters, setFilters] = useState<Filters>({});
   const hits = useMemo(() => search(query, filters), [query, filters]);
@@ -148,14 +148,14 @@ export function SearchPage({ initialQuery = '' }: { initialQuery?: string }) {
 
       <ul className="room-results">
         {hits.map((hit) => (
-          <Result key={hit.doc.id} hit={hit} query={query} />
+          <Result key={hit.doc.id} hit={hit} query={query} base={base} />
         ))}
       </ul>
 
       {hits.length === 0 ? (
         <p className="room-search-none">
           Nothing matches. The index covers document titles, descriptions, topics and planned
-          contents — the documents themselves are still being written, so their text is not
+          contents. The documents themselves are still being written, so their text is not
           searchable yet.
         </p>
       ) : null}
@@ -163,14 +163,14 @@ export function SearchPage({ initialQuery = '' }: { initialQuery?: string }) {
   );
 }
 
-function Result({ hit, query }: { hit: Hit; query: string }) {
+function Result({ hit, query, base }: { hit: Hit; query: string; base: string }) {
   const section = findSection(hit.doc.section);
   return (
     <li className="room-result">
-      <Link href={`/data-room/document/${hit.doc.id}`}>
+      <Link href={`${base}/data-room/document/${hit.doc.id}`}>
         <span className="result-top">
           <span className="result-where">
-            {section?.index} — {section?.title}
+            {section?.index} · {section?.title}
           </span>
           <Status status={hit.doc.status} />
         </span>

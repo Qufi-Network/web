@@ -619,3 +619,68 @@ html {
     display: none;
   }
 }
+
+
+/* ---- reading a paper on a phone ------------------------------------------ */
+
+/*
+ * The pages take the screen.
+ *
+ * A landscape deck on a 390px screen is small however it is arranged — these
+ * are documents drawn for a laptop — so what matters is that it is as large as
+ * the screen allows and that the reader can get from page to page without
+ * hunting. The frame's gutters come off the pages and go back on for the
+ * furniture around them, which buys about fifty pixels of deck.
+ */
+@media (max-width: 720px) {
+  .room-frame:has(.read-paper) {
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .read-paper-top,
+  .reader-bar,
+  .reader-say,
+  .reader-note {
+    padding-left: var(--gutter);
+    padding-right: var(--gutter);
+  }
+
+  .reader-bar {
+    top: 0;
+  }
+
+  .reader-pages {
+    gap: 10px;
+  }
+
+  .paper-page {
+    border-left: 0;
+    border-right: 0;
+  }
+
+  /*
+   * Full width is what a phone already is, so the control that offers it is
+   * offering nothing. The two page steps stay: they are how a deck is read
+   * with a thumb.
+   */
+  .reader-wide {
+    display: none;
+  }
+
+  .reader-step {
+    width: 44px;
+    height: 44px;
+  }
+
+  .viewbtn {
+    grid-template-columns: auto minmax(0, 1fr);
+    row-gap: 12px;
+  }
+
+  /* The word "open" goes under the label rather than squeezing it. */
+  .viewbtn-go {
+    grid-column: 1 / -1;
+    justify-content: flex-end;
+  }
+}

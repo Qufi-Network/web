@@ -19,7 +19,7 @@ import { START_HERE, START_HERE_WHY, findDoc, findSection } from './catalogue';
  * contents. Putting what the cards knew into the rows is what let the second
  * list go.
  */
-export function Journey({ full = false }: { full?: boolean }) {
+export function Journey({ full = false, base = '' }: { full?: boolean; base?: string }) {
   return (
     <ol className={full ? 'room-journey room-journey-full' : 'room-journey'}>
       {START_HERE.map((id, index) => {
@@ -29,7 +29,7 @@ export function Journey({ full = false }: { full?: boolean }) {
 
         return (
           <li key={id}>
-            <Link href={`/data-room/document/${doc.id}`}>
+            <Link href={`${base}/data-room/document/${doc.id}`}>
               <span className="journey-step">{String(index + 1).padStart(2, '0')}</span>
 
               <span className="journey-body">
@@ -40,7 +40,7 @@ export function Journey({ full = false }: { full?: boolean }) {
                 <span className="journey-why">{START_HERE_WHY[id]}</span>
                 {full ? (
                   <span className="journey-where">
-                    {section?.index} — {section?.title} · {doc.kind}
+                    {section?.index} · {section?.title} · {doc.kind}
                   </span>
                 ) : null}
               </span>

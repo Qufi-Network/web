@@ -16,7 +16,7 @@ import { SECTIONS, docsIn } from './catalogue';
  * is better served by knowing that Technology holds five and Legal holds three
  * than by finding out after the click.
  */
-export function DataRoomNav() {
+export function DataRoomNav({ base = '' }: { base?: string }) {
   const path = usePathname();
   const [open, setOpen] = useState(false);
   const here = (href: string) => path === href;
@@ -48,14 +48,14 @@ export function DataRoomNav() {
 
           <ul className="room-nav-list">
             <li>
-              <Link href="/data-room" data-here={String(here('/data-room'))} onClick={() => setOpen(false)}>
+              <Link href={`${base}/data-room`} data-here={String(here(`${base}/data-room`))} onClick={() => setOpen(false)}>
                 Overview
               </Link>
             </li>
             <li>
               <Link
-                href="/data-room/start"
-                data-here={String(here('/data-room/start'))}
+                href={`${base}/data-room/start`}
+                data-here={String(here(`${base}/data-room/start`))}
                 onClick={() => setOpen(false)}
               >
                 Start here
@@ -65,7 +65,7 @@ export function DataRoomNav() {
 
           <ul className="room-nav-list room-nav-sections">
             {SECTIONS.map((section) => {
-              const href = `/data-room/section/${section.id}`;
+              const href = `${base}/data-room/section/${section.id}`;
               return (
                 <li key={section.id}>
                   <Link href={href} data-here={String(here(href))} onClick={() => setOpen(false)}>
@@ -81,16 +81,16 @@ export function DataRoomNav() {
           <ul className="room-nav-list room-nav-tail">
             <li>
               <Link
-                href="/data-room/search"
-                data-here={String(here('/data-room/search'))}
+                href={`${base}/data-room/search`}
+                data-here={String(here(`${base}/data-room/search`))}
                 onClick={() => setOpen(false)}
               >
                 Search
               </Link>
             </li>
             <li>
-              <Link href="/" onClick={() => setOpen(false)}>
-                Back to the network
+              <Link href={base ? '/classic' : '/'} onClick={() => setOpen(false)}>
+                {base ? 'Back to the site' : 'Back to the network'}
               </Link>
             </li>
           </ul>

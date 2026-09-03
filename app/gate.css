@@ -1,0 +1,319 @@
+/*
+ * The front door.
+ *
+ * It has one job and about a second to do it: say that there are two sites,
+ * show what each one is, and get out of the way. So it is deliberately cheap —
+ * no canvas, no imagery beyond two inline diagrams, and nothing that has to be
+ * fetched before it can be read.
+ *
+ * It sits on the environment's near-black rather than the site's white,
+ * because the door is not a page of either site and one of them has to be
+ * behind it. Black also means the network card can be shown as it actually is.
+ */
+
+.gate {
+  position: fixed;
+  inset: 0;
+  z-index: 8;
+  display: grid;
+  place-items: center;
+  overflow-y: auto;
+  padding: clamp(24px, 5vh, 64px) var(--gutter);
+  background:
+    radial-gradient(140% 90% at 50% -10%, rgba(16, 34, 66, 0.72) 0%, transparent 68%),
+    var(--void);
+  animation: gate-in 700ms var(--ease) both;
+}
+
+/* Leaving, once a card has been pressed. */
+.gate[data-going='network'],
+.gate[data-going='classic'] {
+  animation: gate-out 480ms var(--ease) both;
+  pointer-events: none;
+}
+
+@keyframes gate-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes gate-out {
+  to {
+    opacity: 0;
+    transform: scale(1.015);
+  }
+}
+
+.gate-inner {
+  width: 100%;
+  max-width: 940px;
+  margin: auto;
+}
+
+.gate-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: clamp(28px, 6vh, 56px);
+}
+
+.gate-mark img {
+  display: block;
+  width: clamp(30px, 3vw, 38px);
+  height: auto;
+}
+
+.gate-word {
+  display: block;
+  height: clamp(17px, 1.6vw, 21px);
+  width: auto;
+}
+
+.gate-say {
+  margin: 0 0 14px;
+  font-family: var(--mono);
+  font-size: var(--label);
+  letter-spacing: var(--track);
+  text-transform: uppercase;
+  color: var(--hud);
+}
+
+.gate-title {
+  margin: 0 0 16px;
+  max-width: 20ch;
+  font-size: clamp(30px, 5vw, 54px);
+  font-weight: 200;
+  line-height: 1.06;
+  letter-spacing: -0.02em;
+  color: var(--ice);
+}
+
+.gate-lede {
+  margin: 0 0 clamp(30px, 5vh, 52px);
+  max-width: 56ch;
+  font-size: clamp(15px, 1.3vw, 18px);
+  font-weight: 300;
+  line-height: 1.6;
+  color: var(--ice-soft);
+}
+
+/* ---- the two doors --------------------------------------------------------- */
+
+.gate-doors {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(14px, 2vw, 22px);
+}
+
+.gate-door {
+  display: grid;
+  align-content: start;
+  gap: 14px;
+  padding: clamp(20px, 2.6vw, 30px);
+  border: 1px solid rgba(150, 190, 255, 0.2);
+  background: rgba(6, 10, 20, 0.5);
+  text-align: left;
+  text-decoration: none;
+  font-family: inherit;
+  cursor: pointer;
+  transition:
+    border-color 380ms var(--ease),
+    background 380ms var(--ease),
+    transform 380ms var(--ease);
+}
+
+.gate-door:hover,
+.gate-door:focus-visible {
+  border-color: rgba(150, 190, 255, 0.5);
+  background: rgba(10, 16, 30, 0.7);
+  transform: translateY(-3px);
+}
+
+.gate-door:disabled {
+  cursor: default;
+}
+
+/* The little picture of what is behind each door. */
+.gate-door-art {
+  display: block;
+  padding: clamp(12px, 2vh, 20px) 0;
+  border-bottom: 1px solid rgba(150, 190, 255, 0.12);
+}
+
+.gate-door-art svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 130px;
+}
+
+.gate-net-lines path {
+  stroke: rgba(120, 175, 255, 0.42);
+  stroke-width: 1;
+}
+
+.gate-net-nodes circle {
+  fill: var(--signal);
+  opacity: 0.85;
+}
+
+/*
+ * One node breathing, which is the entire promise of that side of the door:
+ * the thing behind it is alive and the thing behind the other one is not.
+ */
+.gate-net-pulse {
+  fill: none;
+  stroke: var(--signal);
+  stroke-width: 1;
+  transform-origin: 74px 44px;
+  animation: gate-pulse 3.4s var(--ease) infinite;
+}
+
+@keyframes gate-pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+  70%,
+  100% {
+    transform: scale(3.4);
+    opacity: 0;
+  }
+}
+
+.gate-page {
+  fill: rgba(255, 255, 255, 0.94);
+}
+
+.gate-page-rule {
+  stroke: rgba(10, 15, 26, 0.28);
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+
+.gate-page-head {
+  fill: #1769ff;
+}
+
+.gate-door-words {
+  display: grid;
+  gap: 7px;
+}
+
+.gate-door-name {
+  font-size: clamp(18px, 1.8vw, 23px);
+  font-weight: 300;
+  line-height: 1.2;
+  color: var(--ice);
+}
+
+.gate-door-note {
+  font-size: 13.5px;
+  font-weight: 300;
+  line-height: 1.58;
+  color: rgba(255, 255, 255, 0.54);
+}
+
+.gate-door-go {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--mono);
+  font-size: var(--label);
+  letter-spacing: var(--track);
+  text-transform: uppercase;
+  color: var(--signal);
+}
+
+.gate-door-go i {
+  width: 7px;
+  height: 7px;
+  border-top: 1px solid currentColor;
+  border-right: 1px solid currentColor;
+  transform: rotate(45deg);
+  transition: transform 380ms var(--ease);
+}
+
+.gate-door:hover .gate-door-go i,
+.gate-door:focus-visible .gate-door-go i {
+  transform: rotate(45deg) translate(3px, -3px);
+}
+
+/* The site's card wears the site's colour, so the choice is visible at a glance. */
+.gate-door-classic .gate-door-go {
+  color: #9dc4ff;
+}
+
+.gate-door-classic:hover,
+.gate-door-classic:focus-visible {
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+/* Said only when the machine has told us it cannot draw the other one. */
+.gate-door-warn {
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 176, 58, 0.28);
+  font-size: 12.5px;
+  font-weight: 300;
+  line-height: 1.55;
+  color: #ffb03a;
+}
+
+.gate-foot {
+  margin: clamp(24px, 4vh, 40px) 0 0;
+  font-size: 13px;
+  font-weight: 300;
+  color: rgba(255, 255, 255, 0.42);
+}
+
+/* It is a link at the bottom of the door, so a thumb has to be able to hit it. */
+.gate-foot a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--ice-soft);
+  text-underline-offset: 3px;
+}
+
+/* ---- narrow ---------------------------------------------------------------- */
+
+@media (max-width: 720px), (max-height: 620px) {
+  .gate {
+    place-items: start;
+    padding-top: clamp(20px, 4vh, 40px);
+  }
+
+  .gate-doors {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  /*
+   * The pictures go on a phone.
+   *
+   * Two cards with diagrams stack to something taller than the screen, and a
+   * door where you cannot see both options at once is not offering a choice.
+   * The words are what the choice is actually made on.
+   */
+  .gate-door-art {
+    display: none;
+  }
+
+  .gate-door {
+    gap: 10px;
+    padding: 18px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gate,
+  .gate[data-going='network'],
+  .gate[data-going='classic'] {
+    animation-duration: 1ms;
+  }
+
+  .gate-net-pulse {
+    animation: none;
+    opacity: 0;
+  }
+}

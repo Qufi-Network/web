@@ -24,3 +24,10 @@ AGENTS.md
 # repository is the wrong place for a pitch and this one already carries the
 # instruction that no investor-facing content belongs here.
 *.pptx
+
+# the papers themselves. The data room serves them and the site needs them at
+# runtime, but this repository is public: anything committed here is available
+# from raw.githubusercontent.com with none of the viewer's protection in front
+# of it, which would make the whole view-only arrangement decorative. They are
+# placed on the host at deploy time instead — see papers/README.md.
+papers/*.pdf

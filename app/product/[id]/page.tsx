@@ -50,7 +50,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
             {journey.stages.map((stage) => (
               <section key={stage.id}>
                 <h2>
-                  {stage.index} — {stage.title}
+                  {stage.index} · {stage.title}
                 </h2>
                 <p>{stage.body}</p>
               </section>

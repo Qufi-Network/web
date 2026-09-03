@@ -118,6 +118,14 @@ const audit = () =>
       const box = node.getBoundingClientRect();
       const style = getComputedStyle(node);
       if (style.display === 'none' || style.visibility === 'hidden') continue;
+      /*
+       * A control with no box is not rendered, and reporting it as "off
+       * screen" is reporting the wrong thing. This happens wherever a whole
+       * region is `display: none` — the region's own display is none and is
+       * caught above, but its children keep their specified display and only
+       * lose their boxes.
+       */
+      if (box.width === 0 && box.height === 0) continue;
       const opacity = Number(style.opacity);
       const midX = box.left + box.width / 2;
       const midY = box.top + box.height / 2;
@@ -279,6 +287,7 @@ const ROOM = [
   ['room / a section', '/data-room/section/technology'],
   ['room / a document', '/data-room/document/technical-whitepaper'],
   ['room / search', '/data-room/search?q=quantum'],
+  ['room / a paper', '/data-room/view/corporate-overview'],
 ];
 
 for (const [where, url] of ROOM) {
@@ -305,7 +314,20 @@ else {
     () => document.querySelector('.room-nav-body').getBoundingClientRect().height,
   );
   if (folded > 8) note('room / contents', `the contents are ${Math.round(folded)}px tall while closed`);
+  /*
+   * Wait for the click to have actually done something.
+   *
+   * A fixed pause here read "opening the contents showed nothing" against a
+   * disclosure that works: on a dev server the first visit to a route can
+   * still be hydrating a second and a half in, and a click before hydration
+   * lands on markup rather than on React.
+   */
   await toggle.click();
+  await page
+    .waitForFunction(() => document.querySelector('.room-nav')?.dataset.open === 'true', {
+      timeout: 6000,
+    })
+    .catch(() => note('room / contents', 'the contents did not open when pressed'));
   await page.waitForTimeout(700);
   const open = await page.evaluate(() => {
     const links = [...document.querySelectorAll('.room-nav-list a')];

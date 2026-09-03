@@ -97,7 +97,7 @@ export const PRODUCTS: Product[] = [
         { value: 'QUANTUM:', size: '8 bytes', lit: true },
         { value: 'SHA3-256 of the instruction', size: '32 bytes' },
       ],
-      note: 'Forty bytes in an OP_RETURN output — well inside the eighty-byte limit, and machine-verifiable by anyone reading the chain. Mint, transfer and redeem all write it; the hash is what differs.',
+      note: 'Forty bytes in an OP_RETURN output, well inside the eighty-byte limit, and machine-verifiable by anyone reading the chain. Mint, transfer and redeem all write it; the hash is what differs.',
       proof: {
         label: 'The first QUANTUM mint, on Bitcoin testnet4',
         txid: '638640bff205a2242749990cbcc6f03bef66ec2cc974d0eab45433ba0042f7ec',
@@ -107,18 +107,18 @@ export const PRODUCTS: Product[] = [
     app: {
       href: 'https://app.ub.tc',
       label: 'Open the uBTC app',
-      note: 'Create a vault, mint, transfer and redeem — the lifecycle on this page, running.',
+      note: 'Create a vault, mint, transfer and redeem: the lifecycle on this page, running.',
     },
     walk: {
       href: '/product/ubtc',
       label: 'Walk the lifecycle',
-      note: 'A vault created, bitcoin deposited, uBTC minted, transferred and redeemed — moving through the network while it happens.',
+      note: 'A vault created, bitcoin deposited, uBTC minted, transferred and redeemed, moving through the network while it happens.',
     },
     timeline: {
       title: 'Qu-Stable rollout',
       lead: 'The same unit, on more than one settlement environment. Bitcoin is where it runs today; the others take the same proof-gated lifecycle to the chains their holders are already on.',
       stops: [
-        { where: 'Bitcoin', what: 'uBTC — deposit, mint, transfer, redeem', when: 'Live on testnet4', state: 'live' },
+        { where: 'Bitcoin', what: 'uBTC: deposit, mint, transfer, redeem', when: 'Live on testnet4', state: 'live' },
         { where: 'Stellar', what: 'Qu-Stable on Stellar', when: 'In progress', state: 'building' },
         { where: 'Solana', what: 'Qu-Stable on Solana', when: 'End of 2026', state: 'planned' },
         { where: 'Ethereum', what: 'Qu-Stable on Ethereum', when: 'End of 2026', state: 'planned' },
@@ -139,11 +139,11 @@ export const PRODUCTS: Product[] = [
     Figure: SettleFigure,
     body: [
       'A letter of credit is an instruction that several parties have to agree to before anybody is paid. Qu-Settle writes that agreement as a multi-signature instrument under post-quantum signatures, with three parties to it: the buyer, the seller, and a verifier whose only job is to say whether what was promised was actually done.',
-      'The buyer’s payment is committed against the instrument before anything ships, and it moves to the seller when two of the three sign against verified documents — a bill of lading, an inspection certificate, whatever the terms name. No single party can release it and no single party can hold it, which is what takes the bank out of the middle rather than replacing it.',
+      'The buyer’s payment is committed against the instrument before anything ships, and it moves to the seller when two of the three sign against verified documents: a bill of lading, an inspection certificate, whatever the terms name. No single party can release it and no single party can hold it, which is what takes the bank out of the middle rather than replacing it.',
     ],
     parts: [
       ['Instrument', 'A letter of credit, written as an instruction the network can check rather than a document a bank holds'],
-      ['Parties', 'Buyer, seller and verifier — release takes two signatures out of the three'],
+      ['Parties', 'Buyer, seller and verifier. Release takes two signatures out of the three'],
       ['Documents', 'Bill of lading, inspection, insurance: checked against the terms before anything moves'],
       ['Signatures', 'Two independent post-quantum schemes, so the undertaking outlives today’s curves'],
     ],
@@ -167,8 +167,8 @@ export const PRODUCTS: Product[] = [
     lede: 'Quantum-wrapped custody, registered ownership, and a palm print to move anything out.',
     Figure: VaultFigure,
     body: [
-      'A Taproot output can be spent by its key or by a script committed into it. A QuVault gives up the key path — the internal key is a point nobody holds a secret for — so everything that can ever move the bitcoin is a script, written before the vault holds anything. The key material those scripts need is wrapped under lattice key encapsulation rather than stored, which is what quantum-wrapped means here: what sits on a machine is a wrapping, and a wrapping spends nothing.',
-      'The moment bitcoin lands it is entered in the Quantum Registry against an owner, signed under post-quantum keys and anchored to Bitcoin, and the owner is issued a certificate saying so. Moving it out needs two conditions at once: the wrapped key, and a biometric authorisation from hardware that reads the vein pattern under the owner’s palm. If the coin is ever taken, the register and the certificate are still there — a quantum-signed owner of record that outlives us, the operator and the reader.',
+      'A Taproot output can be spent by its key or by a script committed into it. A QuVault gives up the key path, since the internal key is a point nobody holds a secret for, so everything that can ever move the bitcoin is a script, written before the vault holds anything. The key material those scripts need is wrapped under lattice key encapsulation rather than stored, which is what quantum-wrapped means here: what sits on a machine is a wrapping, and a wrapping spends nothing.',
+      'The moment bitcoin lands it is entered in the Quantum Registry against an owner, signed under post-quantum keys and anchored to Bitcoin, and the owner is issued a certificate saying so. Moving it out needs two conditions at once: the wrapped key, and a biometric authorisation from hardware that reads the vein pattern under the owner’s palm. If the coin is ever taken, the register and the certificate are still there: a quantum-signed owner of record that outlives us, the operator and the reader.',
     ],
     parts: [
       ['Script path', 'The key path is given up; every way to spend is a script committed into the address'],

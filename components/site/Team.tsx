@@ -1,6 +1,7 @@
 'use client';
 
 import { QUFI_MARK } from '../../assets/mark';
+import { TEAM } from '../../content/team';
 
 /**
  * Who governs and leads the thing.
@@ -16,31 +17,6 @@ import { QUFI_MARK } from '../../assets/mark';
  * because it is the same kind of card.
  */
 
-interface Person {
-  id: string;
-  name: string;
-  role: string;
-  tone: string;
-  /** Where the photograph came out of `tools/build/mkteam.mjs`. */
-  photo: string;
-}
-
-/*
- * The three colours are the ones the products already use, which is not
- * decoration: technology, business and growth are what the products are made
- * of, and giving the people the same three says so without a sentence.
- */
-export const TEAM: Person[] = [
-  {
-    id: 'alex',
-    name: 'Dr. Alexander Reay',
-    role: 'Technology',
-    tone: '#4CC9FF',
-    photo: '/team/alex.webp',
-  },
-  { id: 'sam', name: 'Samson Lee', role: 'Business', tone: '#A97BFF', photo: '/team/sam.webp' },
-  { id: 'eric', name: 'Eric Benz', role: 'Growth', tone: '#3BE08F', photo: '/team/eric.webp' },
-];
 
 export function Team() {
   return (
