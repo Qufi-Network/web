@@ -2228,20 +2228,26 @@ body:has(.classic) {
 }
 
 /*
- * The back is the card's colour, taken deep enough to carry white text.
+ * The back is the site's ink, with the tone on it rather than in it.
  *
- * The four product tones are bright, which is right for a mark on near-black
- * and wrong for a panel of prose. Mixed two-thirds into the ink they keep
- * their hue and lose their value, which is what makes eight of them sit
- * together without shouting.
+ * Mixing each tone a third of the way into the ink kept its hue and lost its
+ * value, which worked for three of the four and turned the amber brown. The
+ * back is now the same near-black for all eight and the colour arrives as the
+ * index, the rule and the mark, so every one of them is the colour the network
+ * actually uses rather than a version of it.
  */
 .cx-flip-back {
   transform: rotateY(180deg);
   background:
-    radial-gradient(120% 120% at 84% 8%, rgba(255, 255, 255, 0.14) 0%, transparent 56%),
-    color-mix(in srgb, var(--tone) 34%, #0a0f1a);
+    radial-gradient(
+      120% 120% at 84% 8%,
+      color-mix(in srgb, var(--tone) 22%, transparent) 0%,
+      transparent 58%
+    ),
+    #0a0f1a;
   color: #fff;
   isolation: isolate;
+  box-shadow: inset 0 3px 0 var(--tone);
 }
 
 .cx-flip-art {
@@ -2263,7 +2269,7 @@ body:has(.classic) {
 
 .cx-flip-back .cx-flip-index {
   margin-top: 0;
-  color: rgba(255, 255, 255, 0.62);
+  color: var(--tone);
 }
 
 .cx-flip h3 {
@@ -2330,14 +2336,19 @@ body:has(.classic) {
 }
 
 .cx-flip-back .cx-sigil-fill {
-  background: #fff;
-  opacity: 0.1;
+  background: var(--tone);
+  opacity: 0.16;
 }
 
 .cx-flip-back .cx-sigil-edge {
-  background: linear-gradient(118deg, transparent 34%, rgba(255, 255, 255, 0.75) 50%, transparent 66%);
+  background: linear-gradient(
+    118deg,
+    transparent 34%,
+    color-mix(in srgb, var(--tone) 90%, white) 50%,
+    transparent 66%
+  );
   background-size: 260% 260%;
-  opacity: 0.3;
+  opacity: 0.42;
   animation: cx-sweep 7s var(--ease) infinite;
 }
 
@@ -3796,5 +3807,64 @@ body:has(.classic) {
   to {
     /* Scale only. A translate here is what pushed it out of the box. */
     transform: scale(1.1);
+  }
+}
+
+
+/* ---- a lit point ------------------------------------------------------------------
+ *
+ * The environment fills its nodes with `currentColor` and gives them a glow of
+ * the same, which is what makes a diagram of lines read as a diagram of things
+ * that are switched on. The classic icons do the same, at about half the
+ * strength: on white a full glow is a smudge.
+ */
+.cx-icon-lit {
+  filter: drop-shadow(0 0 3px color-mix(in srgb, currentColor 55%, transparent));
+}
+
+/* ---- the environment's own product figures, on white ------------------------------
+ *
+ * These are the four drawings the network uses for its products, rendered
+ * exactly as they are there. `document.css` already styles `.figure-line` and
+ * `.figure-lit` for both, so all that is needed here is a box and the product's
+ * colour.
+ */
+.cx-figure {
+  display: block;
+  width: 100%;
+  max-width: 320px;
+  margin: 0 auto;
+  color: color-mix(in srgb, var(--tone) 62%, var(--ink));
+}
+
+.cx-figure svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* On white the lines want a touch more weight than they need on black. */
+.cx-figure .figure-line {
+  opacity: 0.85;
+}
+
+.cx-figure .figure-soft {
+  opacity: 0.42;
+}
+
+.cx-figure .figure-lit {
+  fill: var(--tone);
+  filter: drop-shadow(0 0 4px color-mix(in srgb, var(--tone) 60%, transparent));
+}
+
+.cx-page-head-tone .cx-wrap {
+  display: grid;
+  gap: clamp(24px, 4vw, 56px);
+  align-items: center;
+}
+
+@media (min-width: 900px) {
+  .cx-page-head-tone .cx-wrap {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 0.62fr);
   }
 }

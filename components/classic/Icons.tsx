@@ -29,12 +29,22 @@ import { motion, useReducedMotion } from 'framer-motion';
  */
 const DRAW = 420;
 
+/*
+ * The environment's line, exactly.
+ *
+ * `network.css` and `document.css` draw every glyph and every product figure
+ * at 1.15 with mitred joins and butt caps, and no rounded anything. These were
+ * drawn at 1.6 with round joins, which is a different hand: softer, friendlier,
+ * and plainly from another set the moment the two are seen together. The site
+ * is the same company told twice, so the drawings should be the same drawings.
+ */
 const stroke = {
   fill: 'none',
   stroke: 'currentColor',
-  strokeWidth: 1.6,
-  strokeLinecap: 'round' as const,
-  strokeLinejoin: 'round' as const,
+  strokeWidth: 1.15,
+  strokeLinecap: 'butt' as const,
+  strokeLinejoin: 'miter' as const,
+  vectorEffect: 'non-scaling-stroke' as const,
 };
 
 function Drawn({
@@ -89,6 +99,8 @@ function Dot({ cx, cy, r = 2.6, pulse = false }: { cx: number; cy: number; r?: n
       cx={cx}
       cy={cy}
       r={r}
+      // A lit point, with the glow the environment gives them.
+      className="cx-icon-lit"
       fill="currentColor"
       variants={{
         rest: { scale: 0, opacity: 0 },

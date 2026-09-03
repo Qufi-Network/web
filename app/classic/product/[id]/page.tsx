@@ -45,6 +45,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
     <div style={tone}>
       <section className="cx-page-head cx-page-head-tone">
         <div className="cx-wrap">
+          <div>
           <p className="cx-crumbs">
             <Link href="/classic/product">Products</Link>
             <i aria-hidden="true">/</i>
@@ -88,6 +89,18 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
               </span>
             </a>
           ) : null}
+          </div>
+
+          {/*
+            The product's own drawing, exactly as the network draws it.
+            
+            Same paths, same line weight, same lit points; only the ground has
+            changed. Two versions of one company should not have two sets of
+            pictures of the same four products.
+          */}
+          <span className="cx-figure" aria-hidden="true">
+            <product.Figure />
+          </span>
         </div>
       </section>
 

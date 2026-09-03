@@ -28,14 +28,16 @@ import { Item, Stagger } from './Reveal';
  */
 
 /*
- * Four colours, twice round.
+ * The environment's four colours, twice round.
  *
- * The amber the products use is here replaced by the brand blue: taken down to
- * a third of its own value for the back of a card, amber turns brown, which is
- * the one colour on this palette that reads as a mistake rather than a choice.
- * The other three darken cleanly, and the blue is the site's spine anyway.
+ * These are the colours the products wear in the network and nowhere else on
+ * this site are they changed. The amber was briefly swapped for blue because
+ * mixing it into the ink for the back of a card turned it brown; the answer
+ * was not a different colour but a different back. It is the site's own ink
+ * now, with the tone on the index, the rule and the mark, so all four show as
+ * themselves.
  */
-const TONES = ['#3BE08F', '#A97BFF', '#1769FF', '#4CC9FF'];
+const TONES = ['#3BE08F', '#A97BFF', '#FFB03A', '#4CC9FF'];
 
 export function Capabilities() {
   return (

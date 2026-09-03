@@ -23,12 +23,14 @@ import { CRYPTOGRAPHY } from '../../content/story';
 
 const DRAW = 400;
 
+/* The environment's line: 1.15, mitred, butt caps, no rounding. */
 const stroke = {
   fill: 'none',
   stroke: 'currentColor',
-  strokeWidth: 1.5,
-  strokeLinecap: 'round' as const,
-  strokeLinejoin: 'round' as const,
+  strokeWidth: 1.15,
+  strokeLinecap: 'butt' as const,
+  strokeLinejoin: 'miter' as const,
+  vectorEffect: 'non-scaling-stroke' as const,
 };
 
 /** One stroke, drawing itself whenever the panel changes. */
@@ -66,9 +68,11 @@ function Dot({
       cx={cx}
       cy={cy}
       r={r}
+      className={lit ? 'cx-icon-lit' : undefined}
       fill={lit ? 'currentColor' : 'var(--paper)'}
       stroke="currentColor"
-      strokeWidth={1.5}
+      strokeWidth={1.15}
+      vectorEffect="non-scaling-stroke"
       initial={{ scale: 0, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
       transition={{ type: 'spring', stiffness: 340, damping: 20, delay }}
