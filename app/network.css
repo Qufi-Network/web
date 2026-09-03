@@ -1317,3 +1317,40 @@
   z-index: 4;
   pointer-events: none;
 }
+
+
+/* ---- across to the other site ---------------------------------------------------
+ *
+ * A fourth control in the corner, held apart from the three beside it because
+ * it does not go to a place in this site. It goes to the same place in the
+ * other one, which is a different kind of move and should not look like a
+ * section of this one.
+ */
+.link-cross {
+  --tone: #ffffff;
+  margin-left: 6px;
+  padding-left: 14px;
+  border-left: 1px solid var(--hud-line);
+}
+
+.link-cross .glyph {
+  opacity: 0.6;
+}
+
+.link-cross:hover .glyph,
+.link-cross:focus-visible .glyph {
+  opacity: 1;
+  filter: none;
+}
+
+@media (max-width: 720px) {
+  /*
+   * On a phone the row is already four abreast at the top of the screen. The
+   * rule between them is more than that width can carry.
+   */
+  .link-cross {
+    margin-left: 2px;
+    padding-left: 6px;
+    border-left: 0;
+  }
+}

@@ -1490,9 +1490,7 @@
   pointer-events: none;
 }
 
-.reader[data-wide="true"] .paper-page {
-  max-width: none;
-}
+/* Superseded by the zoom, which sizes the sheet rather than the page. */
 
 .reader-say {
   margin: clamp(30px, 6vh, 60px) 0;
@@ -1588,94 +1586,197 @@
 }
 
 
-/* ---- our mark, over the one baked into the page ---------------------------------
- *
- * The three papers carry a QuFi lockup in the top-left of every page, drawn
- * white for a dark deck. Shown light it inverts with everything else and comes
- * out a grey smudge, and even shown dark it is a fixed number of pixels that
- * softens the moment the page is enlarged.
- *
- * So the box is covered and the real mark is drawn over it: a mask over a
- * fill, sharp at any size, in the right colour whichever way the pages are
- * being shown. It sits outside the canvas, so the inversion filter does not
- * touch it.
- */
+/* ---- one page of a paper ----------------------------------------------------- */
 
 .paper-sheet {
   position: relative;
   display: block;
-  width: 100%;
-  max-width: 900px;
-}
-
-.reader[data-wide="true"] .paper-sheet {
-  max-width: none;
+  width: min(100%, 900px);
 }
 
 .paper-sheet .paper-page {
+  width: 100%;
   max-width: none;
 }
 
+/*
+ * A photograph, laid back over the top with its own colours.
+ *
+ * A copy of the render. The inversion is on `.paper-page` alone, so this is
+ * untouched: a face stays a face rather than becoming a negative. Only shown
+ * when the page underneath has been flipped, because with the page as it was
+ * drawn there is nothing to correct.
+ */
+.paper-keep,
 .paper-badge {
   position: absolute;
   z-index: 1;
+  display: none;
+  pointer-events: none;
+}
+
+.reader[data-light="true"] .paper-keep {
+  display: block;
+}
+
+/* ---- our mark, over the lockup the deck carries ---------------------------------
+ *
+ * On a white ground, because that is what the page around it has become. The
+ * artwork is used as a mask over a fill rather than placed as a picture: the
+ * file is white-on-transparent and drawn for a dark deck, so as an image it
+ * would be invisible here. As a mask it can be the blue Q and the black word
+ * that the site's own header carries, and it stays sharp at any magnification
+ * because it is a shape rather than pixels.
+ */
+.reader[data-light="true"] .paper-badge {
   display: flex;
   align-items: center;
-  gap: 4%;
-  padding: 0 1%;
-  pointer-events: none;
-  /* The ground the deck's own logo was sitting on, so the old one is gone. */
-  background: #04060b;
+  gap: 3.5%;
+  background: #ffffff;
 }
 
 .paper-badge i {
   display: block;
-  background: #ffffff;
   mask-size: contain;
   -webkit-mask-size: contain;
   mask-repeat: no-repeat;
   -webkit-mask-repeat: no-repeat;
-  mask-position: center;
-  -webkit-mask-position: center;
+  mask-position: left center;
+  -webkit-mask-position: left center;
 }
 
 .paper-badge-mark {
-  height: 74%;
+  height: min(58%, 32px);
   aspect-ratio: 190 / 186;
+  background: #1769ff;
   mask-image: var(--badge-mark);
   -webkit-mask-image: var(--badge-mark);
 }
 
 .paper-badge-word {
-  height: 40%;
+  height: min(30%, 16px);
   aspect-ratio: var(--badge-ratio);
+  background: #0a0f1a;
   mask-image: var(--badge-word);
   -webkit-mask-image: var(--badge-word);
 }
 
-/*
- * Shown light, the badge goes the other way.
+/* ---- the loupe ------------------------------------------------------------------
  *
- * The canvas under it is inverted by a filter; the badge is not, so it has to
- * be told. Near-black mark on white, which is what the mark looks like on
- * paper anywhere else.
+ * A round glass that follows the pointer and shows the page under it two and a
+ * half times larger. It is a copy out of the source bitmap rather than a
+ * scaled picture of what is on screen, and the pages are rendered at three
+ * device pixels per CSS pixel, so the magnified view is still drawing about
+ * one device pixel per pixel. Nothing softens.
+ *
+ * There is one of them for the whole strip rather than one per page, so it can
+ * cross from the bottom of one page to the top of the next without being
+ * clipped by either.
  */
-.reader[data-light="true"] .paper-badge {
-  background: #ffffff;
+.reader-pages {
+  position: relative;
+  cursor: crosshair;
 }
 
-.reader[data-light="true"] .paper-badge i {
-  background: #0a0f1a;
+.reader-loupe {
+  position: absolute;
+  z-index: 3;
+  overflow: hidden;
+  width: 220px;
+  height: 220px;
+  margin: -110px 0 0 -110px;
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0;
+  transform: scale(0.86);
+  transition:
+    opacity 200ms var(--ease),
+    transform 260ms var(--ease);
+  box-shadow:
+    0 0 0 1px rgba(150, 190, 255, 0.35),
+    0 0 0 6px rgba(4, 6, 11, 0.6),
+    0 24px 60px -20px rgba(0, 0, 0, 0.75);
+}
+
+.reader-loupe[data-on="true"] {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.cx-room .reader-loupe {
+  box-shadow:
+    0 0 0 1px var(--brand),
+    0 0 0 6px rgba(255, 255, 255, 0.9),
+    0 24px 60px -20px rgba(10, 15, 26, 0.45);
+}
+
+.reader-loupe canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
 }
 
 /*
- * The Q stays blue, the word goes black.
+ * It shows the same pixels, so it is inverted the same way.
  *
- * This is the header's lockup exactly. The selector carries a type on the
- * class because the rule above it sets every `i` in the badge to near-black
- * and, matching on one more component, was winning: the mark came out flat
- * black on a page where the site's own mark is blue two inches above it.
+ * On the canvas rather than on the frame: a filter applies to an element's
+ * shadow as well as its content, so putting it one level up turned the white
+ * ring black on exactly the view the white ring was for.
  */
-.reader[data-light="true"] i.paper-badge-mark {
-  background: #1769ff;
+.reader[data-light="true"] .reader-loupe canvas {
+  filter: invert(1) hue-rotate(180deg) contrast(1.06) brightness(1.02);
+}
+
+/* Saying it is there, because a hover nobody knows about is a hover nobody uses. */
+.reader-loupe-say {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-family: var(--mono);
+  font-size: var(--label);
+  letter-spacing: var(--track);
+  text-transform: uppercase;
+  color: var(--hud);
+}
+
+/* A small glass, drawn rather than set. */
+.reader-loupe-say i {
+  position: relative;
+  width: 11px;
+  height: 11px;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+}
+
+.reader-loupe-say i::after {
+  content: "";
+  position: absolute;
+  right: -4px;
+  bottom: -3px;
+  width: 5px;
+  height: 1px;
+  background: currentColor;
+  transform: rotate(45deg);
+}
+
+.cx-room .reader-loupe-say {
+  color: var(--ink-ghost);
+}
+
+/*
+ * No glass without a pointer.
+ *
+ * A loupe that follows a finger is a loupe underneath a finger. On touch the
+ * page is pinched instead, which is what the browser is for.
+ */
+@media (hover: none) {
+  .reader-loupe,
+  .reader-loupe-say {
+    display: none;
+  }
+
+  .reader-pages {
+    cursor: auto;
+  }
 }

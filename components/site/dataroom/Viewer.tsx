@@ -50,6 +50,18 @@ const OVERSAMPLE = 3;
  */
 const MAX_PIXELS = 9_000_000;
 
+/**
+ * Anything darker than this in a photograph patch is the card behind it.
+ *
+ * The portraits sit on a near-black panel. Skin, even in shadow, is far above
+ * this; the panel is at or near zero.
+ */
+const GROUND = 34;
+
+/** How wide the loupe is, in CSS pixels, and how much larger it shows. */
+const LOUPE = 220;
+const LOUPE_POWER = 2.5;
+
 interface Rendered {
   page: number;
   width: number;
@@ -80,8 +92,9 @@ export function Viewer({
   const [state, setState] = useState<'loading' | 'ready' | 'missing' | 'broken'>('loading');
   const [pages, setPages] = useState<Rendered[]>([]);
   const [at, setAt] = useState(1);
-  const [wide, setWide] = useState(false);
   const [flipped, setFlipped] = useState(light);
+
+  const loupe = useRef<HTMLDivElement>(null);
 
   /*
    * Everything that would ordinarily produce a copy.
@@ -160,18 +173,78 @@ export function Viewer({
           if (!alive) break;
 
           /*
-           * The page, with our own mark over the one baked into it.
+           * The page, exactly as it was drawn.
            *
-           * The badge is a sibling of the canvas rather than something painted
-           * into it, which matters twice over: the CSS inversion applies to
-           * the canvas alone, so the mark keeps its own colours whichever way
-           * the pages are shown; and it is a mask over a fill, so it stays
-           * sharp at any zoom while the render underneath is fixed pixels.
+           * Our own mark was briefly painted over the lockup baked into each
+           * deck, on the reasoning that inverting a white logo would spoil it.
+           * It does not: `hue-rotate` puts the blue Q back where it was and the
+           * white wordmark becomes a black one, which is the mark as it looks
+           * on paper anywhere else. The overlay was solving a problem the
+           * filter had already solved, and solving it worse.
            */
           const sheet = document.createElement('div');
           sheet.className = 'paper-sheet';
           sheet.appendChild(canvas);
 
+          /*
+           * The photographs, laid back over the top with their ground removed.
+           *
+           * Each one is cut out of the render and appended as its own element,
+           * which the inversion does not touch: the filter is on the page's
+           * canvas alone. That keeps the faces as faces, and it also kept the
+           * near-black card they sit on, which put a black rectangle in the
+           * middle of a white page. So anything close to black in the patch is
+           * knocked out to white as it is laid down. The faces are nowhere near
+           * that dark and the coloured hexagons around them survive it.
+           */
+          for (const box of paper.photos ?? []) {
+            if (box.page !== n) continue;
+
+            const patch = document.createElement('canvas');
+            patch.className = 'paper-keep';
+            patch.width = Math.max(1, Math.round(canvas.width * box.w));
+            patch.height = Math.max(1, Math.round(canvas.height * box.h));
+            patch.style.left = `${box.x * 100}%`;
+            patch.style.top = `${box.y * 100}%`;
+            patch.style.width = `${box.w * 100}%`;
+            patch.style.height = `${box.h * 100}%`;
+
+            const cut = patch.getContext('2d', { willReadFrequently: true });
+            if (!cut) continue;
+            cut.drawImage(
+              canvas,
+              Math.round(canvas.width * box.x),
+              Math.round(canvas.height * box.y),
+              patch.width,
+              patch.height,
+              0,
+              0,
+              patch.width,
+              patch.height,
+            );
+
+            const pixels = cut.getImageData(0, 0, patch.width, patch.height);
+            const data = pixels.data;
+            for (let i = 0; i < data.length; i += 4) {
+              const lum = data[i] * 0.2126 + data[i + 1] * 0.7152 + data[i + 2] * 0.0722;
+              if (lum < GROUND) {
+                data[i] = 255;
+                data[i + 1] = 255;
+                data[i + 2] = 255;
+              }
+            }
+            cut.putImageData(pixels, 0, 0);
+            sheet.appendChild(patch);
+          }
+
+          /*
+           * And the mark, over the lockup the deck carries in its corner.
+           *
+           * On a white ground, because that is what the page around it has
+           * become. The artwork is used as a mask over a fill rather than
+           * placed as a picture: the file is white-on-transparent, drawn for a
+           * dark deck, so as an image it would be invisible here.
+           */
           if (paper.logo) {
             const badge = document.createElement('span');
             badge.className = 'paper-badge';
@@ -184,7 +257,7 @@ export function Viewer({
             sheet.appendChild(badge);
           }
 
-          hold.current?.appendChild(sheet);
+          hold.current?.insertBefore(sheet, loupe.current);
           drawn.push({ page: n, width: natural.width, height: natural.height });
           setPages([...drawn]);
           if (n === 1) setState('ready');
@@ -223,6 +296,87 @@ export function Viewer({
     return () => watch.disconnect();
   }, [state, pages.length]);
 
+  /*
+   * The loupe.
+   *
+   * A small canvas that follows the pointer and copies the region under it out
+   * of the page at two and a half times the size. Because it is a copy from
+   * the source bitmap rather than a scaled picture of the page, and because the
+   * pages are rendered at three device pixels per CSS pixel, the magnified view
+   * is still drawing roughly one device pixel per pixel: nothing softens.
+   *
+   * `drawImage` of a two-hundred-pixel square is a few microseconds, so this
+   * runs on the pointer event and needs no frame loop.
+   */
+  const magnify = useCallback((event: React.PointerEvent<HTMLDivElement>) => {
+    const glass = loupe.current;
+    const face = glass?.firstElementChild as HTMLCanvasElement | null;
+    if (!glass || !face) return;
+
+    /*
+     * Which page is under the pointer, found by geometry.
+     *
+     * Not by asking the event what it hit: the pages carry
+     * `pointer-events: none`, because a canvas can be dragged out of a page and
+     * dropped into a folder, which is a download wearing a different coat. So
+     * the pointer never lands on one and `event.target` is always the strip.
+     * Twelve rectangle tests per move is nothing.
+     */
+    let page: HTMLCanvasElement | null = null;
+    let box: DOMRect | null = null;
+    for (const found of hold.current?.querySelectorAll('canvas.paper-page') ?? []) {
+      const rect = found.getBoundingClientRect();
+      if (
+        event.clientX >= rect.left &&
+        event.clientX <= rect.right &&
+        event.clientY >= rect.top &&
+        event.clientY <= rect.bottom
+      ) {
+        page = found as HTMLCanvasElement;
+        box = rect;
+        break;
+      }
+    }
+
+    if (!page || !box) {
+      glass.dataset.on = 'false';
+      return;
+    }
+    const ctx = face.getContext('2d');
+    if (!ctx) return;
+
+    // Where the pointer is in the page's own pixels.
+    const atX = ((event.clientX - box.left) / box.width) * page.width;
+    const atY = ((event.clientY - box.top) / box.height) * page.height;
+
+    // How much of the page one loupe-width covers.
+    const shown = (LOUPE / box.width) * page.width / LOUPE_POWER;
+
+    ctx.clearRect(0, 0, face.width, face.height);
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(
+      page,
+      atX - shown / 2,
+      atY - shown / 2,
+      shown,
+      shown,
+      0,
+      0,
+      face.width,
+      face.height,
+    );
+
+    // Renamed off `hold`, which is the ref for the strip and was being shadowed
+    // by this local: the loop above then read a DOMRect and found no `current`.
+    const strip = glass.parentElement?.getBoundingClientRect();
+    if (strip) {
+      glass.style.left = `${event.clientX - strip.left}px`;
+      glass.style.top = `${event.clientY - strip.top}px`;
+    }
+    glass.dataset.on = 'true';
+  }, []);
+
   const goto = useCallback((n: number) => {
     const target = hold.current?.querySelector(`canvas[data-page="${n}"]`);
     target?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -231,7 +385,6 @@ export function Viewer({
   return (
     <div
       className="reader"
-      data-wide={String(wide)}
       data-state={state}
       data-light={String(flipped)}
       style={
@@ -293,14 +446,14 @@ export function Viewer({
             {flipped ? 'Dark pages' : 'Light pages'}
           </button>
 
-          <button
-            type="button"
-            className="reader-wide"
-            onClick={() => setWide((was) => !was)}
-            aria-pressed={wide}
-          >
-            {wide ? 'Fit width' : 'Full width'}
-          </button>
+          {/*
+            The loupe is a hover, so it has no control. This says it is there,
+            because a magnifier nobody knows about is a magnifier nobody uses.
+          */}
+          <span className="reader-loupe-say" aria-hidden="true">
+            <i />
+            Hover to magnify
+          </span>
         </div>
       </div>
 
@@ -309,11 +462,33 @@ export function Viewer({
         in the stylesheet alone because a canvas can be dragged out of the page
         and dropped into a folder, which is a download by another name.
       */}
+      {/*
+        The pages scroll sideways once they are larger than the column, which
+        is the only honest way to show a zoomed page: the alternative is to
+        shrink it back to fit, which is what the reader just asked us not to do.
+      */}
       <div
         className="reader-pages"
         ref={hold}
         onDragStart={(event) => event.preventDefault()}
-      />
+        onPointerMove={magnify}
+        onPointerLeave={() => {
+          if (loupe.current) loupe.current.dataset.on = 'false';
+        }}
+      >
+        {/*
+          The glass. A sibling of the pages rather than a child of any one of
+          them, so it can cross from one page to the next without being clipped,
+          and so there is one of it rather than twelve.
+
+          The ring is on the frame and the pixels are on the canvas inside it,
+          because the light view inverts the canvas with a filter and a filter
+          takes the element's shadow with it: the white ring came out black.
+        */}
+        <div className="reader-loupe" ref={loupe} data-on="false" aria-hidden="true">
+          <canvas width={LOUPE * 2} height={LOUPE * 2} />
+        </div>
+      </div>
 
       {state === 'loading' ? (
         <p className="reader-say">Rendering {paper.pages} pages…</p>

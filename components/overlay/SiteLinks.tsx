@@ -73,6 +73,31 @@ export function SiteLinks({ tabbable = true }: { tabbable?: boolean }) {
           </Link>
         );
       })}
+
+      {/*
+        The way across to the standard site.
+        
+        The site had a control back into the environment and the environment had
+        nothing going the other way, so a visitor who chose the network at the
+        door was stuck in it. It is set apart from the three above rather than
+        made a fourth of them, because it does not go to a place in this site,
+        it goes to the same place in the other one: `/product/vault` here knows
+        it is `/classic/product/vault` there.
+      */}
+      <Link
+        className="link link-cross"
+        href={`/classic${path === '/' ? '' : path}`}
+        tabIndex={tabbable ? 0 : -1}
+      >
+        <span className="link-face" aria-hidden="true">
+          <svg className="glyph" viewBox="0 0 24 24" focusable="false">
+            <path d="M4 5.5h16v13H4Z" />
+            <path d="M7 9.5h7M7 12.5h10M7 15.5h6" />
+          </svg>
+        </span>
+        <span className="link-label">Standard site</span>
+        <span className="sr-only">Open this page on the standard site</span>
+      </Link>
     </nav>
   );
 }
