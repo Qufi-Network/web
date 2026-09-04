@@ -100,7 +100,6 @@ export function Viewer({
   const [state, setState] = useState<'loading' | 'ready' | 'missing' | 'broken'>('loading');
   const [pages, setPages] = useState<Rendered[]>([]);
   const [at, setAt] = useState(1);
-  const [flipped, setFlipped] = useState(light);
 
   /*
    * How many pages the version actually open has.
@@ -118,9 +117,17 @@ export function Viewer({
    * Where one exists the light view loads it and shows it as drawn: no filter,
    * no photograph patched back in, no lockup covered. The whole apparatus for
    * inverting only runs for the papers that have no light version yet.
+   *
+   * Both follow the site rather than a control. There was a switch here that
+   * let a reader ask for the other treatment, and it was wrong in the one way
+   * that mattered: pressing it on the living network loaded the white deck,
+   * and pressing it on the standard site loaded the dark one. Each version
+   * belongs to one site. The environment gets the deck as it was drawn, the
+   * standard site gets the one drawn for a white page, and neither offers the
+   * other.
    */
-  const drawn = flipped && Boolean(paper.light);
-  const corrected = flipped && !paper.light;
+  const drawn = light && Boolean(paper.light);
+  const corrected = light && !paper.light;
 
   const loupe = useRef<HTMLDivElement>(null);
 
@@ -446,7 +453,7 @@ export function Viewer({
     <div
       className="reader"
       data-state={state}
-      data-light={String(flipped)}
+      data-light={String(light)}
       data-correct={String(corrected)}
       style={
         {
@@ -488,25 +495,6 @@ export function Viewer({
           >
             <i className="reader-arrow" aria-hidden="true" />
           </button>
-          {/*
-            Light or dark, whichever the reader wants.
-            
-            The inversion is a CSS filter rather than a second render: hue is
-            rotated back after the lightness is flipped, so the ground turns
-            white and the type black while the diagrams keep the colours they
-            were drawn in. Doing the same thing honestly, pixel by pixel, would
-            mean processing fifty million pixels across twelve pages, and the
-            filter runs on the GPU for nothing.
-          */}
-          <button
-            type="button"
-            className="reader-flip"
-            onClick={() => setFlipped((was) => !was)}
-            aria-pressed={flipped}
-          >
-            {flipped ? 'Dark pages' : 'Light pages'}
-          </button>
-
           {/*
             The loupe is a hover, so it has no control. This says it is there,
             because a magnifier nobody knows about is a magnifier nobody uses.

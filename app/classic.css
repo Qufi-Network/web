@@ -3601,7 +3601,16 @@ body:has(.classic) {
  * thing done pixel by pixel would be fifty million pixels across twelve pages,
  * and this runs on the GPU.
  */
-.reader[data-light="true"] .paper-page {
+/*
+ * Only the papers that have no light version of their own.
+ *
+ * This was keyed on `data-light`, which is simply "the standard site", and it
+ * lives in the stylesheet that loads last: so it kept inverting the memorandum
+ * long after the real white deck had been wired in and every other trace of
+ * the correction had been switched off. `data-correct` is the narrower flag,
+ * and it is false the moment a paper has a light file.
+ */
+.reader[data-correct="true"] .paper-page {
   filter: invert(1) hue-rotate(180deg) contrast(1.06) brightness(1.02);
 }
 
