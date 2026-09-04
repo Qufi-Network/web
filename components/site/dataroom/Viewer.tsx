@@ -34,21 +34,22 @@ import type { Paper } from './papers';
  *
  * These are decks: dense diagrams, small captions, tables of numbers. At 1x
  * the captions turn to mush, which is worse than useless for a document whose
- * whole job is to be read. Three is where the smallest type in these three
- * papers stops being an approximation of itself.
+ * whole job is to be read. Four is where the smallest type in these three
+ * papers is genuinely crisp rather than merely legible, and it is what the
+ * loupe needs: magnifying two and a half times into a three-times render was
+ * already stretching it slightly, and into a four-times render it is not.
  */
-const OVERSAMPLE = 3;
+const OVERSAMPLE = 4;
 
 /*
  * And a ceiling, because a canvas is memory.
  *
- * Three times a full-width landscape page on a retina display is a bitmap of
- * about twenty-four million pixels, and twelve of them is most of a gigabyte.
- * The scale is reduced for any page that would cross this, so a large screen
- * gets the sharpest render it can hold rather than the sharpest render that
- * exists.
+ * A page is held at four bytes a pixel, so this is sixty-four megabytes each
+ * and twelve of them is most of a gigabyte at the very largest. The scale is
+ * reduced for any page that would cross it, so a large screen gets the
+ * sharpest render it can hold rather than the sharpest render that exists.
  */
-const MAX_PIXELS = 9_000_000;
+const MAX_PIXELS = 16_000_000;
 
 /**
  * Anything darker than this in a photograph patch is the card behind it.
@@ -58,9 +59,16 @@ const MAX_PIXELS = 9_000_000;
  */
 const GROUND = 34;
 
-/** How wide the loupe is, in CSS pixels, and how much larger it shows. */
+/**
+ * How wide the loupe is in CSS pixels, how much larger it shows, and how many
+ * pixels it keeps behind that.
+ *
+ * The glass is backed at three device pixels per CSS pixel of its own, so the
+ * copy it takes out of the page is not itself the thing that softens.
+ */
 const LOUPE = 220;
 const LOUPE_POWER = 2.5;
+const LOUPE_DPR = 3;
 
 interface Rendered {
   page: number;
@@ -93,6 +101,26 @@ export function Viewer({
   const [pages, setPages] = useState<Rendered[]>([]);
   const [at, setAt] = useState(1);
   const [flipped, setFlipped] = useState(light);
+
+  /*
+   * How many pages the version actually open has.
+   *
+   * The manifest knows both counts, but the light papers are separate
+   * documents rather than recoloured ones and can differ in length: the
+   * memorandum is six pages dark and seven light. The readout follows what was
+   * loaded.
+   */
+  const [total, setTotal] = useState(paper.pages);
+
+  /*
+   * A paper that exists in a light version does not need correcting.
+   *
+   * Where one exists the light view loads it and shows it as drawn: no filter,
+   * no photograph patched back in, no lockup covered. The whole apparatus for
+   * inverting only runs for the papers that have no light version yet.
+   */
+  const drawn = flipped && Boolean(paper.light);
+  const corrected = flipped && !paper.light;
 
   const loupe = useRef<HTMLDivElement>(null);
 
@@ -131,7 +159,7 @@ export function Viewer({
         // attachment, and a PDF that asks for one is a PDF doing something
         // else — so the renderer is given the document and no permissions.
         const task = pdfjs.getDocument({
-          url: `/data-room/paper/${id}`,
+          url: `/data-room/paper/${id}${drawn ? '?v=light' : ''}`,
           isEvalSupported: false,
         } as Parameters<typeof pdfjs.getDocument>[0]);
         const file = await task.promise;
@@ -140,9 +168,10 @@ export function Viewer({
           return;
         }
         doc = file;
+        setTotal(file.numPages);
 
         const width = hold.current?.clientWidth ?? 900;
-        const drawn: Rendered[] = [];
+        const made: Rendered[] = [];
 
         for (let n = 1; n <= file.numPages; n++) {
           if (!alive) break;
@@ -197,7 +226,7 @@ export function Viewer({
            * knocked out to white as it is laid down. The faces are nowhere near
            * that dark and the coloured hexagons around them survive it.
            */
-          for (const box of paper.photos ?? []) {
+          for (const box of corrected ? (paper.photos ?? []) : []) {
             if (box.page !== n) continue;
 
             const patch = document.createElement('canvas');
@@ -245,7 +274,38 @@ export function Viewer({
            * placed as a picture: the file is white-on-transparent, drawn for a
            * dark deck, so as an image it would be invisible here.
            */
-          if (paper.logo) {
+          if (corrected && paper.logo) {
+            /*
+             * The deck's lockup is erased with the page's own ground, copied.
+             *
+             * A flat plate was tried twice: white, then a colour sampled from
+             * one pixel beside it. Both showed as a rectangle, because the
+             * ground under these logos is not flat. It is a near-black with a
+             * slight gradient across it, and inverted, the difference between
+             * one shade and its neighbour is the difference between white and
+             * cream.
+             *
+             * So a strip of the same band is copied over the logo instead,
+             * taken from the empty ground immediately to its right. It matches
+             * exactly, gradient and all, because it is the same pixels. And it
+             * happens on the canvas, so it is inverted along with the page and
+             * needs no correction of its own.
+             */
+            const paint = canvas.getContext('2d');
+            if (paint) {
+              const bx = Math.round(canvas.width * paper.logo.x);
+              const by = Math.round(canvas.height * paper.logo.y);
+              const bw = Math.round(canvas.width * paper.logo.w);
+              const bh = Math.round(canvas.height * paper.logo.h);
+              // Far enough right to clear the lockup, and clamped in bounds.
+              const from = Math.min(canvas.width - bw, bx + bw + Math.round(bw * 0.15));
+              paint.drawImage(canvas, from, by, bw, bh, bx, by, bw, bh);
+            }
+
+            /*
+             * And our mark over the space that leaves. No ground of its own:
+             * the page's is already correct underneath it.
+             */
             const badge = document.createElement('span');
             badge.className = 'paper-badge';
             badge.style.left = `${paper.logo.x * 100}%`;
@@ -258,8 +318,8 @@ export function Viewer({
           }
 
           hold.current?.insertBefore(sheet, loupe.current);
-          drawn.push({ page: n, width: natural.width, height: natural.height });
-          setPages([...drawn]);
+          made.push({ page: n, width: natural.width, height: natural.height });
+          setPages([...made]);
           if (n === 1) setState('ready');
         }
       } catch (error) {
@@ -276,7 +336,7 @@ export function Viewer({
       alive = false;
       doc?.destroy();
     };
-  }, [id, title]);
+  }, [id, title, drawn]);
 
   /* Which page is in front of the reader, for the readout. */
   useEffect(() => {
@@ -387,6 +447,7 @@ export function Viewer({
       className="reader"
       data-state={state}
       data-light={String(flipped)}
+      data-correct={String(corrected)}
       style={
         {
           '--badge-mark': `url(${QUFI_MARK})`,
@@ -399,7 +460,7 @@ export function Viewer({
         <p className="reader-where">
           {state === 'ready' ? (
             <>
-              Page <b>{at}</b> of {paper.pages}
+              Page <b>{at}</b> of {total}
             </>
           ) : state === 'loading' ? (
             'Opening…'
@@ -421,8 +482,8 @@ export function Viewer({
           <button
             type="button"
             className="reader-step"
-            onClick={() => goto(Math.min(paper.pages, at + 1))}
-            disabled={state !== 'ready' || at >= paper.pages}
+            onClick={() => goto(Math.min(total, at + 1))}
+            disabled={state !== 'ready' || at >= total}
             aria-label="Next page"
           >
             <i className="reader-arrow" aria-hidden="true" />
@@ -486,7 +547,7 @@ export function Viewer({
           takes the element's shadow with it: the white ring came out black.
         */}
         <div className="reader-loupe" ref={loupe} data-on="false" aria-hidden="true">
-          <canvas width={LOUPE * 2} height={LOUPE * 2} />
+          <canvas width={LOUPE * LOUPE_DPR} height={LOUPE * LOUPE_DPR} />
         </div>
       </div>
 

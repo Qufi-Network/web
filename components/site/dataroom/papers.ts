@@ -31,6 +31,18 @@ export interface Paper {
   size: string;
   /** How the pages are shaped, so the viewer can size itself before it parses. */
   shape: 'portrait' | 'landscape';
+
+  /**
+   * A version of the same paper drawn for a white page.
+   *
+   * Better than any amount of inversion, and it makes most of what was written
+   * to support inverting unnecessary: where one of these exists the light view
+   * simply loads it, and there is no filter to apply, no photograph to patch
+   * and no lockup to cover. They are separate documents rather than recoloured
+   * ones, so they can differ in length; the reader is told the count of
+   * whichever is actually open.
+   */
+  light?: { file: string; pages: number };
   /**
    * Photographs, as fractions of the page.
    *
@@ -70,6 +82,7 @@ export const PAPERS: Paper[] = [
     pages: 6,
     size: '1.4 MB',
     shape: 'landscape',
+    light: { file: 'investor-memorandum-light.pdf', pages: 7 },
     logo: { x: 0, y: 0.005, w: 0.2, h: 0.115 },
     photos: [
       { page: 6, x: 0.288, y: 0.132, w: 0.076, h: 0.162 },
@@ -89,6 +102,14 @@ export const PAPERS: Paper[] = [
       { page: 10, x: 0.562, y: 0.092, w: 0.112, h: 0.064 },
       { page: 10, x: 0.788, y: 0.092, w: 0.118, h: 0.064 },
     ],
+  },
+  {
+    doc: 'product-overview',
+    file: 'product-overview.pdf',
+    pages: 2,
+    size: '16.8 MB',
+    shape: 'landscape',
+    light: { file: 'product-overview-light.pdf', pages: 4 },
   },
   {
     doc: 'corporate-overview',

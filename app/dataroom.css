@@ -1615,7 +1615,7 @@
   pointer-events: none;
 }
 
-.reader[data-light="true"] .paper-keep {
+.reader[data-correct="true"] .paper-keep {
   display: block;
 }
 
@@ -1628,11 +1628,11 @@
  * that the site's own header carries, and it stays sharp at any magnification
  * because it is a shape rather than pixels.
  */
-.reader[data-light="true"] .paper-badge {
+.reader[data-correct="true"] .paper-badge {
   display: flex;
   align-items: center;
   gap: 3.5%;
-  background: #ffffff;
+  /* The colour comes from the page, sampled. See the viewer. */
 }
 
 .paper-badge i {
@@ -1724,7 +1724,7 @@
  * shadow as well as its content, so putting it one level up turned the white
  * ring black on exactly the view the white ring was for.
  */
-.reader[data-light="true"] .reader-loupe canvas {
+.reader[data-correct="true"] .reader-loupe canvas {
   filter: invert(1) hue-rotate(180deg) contrast(1.06) brightness(1.02);
 }
 

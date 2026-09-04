@@ -36,6 +36,13 @@ export async function GET(
   if (!paper) return new Response('Not found', { status: 404 });
 
   /*
+   * Which version. Some papers exist twice: once drawn for a dark deck and
+   * once for a white page, and the standard site asks for the second.
+   */
+  const wants = new URL(request.url).searchParams.get('v');
+  const file = wants === 'light' && paper.light ? paper.light.file : paper.file;
+
+  /*
    * Only from our own pages.
    *
    * `Sec-Fetch-Site` is set by the browser and cannot be forged from script,
@@ -50,7 +57,7 @@ export async function GET(
 
   // A file that is missing is not an error the reader should see a stack for:
   // the room simply does not offer the document. See papers/README.md.
-  const path = join(DIR, paper.file);
+  const path = join(DIR, file);
   let bytes: Buffer;
   try {
     await stat(path);
@@ -68,7 +75,7 @@ export async function GET(
     headers: {
       'content-type': 'application/pdf',
       'content-length': String(bytes.byteLength),
-      'content-disposition': `inline; filename="${paper.file}"`,
+      'content-disposition': `inline; filename="${file}"`,
       'cache-control': 'private, no-store, max-age=0',
       'x-robots-tag': 'noindex, nofollow, noarchive, nosnippet',
       'x-content-type-options': 'nosniff',

@@ -248,7 +248,7 @@ export const DOCUMENTS: DataDoc[] = [
     index: '01',
     title: 'QuFi Product Overview',
     kind: 'Overview',
-    status: 'development',
+    status: 'complete',
     description: 'A complete overview of the QuFi product ecosystem.',
     discover: [
       'The QuFi product stack',
@@ -458,7 +458,7 @@ export const DOCUMENTS: DataDoc[] = [
     index: '01',
     title: 'QuFi Technical Whitepaper',
     kind: 'Whitepaper',
-    status: 'development',
+    status: 'confidential',
     description:
       'The flagship technical reference for QuFi: a detailed explanation of the architecture, the protocol execution model, the verification system, the cryptographic architecture and the network design.',
     discover: [
@@ -501,7 +501,7 @@ export const DOCUMENTS: DataDoc[] = [
     index: '02',
     title: 'Post-Quantum Cryptography Architecture',
     kind: 'Architecture',
-    status: 'development',
+    status: 'confidential',
     description: 'A dedicated explanation of QuFi’s cryptographic strategy.',
     discover: [
       'Why quantum security matters',
@@ -523,7 +523,7 @@ export const DOCUMENTS: DataDoc[] = [
     index: '03',
     title: 'QuFi Verification Network',
     kind: 'Architecture',
-    status: 'development',
+    status: 'confidential',
     description: 'A technical explanation of the decentralised verification network.',
     discover: [
       'Verifier nodes',
@@ -546,7 +546,7 @@ export const DOCUMENTS: DataDoc[] = [
     index: '04',
     title: 'QuFi Security Architecture',
     kind: 'Architecture',
-    status: 'development',
+    status: 'confidential',
     description: 'The security architecture governing the QuFi ecosystem.',
     discover: [
       'Zero-trust architecture',
@@ -568,7 +568,7 @@ export const DOCUMENTS: DataDoc[] = [
     index: '05',
     title: 'Interoperability & Settlement Architecture',
     kind: 'Architecture',
-    status: 'development',
+    status: 'confidential',
     description: 'How QuFi connects to external financial and blockchain systems.',
     discover: [
       'Blockchain integrations',
