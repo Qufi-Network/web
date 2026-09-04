@@ -1,9 +1,18 @@
 # The papers
 
-The three investor documents the data room shows. They are **not** in this
-repository and must not be: it is public, and a PDF committed here is served
-from `raw.githubusercontent.com` with none of the viewer's protection in front
-of it.
+The three investor documents the data room shows. They are in this repository, on the
+owner's decision.
+
+That decision has a consequence worth stating plainly: this repository is
+public, so every file here is served from `raw.githubusercontent.com` as a
+direct download. The viewer's arrangement — pages drawn to canvases, no
+toolbar, no context menu, a route that only answers same-origin requests — is
+still true of the site, and none of it applies to a raw GitHub URL. Anyone who
+knows the path has the file.
+
+The alternative, if that is ever reconsidered, is to make the repository
+private, or to gitignore `papers/*.pdf` again and place them on the host at
+deploy time. The route reads `QUFI_PAPERS_DIR` for exactly that.
 
 What belongs here at runtime:
 
@@ -30,8 +39,7 @@ and a light file is always the better answer.
 
 The route that serves them is `app/data-room/paper/[id]/route.ts`. It reads
 from this directory by default; set `QUFI_PAPERS_DIR` to read from somewhere
-else — a mounted volume or a directory outside the deployment, which is the
-better arrangement on a host that keeps the checkout world-readable.
+else, such as a mounted volume outside the deployment.
 
 A document whose file is missing degrades honestly: the data room drops the
 View control and the page reads as it did before the papers existed. Nothing

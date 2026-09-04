@@ -1,0 +1,12 @@
+# The papers are binary and must never be touched by line-ending conversion.
+#
+# Without this, git treats a PDF as text on Windows and rewrites LF to CRLF on
+# checkout, which corrupts the file: the byte count changes, the cross-reference
+# offsets inside the document no longer point at anything, and the reader gets
+# a PDF that will not parse. It warned about exactly this when they were first
+# staged.
+*.pdf binary
+*.png binary
+*.webp binary
+*.pptx binary
+*.docx binary
